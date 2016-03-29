@@ -1,0 +1,16 @@
+NAME="AutomationServer"
+DESC="AutomationServer service"
+EXEC="/usr/bin/jsvc"
+#USER="fred"
+HOME_PATH="/home/fred/AutomationServer"
+PID="${HOME_PATH}/$NAME.pid"
+LOG4J="log4j.configuration=file:${HOME_PATH}/config/log4j.xml"
+JAVA_HOME="/usr/lib/jvm/jdk-8-oracle-arm-vfp-hflt"
+CLASS_PATH="${HOME_PATH}/lib/*:${HOME_PATH}/AutomationServer.jar:/opt/pi4j/lib/*"
+ARGS=""
+LOG_OUT="${HOME_PATH}/log/${NAME}.out"
+LOG_ERR="${HOME_PATH}/log/${NAME}.err"
+PID="${HOME_PATH}/${NAME}.pid"
+CLASS=fr.guiet.automationserver.AutomationServer
+
+sudo $EXEC -stop -home "$JAVA_HOME" -cp "$CLASS_PATH" -D"${LOG4J}" -outfile $LOG_OUT -errfile $LOG_ERR -pidfile "$PID" $1 $CLASS $ARGS

@@ -23,7 +23,7 @@ public class DbManager {
 
 	private static String _host = "jdbc:postgresql://127.0.0.1:1524/automation";
 	private static String _userName = "automation_p";
-	private static String _password = "8510james";
+	private static String _password = "brgm";
 
 	public DbManager() {
 		try {
