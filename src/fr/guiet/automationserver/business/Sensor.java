@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -98,11 +99,11 @@ public class Sensor implements IXBeeListener {
 
 		} catch (MalformedURLException e) {
 
-			_logger.error(e.printStackTrace());
+			_logger.error(e.getMessage());
 		}
 		catch (IOException e) {
 
-			_logger.error(e.printStackTrace());		
+			_logger.error(e.getMessage());		
 		}
 	}	
 	
