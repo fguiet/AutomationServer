@@ -5,6 +5,10 @@ import org.apache.log4j.Logger;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Date;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.io.IOException;
 
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -22,6 +26,8 @@ public class Sensor implements IXBeeListener {
 	private float _actualTemp;
 	private float _actualHumidity;
 	private Room _room = null;
+	private boolean _alertSent = false; //Alerte envoyée par SMS en cas de non réception de message d'un capteur depuis trop longtemps
+	private static final String targetURL = "https://smsapi.free-mobile.fr/sendmsg?user=@user@&pass=@pass@&msg=@msg@";
 	
 	public float getActualTemp() {
 		return _actualTemp;
@@ -53,10 +59,51 @@ public class Sensor implements IXBeeListener {
 
 		//Timeout si aucune info recu du capteur au bout de 5 minutes
 	    if (diffMinutes >= 5) {
+	    	        //TODO : Faire une classe métier pout l'envoie des SMS
+	    	        if (!_alertSent) {
+	    	        	SendSMS();
+	    	        }
+	    	        
 			return true;
 		}
 		else {
+			_alertSent = false; //Réinitialisation
 			return false;
+		}
+	}
+	
+	private void SendSMS() {
+		try {
+			
+			String freeSMSUser = System.getProperty("freeSMSUser");
+			String freeSMSPass = System.getProperty("freeSMSPass");
+			
+			String url = targetURL.replace("@user@",freeSMSUser);
+			url = targetURL.replace("@pass@",freeSMSPass);
+			url = targetURL.replace("@msg@",URLEncoder.encode("Le capteur de la pièce "+_room.getName()+"ne répond plus"));
+			
+			URL restServiceURL = new URL(url);
+
+			HttpURLConnection httpConnection = (HttpURLConnection) restServiceURL.openConnection();
+			httpConnection.setRequestMethod("GET");
+			//httpConnection.setRequestProperty("Accept", "application/json");
+
+			if (httpConnection.getResponseCode() != 200) {
+				_logger.error("Code retour incorrect lors de l'envoi du SMS Free ("+httpConnection.getResponseCode()+")"");
+			}
+			else {
+				_alertSent = true;
+			}
+			httpConnection.disconnect();
+
+		  } catch (MalformedURLException e) {
+
+			_logger.error(e.printStackTrace());
+
+		  } catch (IOException e) {
+
+			_logger.error(e.printStackTrace());
+		  }
 		}
 	}
 	
