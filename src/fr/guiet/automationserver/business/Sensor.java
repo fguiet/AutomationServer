@@ -96,16 +96,15 @@ public class Sensor implements IXBeeListener {
 			}
 			httpConnection.disconnect();
 
-		  } catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 
 			_logger.error(e.printStackTrace());
-
-		  } catch (IOException e) {
-
-			_logger.error(e.printStackTrace());
-		  }
 		}
-	}
+		catch (IOException e) {
+
+			_logger.error(e.printStackTrace());		
+		}
+	}	
 	
 	//Reception d'un message
 	public void processResponse(String message) {
