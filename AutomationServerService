@@ -27,7 +27,7 @@ LOG4J="log4j.configuration=file:${HOME_PATH}/config/log4j.xml"
 JAVA_HOME="/usr/lib/jvm/jdk-8-oracle-arm-vfp-hflt"
 JAVA_LIBRARY_PATH="java.library.path=/home/fred/AutomationServer/lib"
 CLASS_PATH="${HOME_PATH}/lib/*:${HOME_PATH}/AutomationServer.jar:/opt/pi4j/lib/*"
-ARGS=""
+ARGS="-DfreeSMSUser=xxxx -DfreeSMSPass=xxxx"
 LOG_OUT="${HOME_PATH}/log/${NAME}.out"
 LOG_ERR="${HOME_PATH}/log/${NAME}.err"
 PID="${HOME_PATH}/${NAME}.pid"
@@ -37,7 +37,7 @@ export LANG=fr_FR.UTF-8
 jsvc_exec()
 {   
     #cd $HOME_PATH
-    sudo $EXEC -home "$JAVA_HOME" -cp "$CLASS_PATH" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" -outfile $LOG_OUT -errfile $LOG_ERR -pidfile "$PID" $1 $CLASS $ARGS 
+    sudo $EXEC -home "$JAVA_HOME" -cp "$CLASS_PATH" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" $ARGS -outfile $LOG_OUT -errfile $LOG_ERR -pidfile "$PID" $1 $CLASS  
 }
 
 case "$1" in
