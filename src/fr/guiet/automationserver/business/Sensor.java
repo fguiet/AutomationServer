@@ -80,8 +80,8 @@ public class Sensor implements IXBeeListener {
 			String freeSMSPass = System.getProperty("freeSMSPass");
 			
 			String url = targetURL.replace("@user@",freeSMSUser);
-			url = targetURL.replace("@pass@",freeSMSPass);
-			url = targetURL.replace("@msg@",URLEncoder.encode("Le capteur de la pièce "+_room.getName()+"ne répond plus"));
+			url = url.replace("@pass@",freeSMSPass);
+			url = url.replace("@msg@",URLEncoder.encode("Le capteur de la pièce "+_room.getName()+" ne répond plus"));
 			
 			URL restServiceURL = new URL(url);
 
@@ -90,7 +90,7 @@ public class Sensor implements IXBeeListener {
 			//httpConnection.setRequestProperty("Accept", "application/json");
 
 			if (httpConnection.getResponseCode() != 200) {
-				_logger.error("Code retour incorrect lors de l'envoi du SMS Free ("+httpConnection.getResponseCode()+")");
+				_logger.error("Code retour incorrect lors de l'envoi du SMS Free ("+httpConnection.getResponseCode()+"), Url : "+url);
 			}
 			else {
 				_alertSent = true;
