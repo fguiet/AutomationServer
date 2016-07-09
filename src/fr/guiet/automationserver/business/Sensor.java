@@ -89,7 +89,7 @@ public class Sensor implements IXBeeListener {
 			//httpConnection.setRequestProperty("Accept", "application/json");
 
 			if (httpConnection.getResponseCode() != 200) {
-				_logger.error("Code retour incorrect lors de l'envoi du SMS Free ("+httpConnection.getResponseCode()+")"");
+				_logger.error("Code retour incorrect lors de l'envoi du SMS Free ("+httpConnection.getResponseCode()+")");
 			}
 			else {
 				_alertSent = true;
