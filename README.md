@@ -2,6 +2,7 @@ NAME
   AutomationServer
 
 DESCRIPTION
+
   AutomationServer is a personal home automation project. 
   It is both a software and electronic project.
   Currently, it monitors temperatures in my house by controlling independently my electric heaters (wanted temperatures can be set day by day, hour by hour and even minutes by minutes) . 
@@ -29,7 +30,7 @@ FEATURES
   - Automatic start of my water boiler when electric cost is less expensive (mostly during the night)
 
 INSTALLATION
-   TODO
+  TODO
 
 LICENSE
     Copyright (c) 2015-2016 Frédéric Guiet  - All rights reserved.
