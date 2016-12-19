@@ -132,7 +132,7 @@ public class TeleInfoService implements Runnable {
     }
 	
 	//Récupération de la dernière trame teleinfo recue
-	public TeleInfoTrame GetLastTrame() {
+	public synchronized TeleInfoTrame GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	} 
 	
@@ -273,7 +273,7 @@ public class TeleInfoService implements Runnable {
 				}
 			}
 
-			serial.removeListener(_sdl);
+			//serial.removeListener(_sdl);
 
 			//System.out.println("Trame recue : "+TeleInfoService.ArrayListToStringHelper(trame));				
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
@@ -286,8 +286,10 @@ public class TeleInfoService implements Runnable {
 			throw e;			
 		}
 		finally {
-			if (serial != null && serial.isOpen())
+			if (serial != null && serial.isOpen()) {
+                           serial.removeListener(_sdl);
 			   serial.close();			
+                        }
 		}		
 	}
 	
