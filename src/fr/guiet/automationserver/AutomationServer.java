@@ -90,36 +90,21 @@ public class AutomationServer implements Daemon {
 					ServerSocket socket = new ServerSocket(4310);
 					_logger.info("Serveur d'écoute des messages opérationnels...");
 					
-					CreateCheckThreadActivityTask();
+					//CreateCheckThreadActivityTask();
 					
 					while(!_isStopped) {
+						
 						Socket connection = socket.accept();
 						AutomationServerThread ast=new AutomationServerThread(connection, _roomService, _teleInfoService);
 						ast.start();
 				
-						
-						/*inputStream = new InputStreamReader(connection.getInputStream());
-						response = new DataOutputStream(connection.getOutputStream());
-						input = new BufferedReader(inputStream);
-						
-						String command = input.readLine();
-						_logger.info("Automation Server a recu la commande : "+command);
-						
-						String answer = ProcessMessage(command);
-						
-						if (answer != null) {
-							response.writeUTF(ConvertToJSON(answer)+"\r\n");
-						}
-						else {
-							response.writeUTF("\r\n");
-						}
-						
-						response.flush();                                
-						response.close();
-						inputStream.close();
-						input.close();
-						connection.close();
-					}*/
+					}
+					
+					try {
+						socket.close();
+					} catch (IOException e) {
+						_logger.error("Une erreur est apparue dans lors de l'arrêt du serveur Automation...",e);
+						socket = null;
 					}
 				}
 				//catch(IOException ioe) {
@@ -133,7 +118,7 @@ public class AutomationServer implements Daemon {
     }
 	
 	//Création de la tache de sauvegarde en bdd
-	private void CreateCheckThreadActivityTask() {
+	/*private void CreateCheckThreadActivityTask() {
 		
 		TimerTask checkThreadActivityTask  = new TimerTask() {        
 			@Override
@@ -166,7 +151,7 @@ public class AutomationServer implements Daemon {
 		//Toutes les minutes on enregistre une trame 
 		timer.schedule(checkThreadActivityTask, 5000, 60000);
 		
-	}
+	}*/
 
 	//Méthode start de jsvc (Classe Deamon)
     @Override 
@@ -178,8 +163,10 @@ public class AutomationServer implements Daemon {
     @Override
     public void stop() throws Exception {
 		
-		//Arret du Thread TeleInfoService
+		//Arret des services
 		_teleInfoService.StopService();
+		_roomService.StopService();
+		_waterHeater.StopService();
 		
         _isStopped = true;
 		

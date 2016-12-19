@@ -20,7 +20,7 @@ public class Room {
 	private String _name;
 	private Sensor _sensor = null;
 	private ArrayList<Heater> _heaterList = new ArrayList<Heater>();
-	private Timer _timer = null;
+	//private Timer _timer = null;
 	private Float _userWantedTemp = null;
 	private Float _lastDefaultTemp = null;
 	
@@ -231,6 +231,11 @@ public class Room {
 			
 		}*/
 	//}
+	
+	//Arret du service RoomService
+    public void StopService() {		
+		_sensor.StopService();		
+	}
 	
 	private Room(RoomDto dto) {
 		

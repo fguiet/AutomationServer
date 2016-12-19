@@ -49,6 +49,14 @@ public class WaterHeater implements Runnable {
 			
 		}
 	}
+	
+	//Stop WaterHeater Service
+    public void StopService() {
+						
+		_logger.info("Arrêt du service WaterHeater...");
+		
+        _isStopped = true;
+    }
 
 	public boolean isOn() {
 		return _isOn;

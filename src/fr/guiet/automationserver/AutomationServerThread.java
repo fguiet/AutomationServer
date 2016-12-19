@@ -21,7 +21,6 @@ public class AutomationServerThread extends Thread {
 	//Logger
     private static Logger _logger = Logger.getLogger(AutomationServerThread.class);	
     
-
 	public AutomationServerThread(Socket socket, RoomService roomService, TeleInfoService teleInfoService) {
 		_socket = socket;
 		_roomService = roomService;
@@ -144,38 +143,49 @@ public class AutomationServerThread extends Thread {
 	//Démarrage du thread
 	public void run() {
 		
-		try {
-			InputStreamReader inputStream = new InputStreamReader(_socket.getInputStream());
-			DataOutputStream response = new DataOutputStream(_socket.getOutputStream());
-			BufferedReader input = new BufferedReader(inputStream);
-			
-			String command = input.readLine();
-			//_logger.info("Automation Server a recu la commande : "+command);
-			
-			String answer = ProcessMessage(command);
-			
-			if (answer != null) {
-				response.writeUTF(ConvertToJSON(answer)+"\r\n");
+		//Process client message until socket is closed...
+		while(!_socket.isClosed()) {
+			try {
+				InputStreamReader inputStream = new InputStreamReader(_socket.getInputStream());
+				DataOutputStream response = new DataOutputStream(_socket.getOutputStream());
+				BufferedReader input = new BufferedReader(inputStream);
+				
+				String command = input.readLine();
+				//_logger.info("Automation Server a recu la commande : "+command);
+				
+				String answer = ProcessMessage(command);
+				
+				if (answer != null) {
+					response.writeUTF(ConvertToJSON(answer)+"\r\n");
+				}
+				else {
+					response.writeUTF("\r\n");
+				}
+				
+				response.flush(); 
+				
+				//Thread.sleep(2000);
+				
+				//response.close();
+				//inputStream.close();
+				//input.close();
+				//_socket.close();
 			}
-			else {
-				response.writeUTF("\r\n");
+			catch(InterruptedException ie) {
+				_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
 			}
-			
-			response.flush(); 
-			
-			Thread.sleep(2000);
-			
-			response.close();
-			inputStream.close();
-			input.close();
-			_socket.close();
+			catch(IOException ioe) {
+				_logger.error("Une erreur est apparue dans le thread AutomationServer...",ioe);
+			}
 		}
-		catch(InterruptedException ie) {
-			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
-		}
-		catch(IOException ioe) {
-			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ioe);
-		}
+		
+		response.close();
+		inputStream.close();
+		input.close();
+		response = null;
+		inputStream = null;
+		input = null;
+		_socket.close();
 	}
 
 }

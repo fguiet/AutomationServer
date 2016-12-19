@@ -165,6 +165,18 @@ public class RoomService implements Runnable {
 		}
 	}
 	
+	//Arret du service RoomService
+    public void StopService() {
+				
+		for(Room r : _roomList) {
+			r.StopService();			
+		}
+		
+		_logger.info("Arrêt du service RoomService...");
+		
+        _isStopped = true;
+    }
+	
 	@Override
 	public void run() {
 		
@@ -184,7 +196,7 @@ public class RoomService implements Runnable {
 			
 			try {
 
-				_logger.info("Not dead...");			
+				//_logger.info("Room Service Not dead...");			
 			
 				/*Date currentDate = new Date();
 			
@@ -211,7 +223,7 @@ public class RoomService implements Runnable {
 			}			
 		}
 		
-		_logger.info("!!! DEAD !!!");			
+		//_logger.info("!!! DEAD !!!");			
 	}
 	
 	/*
@@ -251,7 +263,7 @@ public class RoomService implements Runnable {
 	//Methode des gestions de radiateurs des pieces
 	private void ManageHeaters() {
 		
-		_logger.info("Pas mort...");
+		//_logger.info("Pas mort...");
 		
 		Collections.sort(_heaterListPhase1);
 		Collections.sort(_heaterListPhase2);
@@ -287,10 +299,10 @@ public class RoomService implements Runnable {
 			Float roomWantedTemp = h.getRoom().ComputeWantedTemp();
 			Float roomActualTemp = h.getRoom().getActualTemp();
 			
-			String etat = "ALLUME";
+			/*String etat = "ALLUME";
 			if (!h.isOn()) {
 				etat = "ETEINT";
-			}
+			}*/
 			
 			String tempProg = "NA";
 			if (h.getRoom().GetTempProg()!=null)
@@ -304,7 +316,7 @@ public class RoomService implements Runnable {
 			if (roomActualTemp!=null)
 				actualTemp = ""+roomActualTemp;
 			
-			_logger.info("***LOG : Radiateur de la piece : "+h.getRoom().getName()+", Etat : "+etat+", T° prog :"+tempProg+", T° piece : "+actualTemp+", T° desire : "+calcProg);
+			_logger.info("***LOG : Radiateur de la piece : "+h.getRoom().getName()+", Etat : "+h.getEtatLabel()+", T° prog :"+tempProg+", T° piece : "+actualTemp+", T° desire : "+calcProg);
 			
 			//On arrive pas a obtenir la temperature courante de la piece donc on eteint le radiateur
 			if (h.isOn() && roomActualTemp == null) {

@@ -213,6 +213,14 @@ public class Heater implements Comparable<Heater> {
 		return _isOffForced;
 	}
 	
+	//Get french string indicated heater state (on/off)
+	public String getEtatLabel() {
+		if (_isOn)
+			return "ALLUME";
+		else 
+			return "ETEINT";
+	}
+	
 	public void SetOff() {
 		
 		_isOn = false;

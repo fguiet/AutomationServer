@@ -107,6 +107,19 @@ public class Sensor implements IXBeeListener {
 	public String sensorAddress() {
 		return _sensorAddress.toString();
 	} 
+	
+	public void StopService() {
+				
+		if (_timer != null)
+			_timer.cancel();
+		
+		if (!XBeeInstance().isStopped()) {
+			XBeeInstance().StopService();
+		}
+		
+		_logger.info("Arrêt du capteur de la pièce : "+_room.getName());
+		        
+    }
 
 	//Creation de la tache de recuperation des infos des capteurs
 	private void CreateGetSensorInfoTask() {

@@ -24,18 +24,38 @@ public class XBeeService implements PacketListener {
 	//private IXBeeListener _xbeeListener = null;
 	//private ConcurrentLinkedQueue<XBeeResponse> _queue = new ConcurrentLinkedQueue<XBeeResponse>();
 	private ArrayList<IXBeeListener> _sensorList = new ArrayList<IXBeeListener>();
+	private boolean _isStopped = true;  //Service arrete?	
 
 	public XBeeService() {
 		try {
 			_xbee = new XBee();
 			_xbee.open(DEFAULT_COM_PORT, 9600);	
 			_xbee.addPacketListener(this);
-
+			
+			_isStopped = false;
+			
 			_logger.info("Connexion avec le XBee central réussi...");
 		}
 		catch(XBeeException e) {
         	_logger.error("Impossible d'ouvrir une connection avec le XBee sur le port " + DEFAULT_COM_PORT, e);
         } 
+	}
+	
+	//Arret du service XBee
+    public void StopService() {
+				
+		_xbee.removePacketListener(this);
+		_xbee.close();		
+		_xbee = null;
+		
+		_isStopped = true;
+		
+		_logger.info("Arrêt du service XBeeService...");
+		        
+    }
+	
+	public void isStopped() {
+		return _isStopped();
 	}
 	
 	public void addXBeeListener(IXBeeListener xbeeListener) {
