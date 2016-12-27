@@ -143,13 +143,14 @@ public class AutomationServerThread extends Thread {
 	//Démarrage du thread
 	public void run() {
 		
-		InputStreamReader inputStream = null;
-		DataOutputStream response = null;
-		BufferedReader input = null;
+		try {
+			InputStreamReader inputStream = null;
+			DataOutputStream response = null;
+			BufferedReader input = null;
 		
-		//Process client message until socket is closed...
-		while(!_socket.isClosed()) {
-			try {
+			//Process client message until socket is closed...
+			while(!_socket.isClosed()) {
+				
 				inputStream = new InputStreamReader(_socket.getInputStream());
 				response = new DataOutputStream(_socket.getOutputStream());
 				input = new BufferedReader(inputStream);
@@ -174,27 +175,28 @@ public class AutomationServerThread extends Thread {
 				//inputStream.close();
 				//input.close();
 				//_socket.close();
+				
 			}
-			catch(InterruptedException ie) {
-				_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
-			}
-			catch(IOException ioe) {
-				_logger.error("Une erreur est apparue dans le thread AutomationServer...",ioe);
-			}
+		
+			if (response != null)
+				response.close();
+			
+			if (inputStream != null)
+				inputStream.close();
+			
+			if (input !=null)
+				input.close();
+			response = null;
+			inputStream = null;
+			input = null;
+			_socket.close();
 		}
-		
-		if (response != null)
-			response.close();
-		
-		if (inputStream != null)
-			inputStream.close();
-		
-		if (input !=null)
-			input.close();
-		response = null;
-		inputStream = null;
-		input = null;
-		_socket.close();
+		catch(InterruptedException ie) {
+			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
+		}
+		catch(IOException ioe) {
+			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ioe);
+		}
 	}
 
 }
