@@ -143,6 +143,10 @@ public class AutomationServerThread extends Thread {
 	//Démarrage du thread
 	public void run() {
 		
+		InputStreamReader inputStream = null;
+		DataOutputStream response = null;
+		BufferedReader input = null;
+		
 		//Process client message until socket is closed...
 		while(!_socket.isClosed()) {
 			try {
@@ -179,9 +183,14 @@ public class AutomationServerThread extends Thread {
 			}
 		}
 		
-		response.close();
-		inputStream.close();
-		input.close();
+		if (response != null)
+			response.close();
+		
+		if (inputStream != null)
+			inputStream.close();
+		
+		if (input !=null)
+			input.close();
 		response = null;
 		inputStream = null;
 		input = null;
