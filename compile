@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-CLASS_PATH="/home/fred/AutomationServer/lib/*:/opt/pi4j/lib/*" 
+CLASS_PATH="/home/fred/AutomationServer/lib/*" 
 OUTPUT_PATH="/home/fred/AutomationServer/class"
 SOURCE_PATH="/home/fred/AutomationServer/src"
 rm -r /home/fred/AutomationServer/class/* 

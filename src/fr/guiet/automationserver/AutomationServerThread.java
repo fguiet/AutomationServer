@@ -150,9 +150,9 @@ public class AutomationServerThread extends Thread {
 		//Process client message until socket is closed...
 		while(!_socket.isClosed()) {
 			try {
-				InputStreamReader inputStream = new InputStreamReader(_socket.getInputStream());
-				DataOutputStream response = new DataOutputStream(_socket.getOutputStream());
-				BufferedReader input = new BufferedReader(inputStream);
+				inputStream = new InputStreamReader(_socket.getInputStream());
+				response = new DataOutputStream(_socket.getOutputStream());
+				input = new BufferedReader(inputStream);
 				
 				String command = input.readLine();
 				//_logger.info("Automation Server a recu la commande : "+command);

@@ -155,7 +155,7 @@ public class TeleInfoService implements Runnable {
 	}
 	
 	//Creation du listener sur le port serie
-	private void CreateSerialListener() {
+	private void CreateSerialListener()  {
 		
 		_sdl = new SerialDataListener() {
 			@Override
@@ -164,8 +164,17 @@ public class TeleInfoService implements Runnable {
 				if (_trameFullyReceived) return;					
 
 				//Convert en char[]
+
+                                //String dataSz = "";
+                                //try {    
+                                //   dataSz = event.getAsciiString();
+                                //   _logger.info("Info recue : "+dataSz);
+				//}
+				//catch(IOException ex) {
+                                //   _logger.error("Impossible de lire le port Serie pour receptionner la trame TeleInfo");
+				//}
 				char[] data = new char[event.getData().length()];
-				data = event.getData().toCharArray();					
+				data =event.getData().toCharArray();					
 
 				for (int i = 0; i < data.length; i++) {				  
 					char receivedChar = data[i];						
@@ -281,14 +290,23 @@ public class TeleInfoService implements Runnable {
 			
 			return trame;
 		}
+		//catch(IOException ioe) {
+  		//   _logger.error("Erreur pendant la reception de la trame", ioe);
+		//   throw ioe;
+		//}
 		catch(Exception e)
 		{			
-			throw e;			
+		   throw e;			
 		}
 		finally {
 			if (serial != null && serial.isOpen()) {
                            serial.removeListener(_sdl);
-			   serial.close();			
+			   //try {
+			      serial.close();			
+                           //}
+                           //catch(IOException ioe) {
+                           //   _logger.error("Impossible de fermer le port serie",ioe);
+			   //}
                         }
 		}		
 	}
