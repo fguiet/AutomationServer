@@ -149,13 +149,14 @@ public class AutomationServerThread extends Thread {
 			BufferedReader input = null;
 		
 			//Process client message until socket is closed...
-			while(!_socket.isClosed()) {
+			//while(!_socket.isClosed()) {
 				
 				inputStream = new InputStreamReader(_socket.getInputStream());
 				response = new DataOutputStream(_socket.getOutputStream());
 				input = new BufferedReader(inputStream);
 				
 				String command = input.readLine();
+				//String command = input.read();
 				//_logger.info("Automation Server a recu la commande : "+command);
 				
 				String answer = ProcessMessage(command);
@@ -176,7 +177,7 @@ public class AutomationServerThread extends Thread {
 				//input.close();
 				//_socket.close();
 				
-			}
+			//}
 		
 			if (response != null)
 				response.close();
@@ -191,9 +192,9 @@ public class AutomationServerThread extends Thread {
 			input = null;
 			_socket.close();
 		}
-		catch(InterruptedException ie) {
-			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
-		}
+		//catch(InterruptedException ie) {
+		//	_logger.error("Une erreur est apparue dans le thread AutomationServer...",ie);
+		//}
 		catch(IOException ioe) {
 			_logger.error("Une erreur est apparue dans le thread AutomationServer...",ioe);
 		}

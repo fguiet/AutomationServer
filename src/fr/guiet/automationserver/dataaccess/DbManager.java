@@ -13,6 +13,9 @@ import java.sql.ResultSet;
 //import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.influxdb.*;
+import org.influxdb.dto.*;
+import java.util.concurrent.TimeUnit;
 
 import fr.guiet.automationserver.dto.*;
 
@@ -24,6 +27,12 @@ public class DbManager {
 	private static String _host = "jdbc:postgresql://127.0.0.1:1524/automation";
 	private static String _userName = "automation_p";
 	private static String _password = "brgm";
+
+        private static String _hostInfluxDB="http://192.168.1.25:8086";
+	private static String _userNameInfluxDB="user_automation";
+	private static String _passwordInfluxDB="raspberry";
+	private InfluxDB _influxDB = null;
+
 
 	public DbManager() {
 		try {
@@ -355,6 +364,47 @@ public class DbManager {
 	
 	*/
 	
+	public void SaveSensorInfoInfluxDB(String sensorName, Float actualTemp, Float wantedTemp, float humidity) {
+		
+		//Pas de sauvegarde de valeur null dans influxdb
+		//if (actualTemp == null || wantedTemp == null) return;		
+
+                try {
+			
+			//_logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_hostInfluxDB, _userNameInfluxDB, _passwordInfluxDB);
+			//_logger.info("InfluxDB Connected");
+			
+			BatchPoints batchPoints = BatchPoints
+				.database("automation")
+				.tag("async", "true")
+				.retentionPolicy("default")
+				//.consistency(ConsistencyLevel.ALL)
+				.build();
+			Point point1 = Point.measurement(sensorName)
+				.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+				.field("actual_temp", actualTemp)
+				.field("wanted_temp", wantedTemp)
+				.field("humidity", humidity)
+				.build();
+			
+			batchPoints.point(point1);
+						
+			/*Serie serie = new Serie.Builder("automation").columns("actual_temp", "wanted_temp", "humidity").values(
+                        actualTemp,
+                        wantedTemp,
+                        humidity).build();*/
+
+			//_logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);			
+	                //influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			//_logger.info("InfluxDB  written...");
+		}
+		catch(Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+	} 
+
 	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
 				
 		Connection connection = null;
@@ -743,6 +793,57 @@ public class DbManager {
 		
 	}
 	
+	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
+		 try {
+
+                        //_logger.info("InfluxDB connecting..");
+                        _influxDB = InfluxDBFactory.connect(_hostInfluxDB, _userNameInfluxDB, _passwordInfluxDB);
+                        //_logger.info("InfluxDB Connected");
+
+                        BatchPoints batchPoints = BatchPoints
+                                .database("automation")
+                                .tag("async", "true")
+                                .retentionPolicy("default")
+                                //.consistency(ConsistencyLevel.ALL)
+                                .build();
+                        Point point1 = Point.measurement("teleinfo")
+                                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                                .field("ADCO", teleInfoTrameDto.ADCO)
+                                .field("OPTARIF", teleInfoTrameDto.OPTARIF)
+                                .field("ISOUSC",teleInfoTrameDto.ISOUSC)
+                        	.field("HCHC",teleInfoTrameDto.HCHC)
+				.field("HCHP",teleInfoTrameDto.HCHP)
+				.field("PTEC",teleInfoTrameDto.PTEC)
+				.field("IINST1",teleInfoTrameDto.IINST1)
+				.field("IINST2",teleInfoTrameDto.IINST2)
+				.field("IINST3",teleInfoTrameDto.IINST3)
+				.field("IMAX1",teleInfoTrameDto.IMAX1)
+				.field("IMAX2",teleInfoTrameDto.IMAX2)
+				.field("IMAX3",teleInfoTrameDto.IMAX3)
+				.field("PMAX",teleInfoTrameDto.PMAX)
+				.field("PAPP",teleInfoTrameDto.PAPP)
+				.field("HHPHC",teleInfoTrameDto.HHPHC)
+				.field("MOTETAT", teleInfoTrameDto.MOTDETAT)
+				.field("PPOT", teleInfoTrameDto.PPOT).build();
+
+                        batchPoints.point(point1);
+
+                        /*Serie serie = new Serie.Builder("automation").columns("actual_temp", "wanted_temp", "humidity").values(
+                        actualTemp,
+                        wantedTemp,
+                        humidity).build();*/
+
+                        //_logger.info("InfluxDB writing...");
+                        _influxDB.write(batchPoints);
+                        //influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+                        //_logger.info("InfluxDB  written...");
+                }
+                catch(Exception e) {
+                        _logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+                }
+
+	}
+
 	/***
 	/*
 	/* Sauvegarde de la trame en bdd

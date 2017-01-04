@@ -27,8 +27,8 @@ public class Sensor implements IXBeeListener {
 	private float _actualTemp;
 	private float _actualHumidity;
 	private Room _room = null;
-	private boolean _alertSent = false; //Alerte envoyée par SMS en cas de non réception de message d'un capteur depuis trop longtemps
-	private static final String targetURL = "https://smsapi.free-mobile.fr/sendmsg?user=@user@&pass=@pass@&msg=@msg@";
+	//private boolean _alertSent = false; //Alerte envoyée par SMS en cas de non réception de message d'un capteur depuis trop longtemps
+	//private static final String targetURL = "https://smsapi.free-mobile.fr/sendmsg?user=@user@&pass=@pass@&msg=@msg@";
 	
 	public float getActualTemp() {
 		return _actualTemp;
@@ -61,18 +61,19 @@ public class Sensor implements IXBeeListener {
 		//Timeout si aucune info recu du capteur au bout de 5 minutes
 	    if (diffMinutes >= 5) {
 	    	        //TODO : Faire une classe métier pout l'envoie des SMS
-	    	        if (!_alertSent) {
-	    	        	SendSMS();
-	    	        }
+	    	        //if (!_alertSent) {
+	    	        //	SendSMS();
+	    	        //}
 	    	        
 			return true;
 		}
 		else {
-			_alertSent = false; //Réinitialisation
+			//_alertSent = false; //Réinitialisation
 			return false;
 		}
 	}
 	
+/*
 	private void SendSMS() {
 		try {
 			
@@ -105,7 +106,7 @@ public class Sensor implements IXBeeListener {
 
 			_logger.error(e.getMessage());		
 		}
-	}	
+	}*/	
 	
 	//Reception d'un message
 	public void processResponse(String message) {
@@ -141,11 +142,38 @@ public class Sensor implements IXBeeListener {
 			
 			DbManager dbManager = new DbManager();
 		    dbManager.SaveSensorInfo(_idSensor, _actualTemp, _room.getWantedTemp(), _actualHumidity);
+			
+		    String sensorName="";
+		    String id = String.valueOf(_idSensor);
+		    switch(id) {
+ 			case "5":
+			   sensorName="sensor_dht22_chambre_parents";
+			   break;
+			case "1":
+		           sensorName="sensor_dht22_bureau";
+			   break;
+			case "2":
+                           sensorName="sensor_dht22_salon";
+			   break;
+			case "3":
+                           sensorName="sensor_dht22_chambre_nohe";
+			   break;
+			case "4":
+                           sensorName="sensor_dht22_chambre_manon";
+			   break;
+		    }
+			
+		    	
+		    if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
+                            _logger.info("Saving sensor info to InfluxDB");
+	                    dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
+		    }
+
 		    _logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " +_room.getName()+", Temp actuelle : "+_actualTemp+", Temp désirée : "+_room.getWantedTemp()+", Humidité : "+_actualHumidity);
 		}
 		}
 		catch(Exception e) {
-			_logger.error("Erreur lors du traitement du message reçu pour la piece : "+_room.getName()+", message recu : "+message);
+			_logger.error("Erreur lors du traitement du message reçu pour la piece : "+_room.getName()+", message recu : "+message,e);
 			_lastInfoReceived = null;
 		}
 		

@@ -55,7 +55,7 @@ public class XBeeService implements PacketListener {
     }
 	
 	public boolean isStopped() {
-		return _isStopped();
+		return _isStopped;
 	}
 	
 	public void addXBeeListener(IXBeeListener xbeeListener) {

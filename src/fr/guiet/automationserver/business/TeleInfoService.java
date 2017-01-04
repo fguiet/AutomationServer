@@ -84,6 +84,7 @@ public class TeleInfoService implements Runnable {
 				if (_lastTeleInfoTrameReceived != null) {								
 					//Sauvegarde en bdd
 					SaveTrameToDb(_lastTeleInfoTrameReceived);
+					
 				}
 			}
         };
@@ -152,6 +153,10 @@ public class TeleInfoService implements Runnable {
 		DbManager dbManager = new DbManager();
 		dbManager.SaveTeleInfoTrame(ConvertToDto(teleInfoTrame));
 		_logger.info("Sauvegarde de la trame teleinfo en base de données");
+		if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
+			dbManager.SaveTeleInfoTrameToInfluxDb(ConvertToDto(teleInfoTrame));
+			_logger.info("Sauvegarde de la trame teleinfo dans InfluxDB");
+		}
 	}
 	
 	//Creation du listener sur le port serie
