@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>automationserver-parent</artifactId>
+		<groupId>fr.guiet.automationserver</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../ASParent</relativePath>
+	</parent>
+
+	<artifactId>automationserver-main</artifactId>
+	<name>Automation Server Main Program</name>
+	<description>Automation Server Main Program</description>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/resources</directory>
+				<excludes>
+					<!-- Ne pas inclure les XML dans le jar -->
+					<exclude>**/*.xml</exclude>					
+				</excludes>
+			</resource>
+		</resources>
+
+		<!--<finalName>${project.artifactId}</finalName> -->
+		<plugins>
+
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<!-- Compilation JAVA -->
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${plugin.compiler.version}</version>
+				<configuration>
+					<encoding>${encoding.sources}</encoding>
+					<compilerVersion>${java.version}</compilerVersion>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<verbose>true</verbose>
+					<debug>false</debug>
+					<optimize>true</optimize>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<fork>true</fork>
+					<maxmem>512m</maxmem>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly.version}</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/assembly/assembly.xml</descriptor>
+					</descriptors>
+					<finalName>${project.artifactId}</finalName>
+					<outputDirectory>dist</outputDirectory>
+					<!--<workDirectory>target/assembly/work</workDirectory> -->
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Suppresion des dist -->
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${maven-clean.version}</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>dist</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>commons-daemon</groupId>
+			<artifactId>commons-daemon</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.guiet.automationserver</groupId>
+			<artifactId>automationserver-business</artifactId>
+			<version>${automationserver-business.version}</version>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<!--other repositories if any -->
+		<repository>
+			<id>project.local</id>
+			<name>project</name>
+			<url>file:${project.basedir}/repo</url>
+		</repository>
+	</repositories>
+</project>

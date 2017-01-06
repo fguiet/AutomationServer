@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.guiet.automationserver</groupId>
+	<artifactId>automationserver-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Automation Server Aggregator</name>
+	<description>Automation Server Aggregator POM</description>
+
+	<modules>
+		<module>../ASModel</module>
+		<module>../ASDataAccess</module>
+		<module>../ASBusiness</module>
+		<module>../ASMain</module>
+	</modules>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<encoding.sources>UTF-8</encoding.sources>
+		<plugin.compiler.version></plugin.compiler.version>
+		<plugin.compiler.version>3.6.0</plugin.compiler.version>
+		<maven-assembly.version>3.0.0</maven-assembly.version>
+		<maven-clean.version>3.0.0</maven-clean.version>
+		<log4j.version>1.2.8</log4j.version>
+		<xbee-api.version>0.9</xbee-api.version>
+		<pi4j-core.version>1.0</pi4j-core.version>
+		<influxdb-java.version>2.5</influxdb-java.version>
+		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
+		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
+		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>
+	</properties>
+
+	<build>
+		<plugins>
+
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<!-- Compilation JAVA -->
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${plugin.compiler.version}</version>
+				<configuration>
+					<encoding>${encoding.sources}</encoding>
+					<compilerVersion>${java.version}</compilerVersion>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<verbose>true</verbose>
+					<debug>false</debug>
+					<optimize>true</optimize>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<fork>true</fork>
+					<maxmem>512m</maxmem>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>
+

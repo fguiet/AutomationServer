@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>automationserver-parent</artifactId>
+		<groupId>fr.guiet.automationserver</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../ASParent</relativePath>
+	</parent>
+
+	<artifactId>automationserver-model</artifactId>
+	<name>Automation Server Model Layer</name>
+	<description>Automation Server Model Layer (DTO)</description>
+
+	<properties>
+	</properties>
+
+	<build>
+		<plugins>
+
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<!-- Compilation JAVA -->
+			<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${plugin.compiler.version}</version>
+				<configuration>
+					<encoding>${encoding.sources}</encoding>
+					<compilerVersion>${java.version}</compilerVersion>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<verbose>true</verbose>
+					<debug>false</debug>
+					<optimize>true</optimize>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<fork>true</fork>
+					<maxmem>512m</maxmem>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>
