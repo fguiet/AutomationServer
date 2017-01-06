@@ -1,3 +1,0 @@
-sudo rm /var/lock/LCK..ttyUSB0
-./stop
-/home/fred/AutomationServer/AutomationServerService start

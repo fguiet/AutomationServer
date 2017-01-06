@@ -1,9 +1,0 @@
-#! /bin/sh
-#
-CLASS_PATH="/home/fred/AutomationServer/lib/*" 
-OUTPUT_PATH="/home/fred/AutomationServer/class"
-SOURCE_PATH="/home/fred/AutomationServer/src"
-rm -r /home/fred/AutomationServer/class/* 
-find -name "*.java" > sources.txt
-javac -Xlint -d "$OUTPUT_PATH" -classpath "$CLASS_PATH" @sources.txt 
-jar cvf AutomationServer.jar -C /home/fred/AutomationServer/class/ .
