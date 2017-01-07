@@ -9,6 +9,8 @@ import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
 import java.io.IOException;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import java.util.Timer;
@@ -192,21 +194,14 @@ public class TeleInfoService implements Runnable {
 				//char[] data = new char[event.getData().length()];
 				//data = event.getData().toCharArray();
 				
-				StringBuilder buffer = new StringBuilder();
-				char[] data = null;
+				CharBuffer cb = null;
 				try {
-					//dataSZ = event.getAsciiString();
-					byte [] dataBytes = event.getBytes();
-										
-				    for(int i = 0; i < dataBytes.length;i++){
-				    buffer.append(dataBytes[i]);
-				    }
-				    data  = buffer.toString().toCharArray();
-					
+					cb = event.getCharBuffer(StandardCharsets.UTF_8);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				catch(IOException ioe) {
-					_logger.error("Impossible de lire le message du port série",ioe);
-				}
+				char[] data = cb.array();
 				
 				//char[] data = dataSZ.toCharArray();
 
