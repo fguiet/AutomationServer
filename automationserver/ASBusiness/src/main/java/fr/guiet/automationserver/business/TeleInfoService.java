@@ -192,15 +192,23 @@ public class TeleInfoService implements Runnable {
 				//char[] data = new char[event.getData().length()];
 				//data = event.getData().toCharArray();
 				
-				String dataSZ = "";
+				StringBuilder buffer = new StringBuilder();
+				char[] data = null;
 				try {
-					dataSZ = event.getAsciiString();
+					//dataSZ = event.getAsciiString();
+					byte [] dataBytes = event.getBytes();
+										
+				    for(int i = 0; i < dataBytes.length;i++){
+				    buffer.append(dataBytes[i]);
+				    }
+				    data  = buffer.toString().toCharArray();
+					
 				}
 				catch(IOException ioe) {
 					_logger.error("Impossible de lire le message du port série",ioe);
 				}
 				
-				char[] data = dataSZ.toCharArray();
+				//char[] data = dataSZ.toCharArray();
 
 				for (int i = 0; i < data.length; i++) {
 					char receivedChar = data[i];
