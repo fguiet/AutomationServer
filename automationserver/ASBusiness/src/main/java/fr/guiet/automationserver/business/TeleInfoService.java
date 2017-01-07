@@ -316,7 +316,7 @@ public class TeleInfoService implements Runnable {
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
-			// _logger.info("Trame recue" + trame);
+			_logger.info("Trame recue" + trame);
 
 			return trame;
 		}
