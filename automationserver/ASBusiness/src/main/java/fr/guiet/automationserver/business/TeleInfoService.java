@@ -4,10 +4,11 @@ import org.apache.log4j.Logger;
 
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.Serial;
-import com.pi4j.io.serial.SerialDataListener;
+import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialDataEvent;
-import java.util.Date;
 
+import java.util.Date;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.util.Timer;
@@ -24,7 +25,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	private SerialDataListener _sdl = null;
+	private SerialDataEventListener _sdl = null;
 	private static final String DEFAULT_COM_PORT = "/dev/ttyAMA0";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -159,7 +160,7 @@ public class TeleInfoService implements Runnable {
 	// Creation du listener sur le port serie
 	private void CreateSerialListener() {
 
-		_sdl = new SerialDataListener() {
+		_sdl = new SerialDataEventListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
@@ -177,19 +178,29 @@ public class TeleInfoService implements Runnable {
 				// _logger.error("Impossible de lire le port Serie pour
 				// receptionner la trame TeleInfo");
 				// }
-				char[] data = new char[event.getData().length()];
-				data = event.getData().toCharArray();
+				//char[] data = new char[event.getData().length()];
+				//data = event.getData().toCharArray();
+				
+				String dataSZ = "";
+				try {
+					dataSZ = event.getAsciiString();
+				}
+				catch(IOException ioe) {
+					_logger.error("Impossible de lire le message du port série",ioe);
+				}
+				
+				char[] data = dataSZ.toCharArray();
 
 				for (int i = 0; i < data.length; i++) {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					// _logger.info("carac recu: "+(int)receivedChar);
+					//_logger.info("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					// String decoded = String.valueOf(receivedChar);
-					// _logger.warn("carac recu: "+decoded);
-					// System.out.println(decoded);
+					String decoded = String.valueOf(receivedChar);
+					_logger.warn("carac recu: "+decoded);
+					//System.out.println(decoded);
 
 					// Reception indicateur debut trame
 					if (receivedChar == 0x02) {
@@ -242,7 +253,7 @@ public class TeleInfoService implements Runnable {
 		};
 	}
 
-	private synchronized String GetTeleInfoTrame() throws InterruptedException {
+	private synchronized String GetTeleInfoTrame() throws InterruptedException,IOException {
 		_trame = new ArrayList<Character>();
 		_beginTrameDetected = false;
 		_endTrameDetected = false;
@@ -307,12 +318,12 @@ public class TeleInfoService implements Runnable {
 		} finally {
 			if (serial != null && serial.isOpen()) {
 				serial.removeListener(_sdl);
-				// try {
-				serial.close();
-				// }
-				// catch(IOException ioe) {
-				// _logger.error("Impossible de fermer le port serie",ioe);
-				// }
+				try {
+				   serial.close();
+				}
+				catch(IOException ioe) {
+				 _logger.error("Impossible de fermer le port serie",ioe);
+				 }
 			}
 		}
 	}

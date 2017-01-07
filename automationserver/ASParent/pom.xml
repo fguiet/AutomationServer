@@ -14,6 +14,7 @@
 		<module>../ASDataAccess</module>
 		<module>../ASBusiness</module>
 		<module>../ASMain</module>
+		<module>../ASTests</module>
 	</modules>
 
 	<properties>
@@ -25,7 +26,7 @@
 		<maven-clean.version>3.0.0</maven-clean.version>
 		<log4j.version>1.2.8</log4j.version>
 		<xbee-api.version>0.9</xbee-api.version>
-		<pi4j-core.version>1.0</pi4j-core.version>
+		<pi4j-core.version>1.1</pi4j-core.version>
 		<influxdb-java.version>2.5</influxdb-java.version>
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
 		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
