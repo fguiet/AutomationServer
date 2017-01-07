@@ -1,8 +1,8 @@
-package fr.guiet.automationserver.tests;
+package fr.guiet.automationserver.teleinfoservicetests;
 
 import fr.guiet.automationserver.business.TeleInfoService;
 
-public class TeleinfoServiceTest {
+public class TeleinfoServiceTests {
 	public static void main(String args[]) {
 		
 		TeleInfoService teleInfoService = new TeleInfoService();
