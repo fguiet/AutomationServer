@@ -26,7 +26,8 @@ public class TeleInfoService implements Runnable {
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
 	private SerialDataEventListener _sdl = null;
-	private static final String DEFAULT_COM_PORT = "/dev/ttyAMA0";
+	private String _defaultDevice = "/dev/serial0";
+	private int _defaultBaud = 1200;
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
 	private boolean _endTrameDetected = false;
@@ -40,7 +41,17 @@ public class TeleInfoService implements Runnable {
 	public void run() {
 
 		_logger.info("Démarrage du service TeleInfoService...");
-
+		
+		try {
+			_defaultBaud = Integer.parseInt(System.getProperty("serialBaud"));	
+			_defaultDevice = System.getProperty("serialDevice");
+		}
+		catch (Exception e) {
+			_defaultBaud = 1200;
+			_defaultDevice = "/dev/serial0";
+			_logger.error("Could not set baud rate and device, set /dev/serial0 and 1200 bauds by defaults");
+		}
+		
 		// Creation de listener
 		CreateSerialListener();
 
@@ -265,7 +276,7 @@ public class TeleInfoService implements Runnable {
 
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
-			serial.open(DEFAULT_COM_PORT, 1200);
+			serial.open(_defaultDevice, _defaultBaud);
 
 			serial.addListener(_sdl);
 
