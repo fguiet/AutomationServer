@@ -22,7 +22,7 @@ public class DbManager {
 	// Logger
 	private static Logger _logger = Logger.getLogger(DbManager.class);
 
-	private static String _host = "jdbc:postgresql://127.0.0.1:1524/automation";
+	private static String _host = "jdbc:postgresql://127.0.0.1:5432/automation";
 	private static String _userName = "automation_p";
 	private static String _password = "brgm";
 
