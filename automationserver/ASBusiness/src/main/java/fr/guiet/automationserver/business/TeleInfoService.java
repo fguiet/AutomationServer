@@ -2,16 +2,19 @@ package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
 
-import com.pi4j.io.serial.*;
+import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
+import com.pi4j.io.serial.StopBits;
+import com.pi4j.io.serial.Baud;
+import com.pi4j.io.serial.DataBits;
+import com.pi4j.io.serial.FlowControl;
+import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
 import java.io.IOException;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import java.util.Timer;
@@ -30,7 +33,7 @@ public class TeleInfoService implements Runnable {
 	// serial data listener
 	private SerialDataEventListener _sdl = null;
 	private String _defaultDevice = "/dev/serial0";
-	private int _defaultBaud = 1200;
+	//private int _defaultBaud = 1200;
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
 	private boolean _endTrameDetected = false;
@@ -46,13 +49,11 @@ public class TeleInfoService implements Runnable {
 		_logger.info("Démarrage du service TeleInfoService...");
 		
 		try {
-			_defaultBaud = Integer.parseInt(System.getProperty("serialBaud"));	
 			_defaultDevice = System.getProperty("serialDevice");
 		}
 		catch (Exception e) {
-			_defaultBaud = 1200;
 			_defaultDevice = "/dev/serial0";
-			_logger.error("Could not set baud rate and device, set /dev/serial0 and 1200 bauds by defaults");
+			_logger.error("Could not get serial device from argument parameter, set /dev/serial0 by defaults");
 		}
 		
 		// Creation de listener
@@ -180,31 +181,15 @@ public class TeleInfoService implements Runnable {
 
 				if (_trameFullyReceived)
 					return;
-
-				// Convert en char[]
-
-				// String dataSz = "";
-				// try {
-				// dataSz = event.getAsciiString();
-				// _logger.info("Info recue : "+dataSz);
-				// }
-				// catch(IOException ex) {
-				// _logger.error("Impossible de lire le port Serie pour
-				// receptionner la trame TeleInfo");
-				// }
-				//char[] data = new char[event.getData().length()];
-				//data = event.getData().toCharArray();
 				
-				CharBuffer cb = null;
+				String dataSZ = "";
 				try {
-					cb = event.getCharBuffer(StandardCharsets.);
+					dataSZ = event.getAsciiString();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					_logger.error("Unable de read serial port", e);
 				}
-				char[] data = cb.array();
 				
-				//char[] data = dataSZ.toCharArray();
+				char[] data = dataSZ.toCharArray();
 
 				for (int i = 0; i < data.length; i++) {
 					char receivedChar = data[i];
@@ -282,17 +267,18 @@ public class TeleInfoService implements Runnable {
 			// bauds
 			//serial.open(_defaultDevice, _defaultBaud);
 			SerialConfig config = new SerialConfig();
-			config.device("/dev/serial0")
+			config.device(_defaultDevice)
                   .baud(Baud._1200)
                   .dataBits(DataBits._7)
                   .parity(Parity.NONE)
                   .stopBits(StopBits._1)
                   .flowControl(FlowControl.NONE);
 			
+			serial.addListener(_sdl);
+			
 			serial.open(config);
 
-			serial.addListener(_sdl);
-
+			//TODO :  traduire tous les messages en anglais
 			// serial.close();
 			// serial.open(DEFAULT_COM_PORT, 1200);
 			// _logger.info("*** ouverture du port serie reussir");
