@@ -196,7 +196,7 @@ public class TeleInfoService implements Runnable {
 				
 				CharBuffer cb = null;
 				try {
-					cb = event.getCharBuffer(StandardCharsets.UTF_8);
+					cb = event.getCharBuffer(StandardCharsets.);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
