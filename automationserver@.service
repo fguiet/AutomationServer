@@ -1,0 +1,15 @@
+[Unit]
+Description=Service de gestion de la domotique de notre home sweet home
+After=syslog.target network.target postgresql.service influxdb.service
+ 
+[Service]
+Type=forking
+User=root
+#PAMName=login
+#PIDFile=/home/fred/automationserver/%H:%i.pid
+#ExecStartPre=/home/fred/automationserver/cmd/stop_automationserver 
+ExecStart=/home/fred/automationserver/cmd/start_automationserver 
+ExecStop=/home/fred/automationserver/cmd/stop_automationserver 
+ 
+[Install]
+WantedBy=multi-user.target
