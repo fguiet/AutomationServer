@@ -2,6 +2,7 @@ package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
 
+import com.pi4j.io.serial.*;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialDataEventListener;
@@ -279,7 +280,16 @@ public class TeleInfoService implements Runnable {
 
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
-			serial.open(_defaultDevice, _defaultBaud);
+			//serial.open(_defaultDevice, _defaultBaud);
+			SerialConfig config = new SerialConfig();
+			config.device("/dev/serial0")
+                  .baud(Baud._1200)
+                  .dataBits(DataBits._7)
+                  .parity(Parity.NONE)
+                  .stopBits(StopBits._1)
+                  .flowControl(FlowControl.NONE);
+			
+			serial.open(config);
 
 			serial.addListener(_sdl);
 
