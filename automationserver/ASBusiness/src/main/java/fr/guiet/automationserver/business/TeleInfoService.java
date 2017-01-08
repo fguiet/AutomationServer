@@ -48,13 +48,19 @@ public class TeleInfoService implements Runnable {
 
 		_logger.info("Démarrage du service TeleInfoService...");
 		
-		try {
+		//try {
 			_defaultDevice = System.getProperty("serialDevice");
+		//}
+		//catch (Exception e) {
+		//	_defaultDevice = "/dev/serial0";
+		//	_logger.error("Could not get serial device from argument parameter, set /dev/serial0 by defaults");
+		//}
+		if (_defaultDevice == null || _defaultDevice.isEmpty()) {
+  		   _logger.warn("Could not get serial device from argument parameter, set /dev/serial0 by defaults");
+		   _defaultDevice = "/dev/serial0";
 		}
-		catch (Exception e) {
-			_defaultDevice = "/dev/serial0";
-			_logger.error("Could not get serial device from argument parameter, set /dev/serial0 by defaults");
-		}
+
+		_logger.info(String.format("Using serial device : {0}", _defaultDevice));
 		
 		// Creation de listener
 		CreateSerialListener();
@@ -276,11 +282,11 @@ public class TeleInfoService implements Runnable {
 			
 			serial.addListener(_sdl);
 			
-			serial.open(config);
+			//serial.open(config);
 
 			//TODO :  traduire tous les messages en anglais
 			// serial.close();
-			// serial.open(DEFAULT_COM_PORT, 1200);
+			serial.open("/dev/serial0", 1200);
 			// _logger.info("*** ouverture du port serie reussir");
 
 			Date _startTime = new Date();
