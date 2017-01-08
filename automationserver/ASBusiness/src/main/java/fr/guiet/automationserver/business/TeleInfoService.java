@@ -60,7 +60,8 @@ public class TeleInfoService implements Runnable {
 		   _defaultDevice = "/dev/serial0";
 		}
 
-		_logger.info(String.format("Using serial device : {0}", _defaultDevice));
+		//TODO :  using String.format C# similar way to log pieces of information
+		_logger.info("Using serial device : " + _defaultDevice);
 		
 		// Creation de listener
 		CreateSerialListener();

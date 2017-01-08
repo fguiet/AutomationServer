@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 public class XBeeService implements PacketListener {
-
+	
+	//TODO : xbee-api-0.9.jar use RXTXComm-1.0.jar ... use Digicom xbee library instead
+	
 	// Logger
 	private static Logger _logger = Logger.getLogger(XBeeService.class);
 
