@@ -1,0 +1,9 @@
+#! /bin/sh
+
+export NAME="automationserver"
+export EXEC="/usr/bin/jsvc"
+export HOME_PATH="/home/fred/automationserver"
+export PID="${HOME_PATH}/$NAME.pid"
+export CLASS=fr.guiet.automationserver.AutomationServer
+
+sudo ${EXEC} -stop -pidfile "${PID}" ${CLASS}
