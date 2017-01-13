@@ -1,12 +1,16 @@
 package fr.guiet.automationserver.dataaccess;
 
 import java.sql.DriverManager;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.Calendar;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 import java.util.Date;
 import java.util.ArrayList;
 import java.sql.ResultSet;
@@ -17,41 +21,92 @@ import java.util.concurrent.TimeUnit;
 
 import fr.guiet.automationserver.dto.*;
 
+/**
+ * Handles database management 
+ * 
+ * @author guiet
+ *
+ */
 public class DbManager {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(DbManager.class);
-
-	private static String _host = "jdbc:postgresql://127.0.0.1:5432/automation";
-	private static String _userName = "automation_p";
-	private static String _password = "brgm";
-
-	private static String _hostInfluxDB = "http://192.168.1.25:8086";
-	private static String _userNameInfluxDB = "user_automation";
-	private static String _passwordInfluxDB = "raspberry";
+	private static Logger _logger = Logger.getLogger(DbManager.class);	
+	
+	private static String _postgresqlConnectionString = "jdbc:postgresql://%s:%s/%s";
+	private static String _userName = null; 
+	private static String _password = null;
+	private static String _postgresqlEnable = null;
+	
+	private static String _influxdbConnectionString = "http://%s:%s";
+	private static String _databaseInfluxDB = null; //"user_automation";
+	private static String _userNameInfluxDB = null; //"user_automation";
+	private static String _passwordInfluxDB = null; //"raspberry";
+	private static String _influxdbEnable = null;
+	
 	private InfluxDB _influxDB = null;
-
+		
+	/**
+	 * Constructor
+	 */
 	public DbManager() {
 		try {
 			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
-			_logger.error("Impossible de trouver le driver PostgreSQL JDBC, il faut l'inclure dans le library path", e);
-			_logger.info("Trame non enregistree en base");
+			_logger.error("Impossible de trouver le driver PostgreSQL JDBC, il faut l'inclure dans le library path", e);		
 		}
+		
+		InputStream is = null;
+        try {
+        	Properties prop = new Properties();
+            is = this.getClass().getResourceAsStream("/config/automationserver.properties");
+            prop.load(is);
+            
+            //PostgreSQL            
+            String host = prop.getProperty("postgresql.host");
+            String port = prop.getProperty("postgresql.port");
+            String database = prop.getProperty("postgresql.database");
+                                 
+            //TODO : Checker les valeurs null
+            _postgresqlConnectionString = String.format(_postgresqlConnectionString,host,port,database);            
+            _userName = prop.getProperty("postgresql.username");
+            _password = prop.getProperty("postgresql.password");
+            _postgresqlEnable = prop.getProperty("postgresql.enable");
+                        
+            //InfluxDB
+            host = prop.getProperty("influxdb.host");
+            port = prop.getProperty("influxdb.port");            
+            _influxdbConnectionString = String.format(_influxdbConnectionString,host,port);
+            _databaseInfluxDB = prop.getProperty("influxdb.database");                    
+            _userNameInfluxDB = prop.getProperty("influxdb.username");
+            _passwordInfluxDB = prop.getProperty("influxdb.password");
+            _influxdbEnable = prop.getProperty("influxdb.enable");
+            
+        } catch (FileNotFoundException e) {
+        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
+        } catch (IOException e) {
+        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
+        }        
 	}
 
+	/**
+	 * Saves sensor information into InfluxDB
+	 * 
+	 * @param sensorName
+	 * @param actualTemp
+	 * @param wantedTemp
+	 * @param humidity
+	 */
 	public void SaveSensorInfoInfluxDB(String sensorName, Float actualTemp, Float wantedTemp, float humidity) {
-
-		// Pas de sauvegarde de valeur null dans influxdb
-		// if (actualTemp == null || wantedTemp == null) return;
-
+		
 		try {
+			if (!_influxdbEnable.equals("true")) 
+				return;
 
 			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_hostInfluxDB, _userNameInfluxDB, _passwordInfluxDB);
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
-			BatchPoints batchPoints = BatchPoints.database("automation").tag("async", "true").retentionPolicy("default")
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).tag("async", "true").retentionPolicy("default")
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
@@ -71,15 +126,72 @@ public class DbManager {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
 	}
+	
+	/**
+	 * Saves teleinfo framework into InfluxDB
+	 * 
+	 * @param teleInfoTrameDto
+	 */
+	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
+				
+		try {
+			
+			if (!_influxdbEnable.equals("true")) 
+				return;			
 
-	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
 
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).tag("async", "true").retentionPolicy("default")
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+			Point point1 = Point.measurement("teleinfo").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("ADCO", teleInfoTrameDto.ADCO).addField("OPTARIF", teleInfoTrameDto.OPTARIF)
+					.addField("ISOUSC", teleInfoTrameDto.ISOUSC).addField("HCHC", teleInfoTrameDto.HCHC)
+					.addField("HCHP", teleInfoTrameDto.HCHP).addField("PTEC", teleInfoTrameDto.PTEC)
+					.addField("IINST1", teleInfoTrameDto.IINST1).addField("IINST2", teleInfoTrameDto.IINST2)
+					.addField("IINST3", teleInfoTrameDto.IINST3).addField("IMAX1", teleInfoTrameDto.IMAX1)
+					.addField("IMAX2", teleInfoTrameDto.IMAX2).addField("IMAX3", teleInfoTrameDto.IMAX3)
+					.addField("PMAX", teleInfoTrameDto.PMAX).addField("PAPP", teleInfoTrameDto.PAPP)
+					.addField("HHPHC", teleInfoTrameDto.HHPHC).addField("MOTETAT", teleInfoTrameDto.MOTDETAT)
+					.addField("PPOT", teleInfoTrameDto.PPOT).build();
+
+			batchPoints.point(point1);			
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+
+			_influxDB.close();
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+
+	}
+	
+	/**
+	 * Saves sensor information into PostgreSQL
+	 * 
+	 * @param idSensor
+	 * @param actualTemp
+	 * @param wantedTemp
+	 * @param humidity
+	 */
+	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {		
+		
+		//TODO : revoir le modèle de données de la base Postgres
+		
 		Connection connection = null;
 		PreparedStatement pst = null;
 
 		try {
+			
+			if (!_postgresqlEnable.equals("true")) 
+				return;
 
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String stm = "INSERT INTO teleinfo.sensor_entry("
 					+ "id_sensor, actual_temp, wanted_temp, humidity, received_date)" + "VALUES (?, ?, ?, ?, ?);";
@@ -118,6 +230,12 @@ public class DbManager {
 
 	}
 
+	/**
+	 * Gets list of heaters dto associated with a room
+	 * 
+	 * @param roomId
+	 * @return Returns list of Dto objects representing heaters
+	 */
 	public ArrayList<HeaterDto> GetHeatersByRoomId(long roomId) {
 
 		Connection connection = null;
@@ -126,7 +244,7 @@ public class DbManager {
 		ArrayList<HeaterDto> dtoList = new ArrayList<HeaterDto>();
 
 		try {
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from teleinfo.room_heater a, teleinfo.heater b "
 					+ "where a.id_heater = b.id_heater and a.id_room=?";
@@ -167,6 +285,12 @@ public class DbManager {
 		return dtoList;
 	}
 
+	/**
+	 * Returns sensor dto associated with a room
+	 * 
+	 * @param sensorId
+	 * @return
+	 */
 	public SensorDto GetSensorByRoomId(long sensorId) {
 
 		Connection connection = null;
@@ -175,7 +299,7 @@ public class DbManager {
 		SensorDto dto = null;
 
 		try {
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "SELECT c.id_sensor, c.sensor_address FROM teleinfo.sensor c " + "where c.id_sensor = ? ";
 
@@ -220,7 +344,7 @@ public class DbManager {
 
 		try {
 
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "select temp from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -267,7 +391,7 @@ public class DbManager {
 
 		try {
 
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "select priority from teleinfo.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -315,7 +439,7 @@ public class DbManager {
 		ResultSet rs = null;
 
 		try {
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "SELECT a.id_room, a.name, a.id_sensor FROM teleinfo.room a ";
 
@@ -368,7 +492,7 @@ public class DbManager {
 		TempScheduleDto ts = null;
 
 		try {
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			if (dayOfWeek == dow) {
 
@@ -428,47 +552,7 @@ public class DbManager {
 		return ts;
 
 	}
-
-	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
-		try {
-
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_hostInfluxDB, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
-
-			BatchPoints batchPoints = BatchPoints.database("automation").tag("async", "true").retentionPolicy("default")
-					// .consistency(ConsistencyLevel.ALL)
-					.build();
-			Point point1 = Point.measurement("teleinfo").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("ADCO", teleInfoTrameDto.ADCO).addField("OPTARIF", teleInfoTrameDto.OPTARIF)
-					.addField("ISOUSC", teleInfoTrameDto.ISOUSC).addField("HCHC", teleInfoTrameDto.HCHC)
-					.addField("HCHP", teleInfoTrameDto.HCHP).addField("PTEC", teleInfoTrameDto.PTEC)
-					.addField("IINST1", teleInfoTrameDto.IINST1).addField("IINST2", teleInfoTrameDto.IINST2)
-					.addField("IINST3", teleInfoTrameDto.IINST3).addField("IMAX1", teleInfoTrameDto.IMAX1)
-					.addField("IMAX2", teleInfoTrameDto.IMAX2).addField("IMAX3", teleInfoTrameDto.IMAX3)
-					.addField("PMAX", teleInfoTrameDto.PMAX).addField("PAPP", teleInfoTrameDto.PAPP)
-					.addField("HHPHC", teleInfoTrameDto.HHPHC).addField("MOTETAT", teleInfoTrameDto.MOTDETAT)
-					.addField("PPOT", teleInfoTrameDto.PPOT).build();
-
-			batchPoints.point(point1);
-
-			/*
-			 * Serie serie = new
-			 * Serie.Builder("automation").columns("actual_temp", "wanted_temp",
-			 * "humidity").values( actualTemp, wantedTemp, humidity).build();
-			 */
-
-			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
-
-			_influxDB.close();
-			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
-			// _logger.info("InfluxDB written...");
-		} catch (Exception e) {
-			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-
-	}
+	
 
 	/***
 	 * /* /* Sauvegarde de la trame en bdd /*
@@ -479,8 +563,11 @@ public class DbManager {
 		PreparedStatement pst = null;
 
 		try {
+			
+			if (!_postgresqlEnable.equals("true")) 
+				return;
 
-			connection = DriverManager.getConnection(_host, _userName, _password);
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String stm = "INSERT INTO teleinfo.trame_teleinfo("
 					+ "date_reception, adco, optarif, isousc, hchc, hchp, ptec, iinst1, "

@@ -1,0 +1,218 @@
+Installation du Raspberry 3
+---------------------------
+
+0.Mise à jour
+
+sudo apt-get update 
+sudo apt-get upgrade
+
+
+1.Changer le mot de passe de pi (connecté pi)
+
+passwd
+
+2.Creer un user fred
+
+adduser fred
+
+3.Changer le hostname
+
+sudo nano /etc/hostname
+sudo nano /etc/hosts (Attention changer 127.0.1.1 par 127.0.0.1)
+
+4.Pour le WIFI
+
+sudo iwconfig wlan0 power off => A mettre dans un fichier de config pour être repris au demarrage du raspberry
+iwconfig => pour connaitre l'état du WIFI
+
+Installation de Java dans /usr/java
+-----------------------------------
+
+sudo mkdir /usr/java
+sudo wget --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-arm64-vfp-hflt.tar.gz
+dans /usr/java faire sudo tar zxvf jdk-8-linux-arm-vfp-hflt.tar.gz
+sudo update-alternatives --install /usr/bin/javac javac /opt/jdk1.8.0/bin/javac 1
+sudo update-alternatives --install /usr/bin/java java /opt/jdk1.8.0/bin/java 1
+
+Installation de JSVC
+--------------------
+
+sudo apt-get update
+sudo apt-get install jsvc
+
+Installation de git
+-------------------
+
+sudo apt-get install git
+
+Aide = https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository
+
+Commit sans faire le add
+git commit -a -m "blah blah blah"
+git push
+
+Installation de Postgres
+------------------------
+
+sudo apt-get install postgresql-9.4
+
+Création d'un fichier .bashrc
+
+export PGDATA=/home/fred/databases/postgres/data
+export LANG=en_US.utf8
+export PGTZ=Europe/Paris
+export PGHOME=/usr/lib/postgresql/9.4
+export PATH=$PATH:$PGHOME/bin
+export LANG=en_GB.utf8
+
+Sous Debian (peut acceuillir plusiseurs cluster dans differente version):
+
+on change le home de postgres
+
+mkdir postgres
+Chown postgres:postgres /home/postgres/
+utiliser la commande en root : usermod -d /home/postgres/ postgres
+
+on drop l'install par default et on recréé
+
+pg_dropcluster --stop 9.4 main
+pg_createcluster -d /home/fred/databases/postgres/data 9.4 main
+
+Impossible de mettre les logs autre part que dans /var/log/postgres...j'abandonne
+
+Plus d'info ici : http://manpages.ubuntu.com/manpages/precise/man8/pg_createcluster.8.html
+
+Pour configurer la base : /etc/postgresql/9.4/main/postgres.conf
+
+!!! Attention, revoir la conf. => log, Memoire etc)
+
+Installation Gammu
+------------------
+
+apt-get install gammu
+
+/usr/bin/gammu
+
+lsusb
+Bus 001 Device 005: ID 05c6:1000 Qualcomm, Inc. Mass Storage Device
+Bus 001 Device 004: ID 2109:2812
+Bus 001 Device 003: ID 0424:ec00 Standard Microsystems Corp. SMSC9512/9514 Fast Ethernet Adapter
+Bus 001 Device 002: ID 0424:9514 Standard Microsystems Corp.
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+utilisation de usb_modeswitch
+sudo usb_modeswitch -v 0x05c6 -p 0x1000 -K
+
+Creer un fichier 00-gammu.rules dans /etc/udev/rules.d
+avec la commande : ATTRS{idVendor}=="05c6", ATTRS{idProduct}=="1000", RUN+="/usr/sbin/usb_modeswitch -v 0x05c6 -p 0x1000 -K"
+
+# Find port USB device connected to 
+dmesg | grep tty
+
+# Config gammu
+gammu-config
+
+#ajout du user fred au groupe dialout
+sudo usermod -a -G dialout fred
+
+#test identify
+gammu -c /home/fred/gammu/config/gammu-config --identify
+
+#network info
+gammu -c /home/fred/gammu/config/gammu-config --networkinfo
+
+#test envoi sms
+gammu -c /home/fred/gammu/config/gammu-config sendsms TEXT +0033xxxxxxxx -text "demain cave!"
+
+InfluxDB
+--------
+
+sudo apt-get install apt-transport-https
+
+Suivre la doc pour Debian
+https://docs.influxdata.com/influxdb/v1.1/introduction/installation/
+
+Configuration de la db
+
+https://docs.influxdata.com/influxdb/v1.1/administration/config/
+fichier de config : /etc/influxdb/influxdb.conf
+
+Video intéressante influxdb, mqtt, openhab
+https://www.youtube.com/watch?v=-4aRaCAbZxU
+
+Maven
+-----
+
+https://www.xianic.net/post/installing-maven-on-the-raspberry-pi/
+
+Dans /usr
+
+sudo mkdir maven
+cd maven
+wget http://apache.mindstudios.com/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+sudo tar -xzvf apache-maven-3.3.9-bin.tar.gz
+
+--Pour creer le repo, src: https://devcenter.heroku.com/articles/local-maven-dependencies
+mvn deploy:deploy-file -Durl=file:///D:\Documents\guiet\Privé\Projets\AutomationServer\Git\automationserver\ASBusiness\repo -DgroupId=com.rapplogic.xbee -DartifactId=RXTXComm -Dversion=1.0 -Dfile=RXTXcomm.jar -Dpackaging=jar
+
+
+AutomationServer
+----------------
+
+Correspondance PIN Raspberry 1 et 3
+Serial avec le nouveau pi4j => http://pi4j.com/example/serial.html
+A faire avant utilisation du serial => https://www.cube-controls.com/2015/11/02/disable-serial-port-terminal-output-on-raspbian/
+
+http://pi4j.com/pins/model-3b-rev1.html
+
+Pour activer le serial port correctement
+supprimer de /boot/cmdline.txt
+
+=> console=serial0,115200
+=> ajouter enable_uart=1
+=> ajouter pour supprimer le bluetooth => dtoverlay=pi3-disable-bt 
+
+Installation sous forme de service systemd
+http://www.framboise314.fr/systemd-tout-nouveau-tout-beau-ou-pas/
+systemctl => pour voir si le service est correctement lancé
+sudo systemctl stop automationserver@1.service => arret
+sudo systemctl daemon-reload => en cas de changement du script systemd
+systemctl status automationserver@1.service => pour connaître l'état du service
+
+
+Pour faire des tests : 
+java -Dlog4j.configuration=file:/home/fred/automationserver/config/log4j.xml -classpath "./*" fr.guiet.automationserver.teleinfoservicetests.TeleinfoServiceTests
+
+Mosquito (MQTT)
+---------------
+apt-get install mosquito
+apt-get install mosquito-clients
+
+sudo systemctl enable mosquitto (a voir si faut le faire)
+fichier de conf = /etc/mosquitto/mosquitto.conf
+
+topic
+guiet/home/devices/sensors/dht22sejour
+guiet/home/devices/sensors/dht22chambre_manon
+guiet/home/devices/sensors/dht22chambre_parents
+
+Info
+http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
+
+Grafana
+-------
+
+Suivre les instructions
+
+https://github.com/grafana/grafana
+https://hwwong168.wordpress.com/2015/11/19/building-grafana-for-raspberry-pi-2/
+#Build pour Raspberry deja faites
+https://github.com/fg2it/grafana-on-raspberry/wiki
+
+openHAB
+-------
+
+http://docs.openhab.org/installation/rasppi.html
+http://docs.openhab.org/installation/linux.html
+
+J'ai du ajouter JAVA_HOME dans nano /usr/share/openhab2/start.sh

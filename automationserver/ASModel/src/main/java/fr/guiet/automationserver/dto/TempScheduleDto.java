@@ -2,7 +2,14 @@ package fr.guiet.automationserver.dto;
 
 import java.util.Date;
 
+/**
+ * TempSchedule DTO
+ * 
+ * @author guiet
+ *
+ */
 public class TempScheduleDto {
+
 	private Date _hourBegin;
 	private Date _hourEnd;
 	private float _defaultTempNeeded;

@@ -19,6 +19,13 @@
                 <include>*.xml</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>lib/config</outputDirectory>
+            <includes>
+                <include>*.properties</include>
+            </includes>
+        </fileSet>
       </fileSets>
 	<files>
 		<!--<file>

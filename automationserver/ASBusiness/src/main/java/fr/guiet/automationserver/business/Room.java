@@ -195,39 +195,6 @@ public class Room {
 		return defaultTemp;
 	}
 
-	// private Float _currentTemp = null; //Température actuelle
-	// private Float _currentHumidity = null; //Humidite actuelle
-	// private Float _scheduleTemp = null; //Température programmée
-	// private Float _wantedTemp = null; //Température voulue
-
-	// Creation de la tache de recuperation des infos des capteurs
-	/*
-	 * private void CreateManageHeaterTask() {
-	 * 
-	 * TimerTask manageHeaterTask = new TimerTask() {
-	 * 
-	 * @Override public void run() { ManageHeaters(); } };
-	 * 
-	 * _timer = new Timer(true);
-	 * 
-	 * //Gestion des radiateurs toutes les minutes
-	 * _timer.schedule(manageHeaterTask, 5000, 60000); }
-	 */
-
-	/*
-	 * Gestion des radiateurs de la piece
-	 */
-	// private void ManageHeaters() {
-
-	/*
-	 * if (_sensor.HasTimeoutOccured()) { _actualTemp = _sensor.getActualTemp();
-	 * _actualHumidity = _sensor.getActualHumidity(); } else { _actualTemp =
-	 * null; _actualHumidity = null;
-	 * 
-	 * }
-	 */
-	// }
-
 	// Arret du service RoomService
 	public void StopService() {
 		_sensor.StopService();

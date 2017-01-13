@@ -1,5 +1,11 @@
 package fr.guiet.automationserver.dto;
 
+/**
+ * Sensor DTO
+ * 
+ * @author guiet
+ *
+ */
 public class SensorDto {
 
 	public long sensorId;
