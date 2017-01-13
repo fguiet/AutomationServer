@@ -183,6 +183,36 @@ systemctl status automationserver@1.service => pour connaître l'état du service
 Pour faire des tests : 
 java -Dlog4j.configuration=file:/home/fred/automationserver/config/log4j.xml -classpath "./*" fr.guiet.automationserver.teleinfoservicetests.TeleinfoServiceTests
 
+Mosquito (MQTT)
+---------------
+apt-get install mosquito
+apt-get install mosquito-clients
 
+sudo systemctl enable mosquitto (a voir si faut le faire)
+fichier de conf = /etc/mosquitto/mosquitto.conf
 
+topic
+guiet/home/devices/sensors/dht22sejour
+guiet/home/devices/sensors/dht22chambre_manon
+guiet/home/devices/sensors/dht22chambre_parents
 
+Info
+http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
+
+Grafana
+-------
+
+Suivre les instructions
+
+https://github.com/grafana/grafana
+https://hwwong168.wordpress.com/2015/11/19/building-grafana-for-raspberry-pi-2/
+#Build pour Raspberry deja faites
+https://github.com/fg2it/grafana-on-raspberry/wiki
+
+openHAB
+-------
+
+http://docs.openhab.org/installation/rasppi.html
+http://docs.openhab.org/installation/linux.html
+
+J'ai du ajouter JAVA_HOME dans nano /usr/share/openhab2/start.sh

@@ -10,6 +10,12 @@ import com.pi4j.io.gpio.RaspiPin;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
+/**
+ * Handles heater management
+ * 
+ * @author guiet
+ *
+ */
 public class Heater implements Comparable<Heater> {
 
 	private long _heaterId;
@@ -21,57 +27,57 @@ public class Heater implements Comparable<Heater> {
 	private Room _room = null;
 	private Pin _pin;
 	private boolean _isOffForced = false;
-
 	private static Logger _logger = Logger.getLogger(Heater.class);
 
-	// Retourne la priorite du radiateur en fonction du jour de la semaine et de
-	// l'heure
-	public Integer GetCurrentPriority() {
-		DbManager dbManager = new DbManager();
-		return dbManager.GetCurrentPriorityByHeaterId(_heaterId);
-	}
-
-	@Override
-	public int compareTo(Heater heater) {
-
-		final int BEFORE = -1;
-		final int EQUAL = 0;
-		final int AFTER = 1;
-
-		Integer priority = GetCurrentPriority();
-		Integer heaterPriority = heater.GetCurrentPriority();
-
-		if (priority == null) {
-			_logger.error("Impossible de déterminer la priorité pour le radiateur : " + this._name);
-			return EQUAL;
-		}
-
-		// 20160222 - Correction du bug null pointer exception
-		if (heaterPriority == null) {
-			_logger.error("Impossible de déterminer la priorité pour le radiateur : " + heater.getName());
-			return EQUAL;
-		}
-
-		if (priority < heaterPriority) {
-			return BEFORE;
-		}
-
-		if (priority > heaterPriority) {
-			return AFTER;
-		}
-
-		if (priority.equals(heaterPriority)) {
-			return EQUAL;
-		}
-
-		_logger.error("Impossible de comparer la priorite de deux radiateurs");
-		return EQUAL;
-	}
-
+	/**
+	 * @return Returns Heater name (value stored in PostgreSQL database)
+	 */
 	public String getName() {
 		return _name;
 	}
 
+	/**
+	 * @return Returns room object associated with this heater
+	 */
+	public Room getRoom() {
+		return _room;
+	}
+
+	/**
+	 * @return Returns electrical phase associated with this heater
+	 */
+	public int getPhase() {
+		return _phase;
+	}
+
+	/**
+	 * @return Returns whether heater is on or off
+	 */
+	public boolean isOn() {
+		return _isOn;
+	}
+
+	/**
+	 * @return Returns heater max. current consumption
+	 */
+	public int getCurrentConsumption() {
+		return _currentConsumption;
+	}
+
+	/**
+	 * @return Returns whether heater is automatically regulated or if user
+	 *         decided to stop it !
+	 */
+	public boolean IsOffForced() {
+		return _isOffForced;
+	}
+
+	/**
+	 * Create a new heater
+	 * 
+	 * @param dto
+	 * @param room
+	 */
 	private Heater(HeaterDto dto, Room room) {
 
 		_room = room;
@@ -130,39 +136,141 @@ public class Heater implements Comparable<Heater> {
 		case 16:
 			_pin = RaspiPin.GPIO_16;
 			break;
+		case 17:
+			_pin = RaspiPin.GPIO_17;
+			break;
+		case 18:
+			_pin = RaspiPin.GPIO_18;
+			break;
+		case 19:
+			_pin = RaspiPin.GPIO_19;
+			break;
+		case 20:
+			_pin = RaspiPin.GPIO_20;
+			break;
+		case 21:
+			_pin = RaspiPin.GPIO_21;
+			break;
+		case 22:
+			_pin = RaspiPin.GPIO_22;
+			break;
+		case 23:
+			_pin = RaspiPin.GPIO_23;
+			break;
+		case 24:
+			_pin = RaspiPin.GPIO_24;
+			break;
+		case 25:
+			_pin = RaspiPin.GPIO_25;
+			break;
+		case 26:
+			_pin = RaspiPin.GPIO_26;
+			break;
+		case 27:
+			_pin = RaspiPin.GPIO_27;
+			break;
+		case 28:
+			_pin = RaspiPin.GPIO_28;
+			break;
+		case 29:
+			_pin = RaspiPin.GPIO_29;
+			break;
+		case 30:
+			_pin = RaspiPin.GPIO_30;
+			break;
+		case 31:
+			_pin = RaspiPin.GPIO_31;
+			break;
+						
 		default:
 			// TODO : utiliser un throw ici!
-			_logger.error("Pin Raspberry non geree");
-			break;
-		// throw new Exception("Pin Raspberry non geree");
+			_logger.error(String.format("Pin %d not managed !", _raspberryPin));			
+			break;		
 		}
 
-		SetOff(); // On eteint le radiateur par defaut;
+		// Set Heater off by default
+		SetOff();
+	}
+		
+	/**
+	 * @return Returns French heater state (ON or OFF)
+	 */
+	public String getEtatLabel() {
+		
+		//TODO : Rename this method getFRStateLabel()
+		if (_isOn)
+			return "ALLUME";
+		else
+			return "ETEINT";
 	}
 
-	// retourne la piece associee a ce radiateur
-	public Room getRoom() {
-		return _room;
+	// Retourne la priorite du radiateur en fonction du jour de la semaine et de
+	// l'heure
+
+	/**
+	 * @return Returns heater priority value regarding current datetime
+	 */
+	public Integer GetCurrentPriority() {
+		DbManager dbManager = new DbManager();
+		return dbManager.GetCurrentPriorityByHeaterId(_heaterId);
 	}
 
-	public int getPhase() {
-		return _phase;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Heater heater) {
+
+		final int BEFORE = -1;
+		final int EQUAL = 0;
+		final int AFTER = 1;
+
+		Integer priority = GetCurrentPriority();
+		Integer heaterPriority = heater.GetCurrentPriority();
+
+		if (priority == null) {
+			_logger.error(String.format("Cannot retrieve %s heater priority", this._name));
+			return EQUAL;
+		}
+
+		// 20160222 - Correction du bug null pointer exception
+		if (heaterPriority == null) {
+			_logger.error(String.format("Cannot retrieve %s heater priority", heater.getName()));			
+			return EQUAL;
+		}
+
+		if (priority < heaterPriority) {
+			return BEFORE;
+		}
+
+		if (priority > heaterPriority) {
+			return AFTER;
+		}
+
+		if (priority.equals(heaterPriority)) {
+			return EQUAL;
+		}		
+		
+		_logger.error(String.format("Cannot compare %s and %s heater priority", this._name, heater.getName()));
+		
+		return EQUAL;
 	}
 
-	public boolean isOn() {
-		return _isOn;
-	}
-
-	public int getCurrentConsumption() {
-		return _currentConsumption;
-	}
-
+	/**
+	 * @param dto
+	 * @param room
+	 * @return Returns Heater object loaded from Dto
+	 */
 	public static Heater LoadFromDto(HeaterDto dto, Room room) {
 
 		return new Heater(dto, room);
 	}
 
-	// Allume le radiateur
+	/**
+	 * Sets heater ON
+	 */
 	public void SetOn() {
 
 		_isOn = true;
@@ -180,41 +288,16 @@ public class Heater implements Comparable<Heater> {
 		pin.low();
 
 		gpio.unprovisionPin(pin);
+
 		gpio.shutdown();
 
 		if (_room != null)
-			_logger.info("Allumage du radiateur : " + _name + " de la piece : " + _room.getName());
-
+			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));
 	}
-
-	// Active l'arret force du radiateur
-	public void ActivateOffForced() {
-
-		if (isOn())
-			SetOff();
-
-		_logger.info("Activation de l'arrêt forcé du radiateur : " + _name + " de la piece : " + _room.getName());
-		_isOffForced = true;
-	}
-
-	public void DesactivateOffForced() {
-		_logger.info("Déactivation de l'arrêt forcé du radiateur : " + _name + " de la piece : " + _room.getName());
-		_isOffForced = false;
-	}
-
-	// Le radiateur est t-il en arret force par l'utilisateur
-	public boolean IsOffForced() {
-		return _isOffForced;
-	}
-
-	// Get french string indicated heater state (on/off)
-	public String getEtatLabel() {
-		if (_isOn)
-			return "ALLUME";
-		else
-			return "ETEINT";
-	}
-
+	
+	/**
+	 * Sets heater OFF
+	 */
 	public void SetOff() {
 
 		_isOn = false;
@@ -232,10 +315,39 @@ public class Heater implements Comparable<Heater> {
 		pin.high();
 
 		gpio.unprovisionPin(pin);
+		
 		gpio.shutdown();
 
 		if (_room != null)
-			_logger.info("Extinction du radiateur : " + _name + " de la piece : " + _room.getName());
+			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));
 	}
 
+	/**
+	 * Sets heater OFF even if it should be ON (useful when madam is opening
+	 * windows so that fresh air can enters our chamber)
+	 */
+	public void ActivateOffForced() {
+
+		_isOffForced = true;
+		
+		//If heater is ON, set it OFF...
+		if (isOn())
+			SetOff();		
+
+		_logger.info(
+				String.format("Setting OFF automatic heater management. Heater %s from room %s is now OFF for ever...",
+						_name, _room.getName()));
+	}
+
+	/**
+	 * Sets heater state so that is automatically regulated
+	 */
+	public void DesactivateOffForced() {
+
+		_isOffForced = false;
+		
+		_logger.info(String.format(
+				"Setting ON automatic heater management. Heater %s from room %s is now regulated automatically... ",
+				_name, _room.getName()));
+	}
 }

@@ -20,6 +20,8 @@
 				<excludes>
 					<!-- Ne pas inclure les XML dans le jar -->
 					<exclude>**/*.xml</exclude>					
+					<!-- Ne pas inclure les properties dans le jar -->
+					<exclude>**/*.properties</exclude>
 				</excludes>
 			</resource>
 		</resources>
@@ -90,7 +92,7 @@
 		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
-			<version>1.0.10</version>
+			<version>${commons-daemon.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.guiet.automationserver</groupId>

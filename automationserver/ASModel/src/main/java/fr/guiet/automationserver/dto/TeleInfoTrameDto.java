@@ -1,5 +1,11 @@
 package fr.guiet.automationserver.dto;
 
+/**
+ * Teleinfo DTO
+ * 
+ * @author guiet
+ *
+ */
 public class TeleInfoTrameDto {
 	public String ADCO;
 	public String OPTARIF;

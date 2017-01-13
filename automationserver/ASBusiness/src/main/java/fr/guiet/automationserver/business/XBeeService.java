@@ -8,7 +8,12 @@ import com.rapplogic.xbee.api.XBeeException;
 import com.rapplogic.xbee.api.PacketListener;
 import com.rapplogic.xbee.api.XBeeResponse;
 import com.rapplogic.xbee.api.ApiId;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -19,25 +24,49 @@ public class XBeeService implements PacketListener {
 	// Logger
 	private static Logger _logger = Logger.getLogger(XBeeService.class);
 
-	private static final String DEFAULT_COM_PORT = "/dev/ttyUSB0";
+	private int DEFAULT_BAUD_RATE = 9600;
+	private String _xbeeUsbDevice = "";
+	private Integer _xbeeBaudRate = null;
 	private XBee _xbee = null;
-	// private IXBeeListener _xbeeListener = null;
-	// private ConcurrentLinkedQueue<XBeeResponse> _queue = new
-	// ConcurrentLinkedQueue<XBeeResponse>();
+
 	private ArrayList<IXBeeListener> _sensorList = new ArrayList<IXBeeListener>();
 	private boolean _isStopped = true; // Service arrete?
 
 	public XBeeService() {
+		
+		InputStream is = null;
+        try {
+        	Properties prop = new Properties();
+            is = this.getClass().getResourceAsStream("/config/automationserver.properties");
+            prop.load(is);
+            
+            _xbeeUsbDevice = prop.getProperty("xbee.usbdevice");
+            
+            try {
+            
+            	_xbeeBaudRate =  Integer.parseInt(prop.getProperty("xbee.baudrate"));
+            }
+            catch (NumberFormatException nfe) {
+            	_xbeeBaudRate = DEFAULT_BAUD_RATE;
+            	_logger.error("La propriété xbee.baudrate doit être un entier, utilisation du baudrate par défaut : "+ DEFAULT_BAUD_RATE, nfe);            	
+            }
+            
+        } catch (FileNotFoundException e) {
+        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
+        } catch (IOException e) {
+        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
+        } 
+		
 		try {
 			_xbee = new XBee();
-			_xbee.open(DEFAULT_COM_PORT, 9600);
+			_xbee.open(_xbeeUsbDevice, _xbeeBaudRate);
 			_xbee.addPacketListener(this);
 
 			_isStopped = false;
 
 			_logger.info("Connexion avec le XBee central réussi...");
 		} catch (XBeeException e) {
-			_logger.error("Impossible d'ouvrir une connection avec le XBee sur le port " + DEFAULT_COM_PORT, e);
+			_logger.error("Impossible d'ouvrir une connection avec le XBee sur le port " + _xbeeUsbDevice, e);
 		}
 	}
 
@@ -88,38 +117,7 @@ public class XBeeService implements PacketListener {
 			}
 		}
 		// }
-	}
-
-	/*
-	 * public XBeeMessage GetSensorMessages() {
-	 * 
-	 * XBeeMessage xbeeMessage = null; XBeeResponse response; int []
-	 * payloadReceived;
-	 * 
-	 * response = _queue.poll();
-	 * 
-	 * if (response != null) { try {
-	 * 
-	 * if (response.getApiId() == ApiId.RX_64_RESPONSE) {
-	 * 
-	 * RxResponse64 rx = (RxResponse64) response; payloadReceived =
-	 * rx.getData();
-	 * 
-	 * StringBuilder sb = new StringBuilder();
-	 * 
-	 * for (int i=0;i<payloadReceived.length;i++) { char c =
-	 * (char)payloadReceived[i]; sb.append(c); }
-	 * 
-	 * //_logger.info("Messsage recu"+sb.toString()); xbeeMessage = new
-	 * XBeeMessage(rx.getRemoteAddress());
-	 * xbeeMessage.setMessageReceived(sb.toString());
-	 * 
-	 * } } catch(Exception ex) { xbeeMessage = null;
-	 * _logger.error("Erreur dans le traitement des trames reçues par le XBee"
-	 * ,ex); } }
-	 * 
-	 * return xbeeMessage; }
-	 */
+	}	
 
 	// Envoie d'un message synchrone
 	public void SendAsynchronousMessage(XBeeAddress64 sensorAddress, String message) {
@@ -146,57 +144,7 @@ public class XBeeService implements PacketListener {
 			_logger.error("Erreur lors de l'envoi du message.", ex);
 		}
 
-		/*
-		 * if (response != null) { try {
-		 * 
-		 * if (response.getApiId() == ApiId.RX_64_RESPONSE) {
-		 * 
-		 * RxResponse64 rx = (RxResponse64) response; payloadReceived =
-		 * rx.getData();
-		 * 
-		 * StringBuilder sb = new StringBuilder();
-		 * 
-		 * for (int i=0;i<payloadReceived.length;i++) { char c =
-		 * (char)payloadReceived[i]; sb.append(c); }
-		 * 
-		 * //_logger.info("Messsage recu"+sb.toString()); xbeeMessage = new
-		 * XBeeMessage(rx.getRemoteAddress());
-		 * xbeeMessage.setMessageReceived(sb.toString());
-		 * 
-		 * } } catch(Exception ex) { xbeeMessage = null; _logger.
-		 * error("Erreur dans le traitement des trames reçues par le XBee",ex);
-		 * } }
-		 */
-
-		/*
-		 * int retryCpt = 1; boolean sentOk = false; TxStatusResponse response =
-		 * null;
-		 * 
-		 * try { TxRequest64 request = new TxRequest64(_sensorAddress,
-		 * "GETSENSORINFO");
-		 * 
-		 * while(retryCpt <= 3 && !sentOk) {
-		 * 
-		 * //_logger.info("Debut envoie message synchrone"); // send the packet
-		 * and wait up to 1 seconds for the transmit status reply (you should
-		 * really catch a timeout exception)
-		 * _logger.info("Envoi du message : "+xbeeMessage.getMessageToSendString
-		 * ()+" au module : "+xbeeMessage.getRemoteAddress().toString()+
-		 * " (Tentative numero : "+retryCpt+")"); response =
-		 * (TxStatusResponse)_xbee.sendSynchronous(request, 1000);
-		 * //_logger.info("fin envoie message synchrone");
-		 * 
-		 * if (response.isSuccess()) { sentOk = true; } else { _logger.
-		 * warn("Message envoyé à un module mais ACK non recu (Tentative numero : "
-		 * +retryCpt+")"); retryCpt++; } } } catch (XBeeTimeoutException te) {
-		 * _logger.
-		 * error("Timeout lors de l'envoi du message. Le XBee distant est allumé?"
-		 * , te); } catch(Exception e) { _logger.
-		 * error("Erreur lors de l'envoi du message. Le XBee distant est allumé?"
-		 * , e); }
-		 * 
-		 * return sentOk;
-		 */
+		
 	}
 
 	private int[] ConvertMessageToIntArray(String message) {

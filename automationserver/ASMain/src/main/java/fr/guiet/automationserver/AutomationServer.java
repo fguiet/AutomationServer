@@ -9,10 +9,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import fr.guiet.automationserver.business.*;
+import fr.guiet.automationserver.dto.SMSDto;
 
-/***
+/**
+ * Main class : in charge of home IoT management
  * 
- * Classe principale de gestion de l'IoT de la maison Creation : 201602
+ * Creation date : 201602
+ * 
+ * @author guiet
  *
  */
 public class AutomationServer implements Daemon {
@@ -26,11 +30,12 @@ public class AutomationServer implements Daemon {
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
+	private SMSGammuService _smsGammuService = null;
 
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);
 
-	// Initialisation du daemon
+	// Init deamon
 	@Override
 	public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
 		/*
@@ -54,47 +59,43 @@ public class AutomationServer implements Daemon {
 			// Méthode principale du Thread principal (celle qui boucle)
 			@Override
 			public void run() {
+
 				try {
-					_logger.info("Démarrage du serveur Automation...");
-					/*
-					 * _logger.info("Wait one minute before starting...");
-					 * 
-					 * try { Thread.sleep(60000); } catch(InterruptedException
-					 * e) {
-					 * 
-					 * }
-					 * 
-					 * _logger.info("Running...");
-					 */
+					_logger.info("Starting automation server...");
 
-					// Définit de la locale
+					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
+					
+					//SMS Service
+					_smsGammuService = new SMSGammuService();
 
-					// Démarrage du service de teleinfo
-					_teleInfoService = new TeleInfoService();
+					// Starting teleinfo service
+					_teleInfoService = new TeleInfoService(_smsGammuService);
 					_teleInfoServiceThread = new Thread(_teleInfoService);
 					_teleInfoServiceThread.start();
 
-					// Démarrage du service de gestion des pièces
-					_roomService = new RoomService(_teleInfoService);
+					// Starting room service
+					_roomService = new RoomService(_teleInfoService, _smsGammuService);
 					_roomServiceThread = new Thread(_roomService);
 					_roomServiceThread.start();
 
-					// Démarrage du service de gestion du chauffe-eau
-					_waterHeater = new WaterHeater(_teleInfoService);
+					// Starting warter heater
+					_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
 					_waterHeaterServiceThread = new Thread(_waterHeater);
 					_waterHeaterServiceThread.start();
 
-					// Creation du serveur de reception des messages de la
-					// console web
+					// TODO : Replace this server by MQTT subscribe
 					ServerSocket socket = new ServerSocket(4310);
-					_logger.info("Serveur d'écoute des messages opérationnels...");
+					_logger.info("Starting messages management queue...");
 
-					// CreateCheckThreadActivityTask();
-
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Automation server has started...");
+					_smsGammuService.sendMessage(sms, true);
+					
 					while (!_isStopped) {
 
 						Socket connection = socket.accept();
+
 						AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
 								_teleInfoService);
 						ast.start();
@@ -104,44 +105,18 @@ public class AutomationServer implements Daemon {
 					try {
 						socket.close();
 					} catch (IOException e) {
-						_logger.error("Une erreur est apparue dans lors de l'arrêt du serveur Automation...", e);
+						_logger.error("Error occured when closing message management queue socket...", e);
 						socket = null;
 					}
-				}
-				// catch(IOException ioe) {
-				// _logger.error("Une erreur est apparue dans le serveur
-				// Automation...",ioe);
-				// }
-				catch (Exception e) {
-					_logger.error("Une erreur est apparue dans le serveur Automation...", e);
+				} catch (Exception e) {
+					_logger.error("Error occured in automation server...", e);
+
+					//try to stop services properly
+					stop();
 				}
 			}
 		};
 	}
-
-	// Création de la tache de sauvegarde en bdd
-	/*
-	 * private void CreateCheckThreadActivityTask() {
-	 * 
-	 * TimerTask checkThreadActivityTask = new TimerTask() {
-	 * 
-	 * @Override public void run() { if (_roomServiceThread.isAlive()) {
-	 * _logger.info("Thread RoomService Alive"); } else {
-	 * _logger.info("Thread RoomService Dead"); }
-	 * 
-	 * if (_teleInfoServiceThread.isAlive()) {
-	 * _logger.info("Thread TeleInfoService Alive"); } else {
-	 * _logger.info("Thread TeleInfoService Dead"); }
-	 * 
-	 * if (_waterHeaterServiceThread.isAlive()) {
-	 * _logger.info("Thread WaterHeaterService Alive"); } else {
-	 * _logger.info("Thread WaterHeaterService Dead"); } } };
-	 * 
-	 * Timer timer = new Timer(true); //Toutes les minutes on enregistre une
-	 * trame timer.schedule(checkThreadActivityTask, 5000, 60000);
-	 * 
-	 * }
-	 */
 
 	// Méthode start de jsvc (Classe Deamon)
 	@Override
@@ -149,30 +124,39 @@ public class AutomationServer implements Daemon {
 		_mainThread.start(); // Démarrage du thread principal
 	}
 
-	// Arret du serveur
+	
+	/* (non-Javadoc)
+	 * @see org.apache.commons.daemon.Daemon#stop()
+	 */
 	@Override
 	public void stop() throws Exception {
 
-		// Arret des services
-		_teleInfoService.StopService();
-		_roomService.StopService();
-		_waterHeater.StopService();
-
-		_isStopped = true;
-
 		try {
+			_logger.info("Stopping automation server...");
+			
+			// Stopping all services
+			_teleInfoService.StopService();
+			_roomService.StopService();
+			_waterHeater.StopService();
+
+			_isStopped = true;
+
 			_mainThread.join(5000); // Attend la fin de l'exécution du Thread
 									// principal (5 secondes)
-
-			_logger.info("Arrêt du serveur Automation...");
-		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
-			_logger.error("Erreur lors de l'arrêt du serveur Automation ", e);
-			throw e;
+					
+			_logger.info("Bye bye automation server stopped...");
+			
+		} catch (Exception e) {
+			_logger.error("Automation server has not stopped properly", e);
+		}
+		finally {
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Automation server has stopped...");
+			_smsGammuService.sendMessage(sms, true);
 		}
 	}
 
-	// Destruction propre des objets
+	// Destroy objects
 	@Override
 	public void destroy() {
 		_mainThread = null;

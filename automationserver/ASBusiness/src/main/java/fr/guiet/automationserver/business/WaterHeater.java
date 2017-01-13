@@ -5,6 +5,9 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
+
+import fr.guiet.automationserver.dto.SMSDto;
+
 import org.apache.log4j.Logger;
 import java.util.Date;
 
@@ -18,19 +21,32 @@ public class WaterHeater implements Runnable {
 	private int _retryStart = 0;
 	private TeleInfoService _teleInfoService = null;
 	private boolean _isStopped = false; // Service arrete?
+	private SMSGammuService _smsGammuService = null;
 
-	// Constructeur
-	public WaterHeater(TeleInfoService teleInfoService) {
-		_teleInfoService = teleInfoService;
-
+	/**
+	 * @return Returns whether heater is on or off
+	 */
+	public boolean isOn() {
+		return _isOn;
+	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param teleInfoService
+	 */
+	public WaterHeater(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
+		_teleInfoService = teleInfoService;		
+		_smsGammuService = smsGammuService;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 
-		_logger.info("Démarrage de la gestion du chauffe-eau...");
-
-		// Extinction des radiateurs par defaut
+		_logger.info("Starting water heater management...");
 
 		while (!_isStopped) {
 
@@ -38,28 +54,32 @@ public class WaterHeater implements Runnable {
 
 				ManageWaterHeater();
 
-				// Toutes les minutes
+				// Sleep for 1 minutes
 				Thread.sleep(60000);
 
-			} catch (Exception e) {
-				_logger.error("Erreur dans la gestion du chauffe-eau", e);
+			} catch (Exception e) { 
+				_logger.error("Error occured in water heater management service", e);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage("Error occured in water heater management service, review error log for more details");
+				_smsGammuService.sendMessage(sms, true);
 			}
-
 		}
 	}
 
-	// Stop WaterHeater Service
+	/**
+	 * Stops water heater properly 
+	 */
 	public void StopService() {
 
-		_logger.info("Arrêt du service WaterHeater...");
+		_logger.info("Stopping water heater service...");
 
 		_isStopped = true;
 	}
 
-	public boolean isOn() {
-		return _isOn;
-	}
-
+	/**
+	 *  Water heater main management method
+	 */
 	private void ManageWaterHeater() {
 
 		// *** Gestion du chauffe eau
@@ -115,10 +135,14 @@ public class WaterHeater implements Runnable {
 		}
 	}
 
+	/**
+	 * Turns water heater ON
+	 */
 	private void SetOn() {
 
 		_isCheckedOk = false;
 
+		//TODO : faire une classe métier pour la gestion des PINS
 		// create gpio controller
 		final GpioController gpio = GpioFactory.getInstance();
 
@@ -134,13 +158,16 @@ public class WaterHeater implements Runnable {
 		gpio.unprovisionPin(pin);
 		gpio.shutdown();
 
-		_logger.info("Mise en marche du chauffe-eau");
+		_logger.info("Turning ON water heater");
 
 		_startTime = new Date();
 		_isOn = true;
 
 	}
 
+	/**
+	 * Turns water heater OFF
+	 */
 	private void SetOff() {
 
 		// create gpio controller
@@ -163,10 +190,8 @@ public class WaterHeater implements Runnable {
 		long diff = currentDate.getTime() - _startTime.getTime();
 		long diffMinutes = diff / (60 * 1000);
 
-		_logger.info("Extinction du chauffe-eau, durée de chauffe : " + diffMinutes + " minutes");
+		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
 
 		_isOn = false;
-
 	}
-
 }

@@ -22,11 +22,14 @@ public class Sensor implements IXBeeListener {
 	private float _actualTemp;
 	private float _actualHumidity;
 	private Room _room = null;
-	// private boolean _alertSent = false; //Alerte envoyée par SMS en cas de
-	// non réception de message d'un capteur depuis trop longtemps
-	// private static final String targetURL =
-	// "https://smsapi.free-mobile.fr/sendmsg?user=@user@&pass=@pass@&msg=@msg@";
-
+	private SMSGammuService _smsGammuService = null;
+	private boolean _alertSent = false;
+	
+	public Sensor() {
+		
+		_smsGammuService = new SMSGammuService();
+	}
+	
 	public float getActualTemp() {
 		return _actualTemp;
 	}
@@ -58,14 +61,20 @@ public class Sensor implements IXBeeListener {
 
 		// Timeout si aucune info recu du capteur au bout de 5 minutes
 		if (diffMinutes >= 5) {
-			// TODO : Faire une classe métier pout l'envoie des SMS
-			// if (!_alertSent) {
-			// SendSMS();
-			// }
-
+			
+			if (!_alertSent) {
+			
+				SMSDto sms = new SMSDto();
+				String message = String.format("Sensor "+_room.getName()+" does not send messages anymore...");						
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+				
+				_alertSent = true;
+			}
+			
 			return true;
 		} else {
-			// _alertSent = false; //Réinitialisation
+			_alertSent = false; //Réinitialisation
 			return false;
 		}
 	}
@@ -138,6 +147,7 @@ public class Sensor implements IXBeeListener {
 				String id = String.valueOf(_idSensor);
 				switch (id) {
 				case "5":
+					//TODO : Store sensor name into database
 					sensorName = "sensor_dht22_chambre_parents";
 					break;
 				case "1":

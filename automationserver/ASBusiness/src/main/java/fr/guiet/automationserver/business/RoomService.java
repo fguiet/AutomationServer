@@ -20,13 +20,25 @@ public class RoomService implements Runnable {
 	private List<Heater> _heaterListPhase3 = new ArrayList<Heater>();
 	private List<Heater> _allHeaterList = new ArrayList<Heater>();
 	private static final int MAX_INTENSITE_PAR_PHASE = 25;
-	// private boolean _isUp = false;
-
+	private SMSGammuService _smsGammuService = null;
+	
 	// Constructeur
-	public RoomService(TeleInfoService teleInfoService) {
-		_teleInfoService = teleInfoService;
+	/**
+	 * Constructor
+	 * 
+	 * @param teleInfoService
+	 */
+	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
+		_teleInfoService = teleInfoService;		
+		_smsGammuService = smsGammuService;
 	}
 
+	/**
+	 * Add heater to a list according to which phase the heater is link with
+	 * Add heater to the global list  
+	 * 
+	 * @param heater
+	 */
 	private void AddHeater(Heater heater) {
 		if (heater.getPhase() == 1) {
 			_heaterListPhase1.add(heater);
@@ -50,7 +62,7 @@ public class RoomService implements Runnable {
 			}
 		}
 
-		// Ne doit pas arriver!!
+		// Must not occur
 		return null;
 	}
 
@@ -158,7 +170,7 @@ public class RoomService implements Runnable {
 			r.StopService();
 		}
 
-		_logger.info("Arrêt du service RoomService...");
+		_logger.info("Stopping Room Service...");
 
 		_isStopped = true;
 	}
@@ -166,7 +178,7 @@ public class RoomService implements Runnable {
 	@Override
 	public void run() {
 
-		_logger.info("Démarrage du service RoomService...");
+		_logger.info("Starting Room Service...");
 		// Date startTime = new Date();
 
 		LoadRoomList();
@@ -181,20 +193,6 @@ public class RoomService implements Runnable {
 		while (!_isStopped) {
 
 			try {
-
-				// _logger.info("Room Service Not dead...");
-
-				/*
-				 * Date currentDate = new Date();
-				 * 
-				 * long diff = currentDate.getTime() - startTime.getTime(); long
-				 * diffMinutes = diff / (60 * 1000);
-				 * 
-				 * if (diffMinutes >=5) { _logger.
-				 * info("Le service de gestion des pièces est opérationnel...");
-				 * startTime = new Date(); }
-				 */
-
 				// Gestion du delestage!
 				ManageDelestage();
 
@@ -205,11 +203,14 @@ public class RoomService implements Runnable {
 				Thread.sleep(5000);
 
 			} catch (Exception e) {
-				_logger.error("Erreur dans la gestion des pièces de la maison", e);
+				_logger.error("Error occured in room Service", e);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage("Error occured in room Service, review error log for more details");
+				_smsGammuService.sendMessage(sms, true); 
 			}
 		}
 
-		// _logger.info("!!! DEAD !!!");
 	}
 
 	/*
@@ -221,7 +222,7 @@ public class RoomService implements Runnable {
 		Collections.reverse(_heaterListPhase2);
 		Collections.reverse(_heaterListPhase3);
 
-		TeleInfoTrame teleInfoTrame = _teleInfoService.GetLastTrame();
+		TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
 		if (teleInfoTrame != null) {
 			DelesteHeater(1, teleInfoTrame.IINST1, _heaterListPhase1);
 			DelesteHeater(2, teleInfoTrame.IINST2, _heaterListPhase2);
@@ -255,7 +256,7 @@ public class RoomService implements Runnable {
 		Collections.sort(_heaterListPhase2);
 		Collections.sort(_heaterListPhase3);
 
-		TeleInfoTrame teleInfoTrame = _teleInfoService.GetLastTrame();
+		TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
 		if (teleInfoTrame != null) {
 			ManagerHeatersByPhase(1, teleInfoTrame.IINST1, _heaterListPhase1);
 			ManagerHeatersByPhase(2, teleInfoTrame.IINST2, _heaterListPhase2);
