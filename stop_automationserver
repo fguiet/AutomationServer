@@ -6,4 +6,4 @@ export HOME_PATH="/home/fred/automationserver"
 export PID="${HOME_PATH}/$NAME.pid"
 export CLASS=fr.guiet.automationserver.AutomationServer
 
-sudo ${EXEC} -stop -pidfile "${PID}" ${CLASS}
+${EXEC} -stop -pidfile "${PID}" ${CLASS}

@@ -13,5 +13,5 @@ export LOG_ERR="${HOME_PATH}/logs/${NAME}.err"
 export PID="${HOME_PATH}/${NAME}.pid"
 export CLASS=fr.guiet.automationserver.AutomationServer
 
-sudo rm /var/lock/LCK..ttyUSB0
-sudo $EXEC -home "$JAVA_HOME" -cp "$CLASS_PATH" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" $ARGS -outfile "${LOG_OUT}" -errfile "${LOG_ERR}" -pidfile "${PID}" $1 $CLASS
+rm /var/lock/LCK..ttyUSB0
+$EXEC -home "$JAVA_HOME" -cp "$CLASS_PATH" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" $ARGS -outfile "${LOG_OUT}" -errfile "${LOG_ERR}" -pidfile "${PID}" $1 $CLASS
