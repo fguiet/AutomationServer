@@ -1,11 +1,14 @@
 package fr.guiet.automationserver.teleinfoservicetests;
 
+import fr.guiet.automationserver.business.SMSGammuService;
 import fr.guiet.automationserver.business.TeleInfoService;
 
 public class TeleinfoServiceTests {
 	public static void main(String args[]) {
 		
-		TeleInfoService teleInfoService = new TeleInfoService();
+		SMSGammuService gammuService = new SMSGammuService();
+		
+		TeleInfoService teleInfoService = new TeleInfoService(gammuService);
 		Thread teleInfoServiceThread = new Thread(teleInfoService);
 		teleInfoServiceThread.start();
 		
