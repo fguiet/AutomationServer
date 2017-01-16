@@ -21,7 +21,7 @@ public class RoomService implements Runnable {
 	private List<Heater> _allHeaterList = new ArrayList<Heater>();
 	private static final int MAX_INTENSITE_PAR_PHASE = 25;
 	private SMSGammuService _smsGammuService = null;
-	
+
 	// Constructeur
 	/**
 	 * Constructor
@@ -29,13 +29,13 @@ public class RoomService implements Runnable {
 	 * @param teleInfoService
 	 */
 	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
-		_teleInfoService = teleInfoService;		
+		_teleInfoService = teleInfoService;
 		_smsGammuService = smsGammuService;
 	}
 
 	/**
-	 * Add heater to a list according to which phase the heater is link with
-	 * Add heater to the global list  
+	 * Add heater to a list according to which phase the heater is link with Add
+	 * heater to the global list
 	 * 
 	 * @param heater
 	 */
@@ -204,10 +204,10 @@ public class RoomService implements Runnable {
 
 			} catch (Exception e) {
 				_logger.error("Error occured in room Service", e);
-				
+
 				SMSDto sms = new SMSDto();
 				sms.setMessage("Error occured in room Service, review error log for more details");
-				_smsGammuService.sendMessage(sms, true); 
+				_smsGammuService.sendMessage(sms, true);
 			}
 		}
 
@@ -377,7 +377,7 @@ public class RoomService implements Runnable {
 
 		for (RoomDto dtoRoom : roomDtoList) {
 
-			Room r = Room.LoadFromDto(dtoRoom);
+			Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);
 			_roomList.add(r);
 		}
 	}

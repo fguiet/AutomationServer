@@ -76,7 +76,7 @@ public class Heater implements Comparable<Heater> {
 	 * Create a new heater
 	 * 
 	 * @param dto
-	 * @param room
+	 * @param room 
 	 */
 	private Heater(HeaterDto dto, Room room) {
 
@@ -85,7 +85,7 @@ public class Heater implements Comparable<Heater> {
 		_currentConsumption = dto.currentConsumption;
 		_phase = dto.phase;
 		_raspberryPin = dto.raspberryPin;
-		_name = dto.name;
+		_name = dto.name;		 
 
 		switch (_raspberryPin) {
 		case 1:
@@ -265,7 +265,7 @@ public class Heater implements Comparable<Heater> {
 	 */
 	public static Heater LoadFromDto(HeaterDto dto, Room room) {
 
-		return new Heater(dto, room);
+		return new Heater(dto, room);		
 	}
 
 	/**

@@ -63,8 +63,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.rapplogic.xbee</groupId>
-  			<artifactId>RXTXComm</artifactId>
-  			<version>${RXTXComm.version}</version>
+			<artifactId>RXTXComm</artifactId>
+			<version>${RXTXComm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.pi4j</groupId>
@@ -77,14 +77,19 @@
 			<artifactId>commons-exec</artifactId>
 			<version>${commons-exec.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+			<version>${mqttv3.version}</version>
+		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<!--other repositories if any -->
 		<repository>
 			<id>project.local</id>
 			<name>project</name>
-			<url>file:${project.basedir}/repo</url>			
+			<url>file:${project.basedir}/repo</url>
 		</repository>
 	</repositories>
 

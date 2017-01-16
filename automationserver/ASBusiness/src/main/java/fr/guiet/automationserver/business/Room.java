@@ -200,7 +200,7 @@ public class Room {
 		_sensor.StopService();
 	}
 
-	private Room(RoomDto dto) {
+	private Room(RoomDto dto, SMSGammuService gammuService) {
 
 		_id = dto.id;
 		_name = dto.name;
@@ -218,7 +218,7 @@ public class Room {
 		// _logger.info("Capteur : " + sensorDto.sensorId + ", address : " +
 		// sensorDto.sensorAddress);
 
-		_sensor = Sensor.LoadFromDto(sensorDto, this);
+		_sensor = Sensor.LoadFromDto(sensorDto, this, gammuService);
 
 		// CreateManageHeaterTask();
 
@@ -228,9 +228,9 @@ public class Room {
 											// au demarrage
 	}
 
-	public static Room LoadFromDto(RoomDto dto) {
+	public static Room LoadFromDto(RoomDto dto, SMSGammuService gammuService) {
 
-		return new Room(dto);
+		return new Room(dto, gammuService);
 	}
 
 	private String GetDayName(int day) {

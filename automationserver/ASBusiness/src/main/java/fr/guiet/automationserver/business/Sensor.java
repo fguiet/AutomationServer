@@ -2,6 +2,7 @@ package fr.guiet.automationserver.business;
 
 import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Date;
@@ -24,11 +25,13 @@ public class Sensor implements IXBeeListener {
 	private Room _room = null;
 	private SMSGammuService _smsGammuService = null;
 	private boolean _alertSent = false;
+	private MqttHelper _mqttHelper = null;
 	
-	public Sensor() {
+	/*public Sensor(SMSGammuService smsGammuService) {
 		
-		_smsGammuService = new SMSGammuService();
-	}
+		_smsGammuService = smsGammuService;
+		_mqttHelper = new MqttHelper();
+	}*/
 	
 	public float getActualTemp() {
 		return _actualTemp;
@@ -142,36 +145,43 @@ public class Sensor implements IXBeeListener {
 
 				DbManager dbManager = new DbManager();
 				dbManager.SaveSensorInfo(_idSensor, _actualTemp, _room.getWantedTemp(), _actualHumidity);
+				_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " + _room.getName()
+				+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
+				+ ", Humidité : " + _actualHumidity);
 
 				String sensorName = "";
+				String sensorMqttTopic = "";
 				String id = String.valueOf(_idSensor);
 				switch (id) {
 				case "5":
 					//TODO : Store sensor name into database
 					sensorName = "sensor_dht22_chambre_parents";
+					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_parents";
 					break;
 				case "1":
 					sensorName = "sensor_dht22_bureau";
+					sensorMqttTopic = "guiet/home/devices/sensors/dht22bureau";
 					break;
 				case "2":
 					sensorName = "sensor_dht22_salon";
+					sensorMqttTopic = "guiet/home/devices/sensors/dht22salon";
 					break;
 				case "3":
 					sensorName = "sensor_dht22_chambre_nohe";
+					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_nohe";
 					break;
 				case "4":
 					sensorName = "sensor_dht22_chambre_manon";
+					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_manon";
 					break;
 				}
-
-				if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
-					_logger.info("Saving sensor info to InfluxDB");
-					dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
-				}
-
-				_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " + _room.getName()
-						+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
-						+ ", Humidité : " + _actualHumidity);
+				
+				_logger.info("Saving sensor info to InfluxDB");
+				dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
+				
+				//Envoi des infos reçues vers le broker Mqtt
+				_mqttHelper.Publish(sensorMqttTopic, message);
+				
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()
@@ -220,10 +230,11 @@ public class Sensor implements IXBeeListener {
 		XBeeInstance().SendAsynchronousMessage(_sensorAddress, "GETSENSORINFO");
 	}
 
-	private Sensor(SensorDto dto, Room room) {
+	private Sensor(SensorDto dto, Room room, SMSGammuService gammuService) {
 
 		_idSensor = dto.sensorId;
 		_room = room;
+		_smsGammuService = gammuService;
 
 		String[] address = dto.sensorAddress.split(" ");
 
@@ -242,9 +253,9 @@ public class Sensor implements IXBeeListener {
 		XBeeInstance().addXBeeListener(this);
 	}
 
-	public static Sensor LoadFromDto(SensorDto dto, Room room) {
+	public static Sensor LoadFromDto(SensorDto dto, Room room, SMSGammuService gammuService) {
 
-		return new Sensor(dto, room);
+		return new Sensor(dto, room, gammuService);
 	}
 
 	public XBeeAddress64 getSensorAddress() {

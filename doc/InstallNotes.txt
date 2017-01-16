@@ -212,7 +212,47 @@ https://github.com/fg2it/grafana-on-raspberry/wiki
 openHAB
 -------
 
+PaperUI = pour configurer le bouzzin (plus de openhab.cfg)
+Stuff created by the Paper UI is stored in a database located in userdata/mapdb
+
 http://docs.openhab.org/installation/rasppi.html
 http://docs.openhab.org/installation/linux.html
 
-J'ai du ajouter JAVA_HOME dans nano /usr/share/openhab2/start.sh
+Configuration : 
+/etc/openhab2
+/var/lib/openhab2
+
+Sitemaps:
+http://docs.openhab.org/configuration/sitemaps.html
+
+Addon ici
+/usr/share/openhab/addons
+
+
+J'ai du ajouter JAVA_HOME et LANG=fr_FR.UTF8 dans nano /usr/share/openhab2/start.sh
+
+Formatter Java
+http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax
+
+MQTT client :
+installer l'addon via PaperUI puis configuration /etc/openhab2/services/mqtt.cfg
+
+items:/etc/openhab2/items
+
+
+
+Mosquitto (MQTT)
+---------------
+apt-get install mosquitto
+apt-get install mosquitto-clients
+
+sudo systemctl enable mosquitto (a voir si faut le faire)
+fichier de conf = /etc/mosquitto/mosquitto.conf
+
+topic
+guiet/home/devices/sensors/dht22sejour
+guiet/home/devices/sensors/dht22chambre_manon
+guiet/home/devices/sensors/dht22chambre_parents
+
+Info
+http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo

@@ -24,6 +24,7 @@ public class SMSGammuService {
 	
 	private static Logger _logger = Logger.getLogger(SMSGammuService.class);
 	private String[] _configRecipientList = null;
+	private String _configGammu = null;
 
 	public SMSGammuService() {
 		
@@ -34,7 +35,9 @@ public class SMSGammuService {
             is = this.getClass().getResourceAsStream("/config/automationserver.properties");
             prop.load(is);
             
-            _configRecipientList = prop.getProperty("sms.recipients").split(",");            
+            _configRecipientList = prop.getProperty("sms.recipients").split(",");
+            _configGammu = prop.getProperty("gammu.config");
+            
             
         } catch (FileNotFoundException e) {
         	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
@@ -68,6 +71,8 @@ public class SMSGammuService {
 
 		//TODO : Add gammu config file
         CommandLine commandLine = new CommandLine("gammu");
+        commandLine.addArgument("-c");
+        commandLine.addArgument(_configGammu);
         commandLine.addArgument("sendsms") ;
         commandLine.addArgument("TEXT") ;
         commandLine.addArgument(sms.getRecipient()) ;
