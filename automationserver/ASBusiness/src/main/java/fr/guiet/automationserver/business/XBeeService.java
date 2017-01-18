@@ -9,6 +9,7 @@ import com.rapplogic.xbee.api.PacketListener;
 import com.rapplogic.xbee.api.XBeeResponse;
 import com.rapplogic.xbee.api.ApiId;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +37,10 @@ public class XBeeService implements PacketListener {
 		
 		InputStream is = null;
         try {
-        	Properties prop = new Properties();
-            is = this.getClass().getResourceAsStream("/config/automationserver.properties");
+        	String configPath = System.getProperty("automationserver.config.path");
+        	is = new FileInputStream(configPath);
+        	
+        	Properties prop = new Properties();            
             prop.load(is);
             
             _xbeeUsbDevice = prop.getProperty("xbee.usbdevice");

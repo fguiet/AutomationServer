@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.dataaccess;
 
 import java.sql.DriverManager;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +58,10 @@ public class DbManager {
 		
 		InputStream is = null;
         try {
-        	Properties prop = new Properties();
-            is = this.getClass().getResourceAsStream("/config/automationserver.properties");
+        	String configPath = System.getProperty("automationserver.config.path");
+        	is = new FileInputStream(configPath);
+        	
+        	Properties prop = new Properties();            
             prop.load(is);
             
             //PostgreSQL            

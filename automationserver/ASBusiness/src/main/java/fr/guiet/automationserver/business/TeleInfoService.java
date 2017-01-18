@@ -15,6 +15,7 @@ import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
 import java.util.Properties;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +58,10 @@ public class TeleInfoService implements Runnable {
 		
 		InputStream is = null;
         try {
-        	Properties prop = new Properties();
-            is = this.getClass().getResourceAsStream("/config/automationserver.properties");
+        	String configPath = System.getProperty("automationserver.config.path");
+        	is = new FileInputStream(configPath);
+        	
+        	Properties prop = new Properties();            
             prop.load(is);
             
             _defaultDevice = prop.getProperty("teleinfo.usbdevice");            
