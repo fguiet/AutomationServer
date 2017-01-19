@@ -9,7 +9,7 @@ DESCRIPTION
   Currently, it monitors temperatures in my house by controlling independently my electric heaters (wanted temperatures can be set day by day, hour by hour and even minutes by minutes) . 
   Electrical pieces of information from my electric provider are also collected. 
   Moreover, it launches automatically my water boiler at night when electrical cost is less expensive. 
-  ALl collected data (temperatue, humidity, electric consumption) are saved in a database (PostgreSQL and InfluxDB).
+  All collected data (temperatue, humidity, electric consumption) are saved in a database (PostgreSQL and InfluxDB).
   
   This project is based on :
   
@@ -43,7 +43,7 @@ INSTALLATION
 
 LICENSE
 
-  Copyright (c) 2015-2016 Frédéric Guiet  - All rights reserved.
+  Copyright (c) 2015-2017 Frédéric Guiet  - All rights reserved.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
