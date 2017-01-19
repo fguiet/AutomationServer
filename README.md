@@ -9,7 +9,7 @@ DESCRIPTION
   Currently, it monitors temperatures in my house by controlling independently my electric heaters (wanted temperatures can be set day by day, hour by hour and even minutes by minutes) . 
   Electrical pieces of information from my electric provider are also collected. 
   Moreover, it launches automatically my water boiler at night when electrical cost is less expensive. 
-  ALl collected data (temperatue, humidity, electric consumption) are saved in a database.
+  ALl collected data (temperatue, humidity, electric consumption) are saved in a database (PostgreSQL and InfluxDB).
   
   This project is based on :
   
@@ -18,18 +18,24 @@ DESCRIPTION
     - Arduino
     - DHT22 Sensor
     - XBee
-    - Raspberry first edition
+    - Raspberry Pi 3
+    - Grafana
+    - OpenHab 2
+    - InfluxDB
+    - Mqtt
     - Handmade electonic stuffs (to collect data from my electric provider, to control my heaters)
   
 FEATURES
 
   - Monitor, room by room, temperature and humidity of the house
   - Temperatures level in each room automatically monitored through a week personal defined schedule
-  - Responsive and interactive web-based dashboard (aggregate all monitored data, temperture can be changed room by room, etc)
-  - All pieces of information collected are saved in a PostgreSQL database 
-  - Automatic SMS notification when a sensor is disconnected
+  - Custom responsive and interactive web-based dashboard (aggregate all monitored data, temperature can be changed room by room, etc). Will be replace by OpenHab 2 very soon
+  - All pieces of information collected are saved in a PostgreSQL and InfluxDB database 
+  - Automatic SMS notifications
   - Monitor real-time house electric consumption
   - Automatic start of my water boiler when electric cost is less expensive (mostly during the night)
+  - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboard
+  - All data are published to a Mqtt broker via various topics, so various client subscriber software can access data in real-time
 
 INSTALLATION
 
