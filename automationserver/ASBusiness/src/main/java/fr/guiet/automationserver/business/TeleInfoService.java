@@ -197,8 +197,8 @@ public class TeleInfoService implements Runnable {
 					//_logger.info("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					String decoded = String.valueOf(receivedChar);
-					_logger.warn("carac recu: "+decoded);
+					//String decoded = String.valueOf(receivedChar);
+					//_logger.warn("carac recu: "+decoded);
 					//System.out.println(decoded);
 
 					// Reception indicateur debut trame
@@ -314,7 +314,7 @@ public class TeleInfoService implements Runnable {
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
-			_logger.info("Trame recue" + trame);
+			//_logger.info("Trame recue" + trame);
 
 			return trame;
 		}

@@ -235,6 +235,7 @@ public class Sensor implements IXBeeListener {
 		_idSensor = dto.sensorId;
 		_room = room;
 		_smsGammuService = gammuService;
+		_mqttHelper = new MqttHelper(gammuService);
 
 		String[] address = dto.sensorAddress.split(" ");
 
