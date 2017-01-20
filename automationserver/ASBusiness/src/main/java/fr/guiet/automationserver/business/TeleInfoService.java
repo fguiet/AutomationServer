@@ -309,7 +309,7 @@ public class TeleInfoService implements Runnable {
 				}
 			}
   
-			// serial.removeListener(_sdl);
+			//serial.removeListener(_sdl);
 
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
@@ -325,10 +325,11 @@ public class TeleInfoService implements Runnable {
 		catch (Exception e) {
 			throw e;
 		} finally {
-			if (serial != null && serial.isOpen()) {
+			if (serial != null) {
 				serial.removeListener(_sdl);
 				try {
-				   serial.close();
+				   if (serial.isOpen())
+					   serial.close();
 				}
 				catch(IOException ioe) {
 				 _logger.error("Impossible de fermer le port serie",ioe);
