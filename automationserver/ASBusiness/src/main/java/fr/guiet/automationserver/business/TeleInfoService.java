@@ -272,10 +272,10 @@ public class TeleInfoService implements Runnable {
                   .parity(Parity.NONE)
                   .stopBits(StopBits._1)
                   .flowControl(FlowControl.NONE);
+					
+			serial.open(config);
 			
 			serial.addListener(_sdl);
-			
-			serial.open(config);
 
 			//TODO :  traduire tous les messages en anglais
 			// serial.close();
