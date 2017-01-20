@@ -175,7 +175,7 @@ public class Sensor implements IXBeeListener {
 					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_manon";
 					break;
 				}
-				
+				  
 				_logger.info("Saving sensor info to InfluxDB");
 				dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
 				

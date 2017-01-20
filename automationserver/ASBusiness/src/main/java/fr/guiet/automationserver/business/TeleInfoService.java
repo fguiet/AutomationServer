@@ -308,7 +308,7 @@ public class TeleInfoService implements Runnable {
 					throw ie;
 				}
 			}
-
+  
 			// serial.removeListener(_sdl);
 
 			// System.out.println("Trame recue :
