@@ -326,10 +326,13 @@ public class TeleInfoService implements Runnable {
 			throw e;
 		} finally {
 			if (serial != null) {
+				_logger.info("remove listener");
 				serial.removeListener(_sdl);
 				try {
-				   if (serial.isOpen())
+				   if (serial.isOpen()) {
+					   _logger.info("fermeture port serie");
 					   serial.close();
+				   }
 				}
 				catch(IOException ioe) {
 				 _logger.error("Impossible de fermer le port serie",ioe);
