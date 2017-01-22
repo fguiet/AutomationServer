@@ -171,6 +171,7 @@ supprimer de /boot/cmdline.txt
 => console=serial0,115200
 => ajouter enable_uart=1
 => ajouter pour supprimer le bluetooth => dtoverlay=pi3-disable-bt 
+=> pour voir ce qui arrive sur le port serie => cat /dev/serial0
 
 Installation sous forme de service systemd
 http://www.framboise314.fr/systemd-tout-nouveau-tout-beau-ou-pas/
@@ -198,6 +199,9 @@ guiet/home/devices/sensors/dht22chambre_parents
 
 Info
 http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
+
+Souscrire à un topic pour test
+mosquitto_sub -h localhost -t guiet/home/devices/sensors/dht22chambre_manon
 
 Grafana
 -------
