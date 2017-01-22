@@ -53,17 +53,17 @@ public class TeleInfoService implements Runnable {
 		_smsGammuService = smsGammuService;
 	}
 
-	public void StopCollectingTeleinfo(String initiator) {
+	public synchronized void StopCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
 		_stopCollectingTeleinfo = true;
 	}
 
-	public void StartCollectingTeleinfo(String initiator) {
-		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
+	public synchronized void StartCollectingTeleinfo(String initiator) {
+		_logger.info(String.format("Starting collect of teleinfo (initiator is %s)", initiator));
 		_stopCollectingTeleinfo = false;
 	}
 
-	public boolean IsTeleInfoCollectStopped() {
+	public synchronized boolean IsTeleInfoCollectStopped() {
 		return _isCollectTeleInfoStopped;
 	}
 
@@ -105,11 +105,11 @@ public class TeleInfoService implements Runnable {
 
 				if (_stopCollectingTeleinfo) {
 					_isCollectTeleInfoStopped = true;
-					_logger.info("ok teleinfoservice stoppé!!");
+					//_logger.info("ok teleinfoservice stoppé!!");
 					Thread.sleep(2000);
 					continue;
 				} else {
-					_logger.info("ok teleinfoservice reprise!!");
+					//_logger.info("ok teleinfoservice reprise!!");
 					_isCollectTeleInfoStopped = false;
 				}
 
@@ -338,6 +338,9 @@ public class TeleInfoService implements Runnable {
 					if (diffMinutes >= 1) {
 						_logger.warn(
 								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
+						
+						if (_stopCollectingTeleinfo)
+							_logger.warn("INFO : La collecte de teleinfo est stoppée");
 
 						SMSDto sms = new SMSDto();
 						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");

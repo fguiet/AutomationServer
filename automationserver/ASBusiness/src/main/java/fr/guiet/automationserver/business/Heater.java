@@ -307,7 +307,14 @@ public class Heater implements Comparable<Heater> {
 	
 	private void StopTeleInfoService() {
 		_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));		
-		while (!_teleInfoService.IsTeleInfoCollectStopped());
+		while (!_teleInfoService.IsTeleInfoCollectStopped()) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					_logger.error("Error in Heater::StopTeleInfoService method");
+					break;
+				}
+		}
 	}
 	
 	/**

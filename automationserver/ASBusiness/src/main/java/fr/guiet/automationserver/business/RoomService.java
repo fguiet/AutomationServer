@@ -289,7 +289,7 @@ public class RoomService implements Runnable {
 			if (roomActualTemp != null)
 				actualTemp = "" + roomActualTemp;
 
-			_logger.info("***LOG : Radiateur de la piece : " + h.getRoom().getName() + ", Etat : " + h.getEtatLabel()
+			_logger.info("***LOG : Radiateur  " + h.getName() + " de la pièce " + h.getRoom().getName() + ", Etat : " + h.getEtatLabel()
 					+ ", T° prog :" + tempProg + ", T° piece : " + actualTemp + ", T° desire : " + calcProg);
 
 			// On arrive pas a obtenir la temperature courante de la piece donc
@@ -353,7 +353,7 @@ public class RoomService implements Runnable {
 			}
 		}
 		
-		_logger.info("je sors");
+		//_logger.info("je sors");
 	}
 
 	private void LoadRoomList() {

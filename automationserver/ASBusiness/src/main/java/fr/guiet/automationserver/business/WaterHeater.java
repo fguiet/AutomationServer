@@ -177,7 +177,14 @@ public class WaterHeater implements Runnable {
 	
 	private void StopTeleInfoService() {
 		_teleInfoService.StopCollectingTeleinfo("WaterHeater");		
-		while (!_teleInfoService.IsTeleInfoCollectStopped());
+		while (!_teleInfoService.IsTeleInfoCollectStopped()) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				_logger.error("Error in StopTeleInfoService method");
+				break;
+			}
+		}
 	}
 
 	/**
