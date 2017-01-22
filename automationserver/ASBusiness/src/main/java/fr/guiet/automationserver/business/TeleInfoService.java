@@ -116,7 +116,7 @@ public class TeleInfoService implements Runnable {
 
 				if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
 					NotifyCollectInfoStop();					
-					_logger.info("ok teleinfoservice stoppé!!");
+					_logger.info("ok teleinfoservice stoppé!! (start_stop_counter :)" + _startStopCounter);
 					Thread.sleep(2000);
 					continue;
 				}

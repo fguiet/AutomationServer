@@ -30,7 +30,7 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	public void OnCollectInfoStopped() {
 
 		
-		_logger.info("Hello from water heater");
+		//_logger.info("Hello from water heater");
 		
 		if (_waitForOn) {
 			_waitForOn = false;
