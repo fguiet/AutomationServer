@@ -147,7 +147,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Récupération de la dernière trame teleinfo recue
-	public TeleInfoTrameDto GetLastTrame() {
+	public synchronized TeleInfoTrameDto GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	}
 
@@ -372,7 +372,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Décodage de la trame recue
-	private TeleInfoTrameDto DecodeTrame(String trame) {
+	private synchronized TeleInfoTrameDto DecodeTrame(String trame) {
 
 		boolean invalidChecksum = false;
 
