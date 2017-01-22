@@ -318,6 +318,7 @@ public class TeleInfoService implements Runnable {
 			// size = 0, active threads = 0, queued tasks = 0, completed tasks =
 			// 4]
 			serial.open(config);
+			serial.discardAll();
 
 			// TODO : traduire tous les messages en anglais
 			// serial.close();
@@ -384,11 +385,11 @@ public class TeleInfoService implements Runnable {
 			throw e;
 		} finally {
 			if (serial != null) {
-				// _logger.info("remove listener");
+				_logger.info("remove listener");
 				serial.removeListener(sdl);
 				try {
 					if (serial.isOpen()) {
-						// _logger.info("fermeture port serie");
+						_logger.info("fermeture port serie");
 						serial.close();
 					}
 				} catch (IOException ioe) {

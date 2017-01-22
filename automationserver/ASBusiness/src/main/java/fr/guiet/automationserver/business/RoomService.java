@@ -231,9 +231,9 @@ public class RoomService implements Runnable {
 		// _logger.info("*** FIN GESTION DELESTAGE ***");
 	}
 
-	private void DelesteHeater(int phase, int intensitePhase, List<Heater> _heaterList) {
+	private void DelesteHeater(int phase, int intensitePhase, List<Heater> heaterList) {
 
-		for (Heater h : _heaterList) {
+		for (Heater h : heaterList) {
 			// _logger.info("INFO DELESTAGE : Radiateur de la piece :
 			// "+h.getRoom().getName()+", Etat : "+h.getEtat());
 			if (intensitePhase >= MAX_INTENSITE_PAR_PHASE && h.isOn()) {
@@ -260,6 +260,11 @@ public class RoomService implements Runnable {
 			ManagerHeatersByPhase(2, teleInfoTrame.IINST2, _heaterListPhase2);
 			ManagerHeatersByPhase(3, teleInfoTrame.IINST3, _heaterListPhase3);
 		} else {
+			//ICi il faut tout coupé au cas ou des radiateurs soit allumés...
+			for (Heater h : _allHeaterList) {
+				h.SetOff();
+			}			
+			
 			_logger.error("Derniere trame de teleinfo recue vide. Gestion des radiateurs impossible.");
 		}
 	}
