@@ -135,7 +135,7 @@ public class TeleInfoService implements Runnable {
 
 				// On pause le Thread pendant deux secondes...
 				// recup des trames toutes les deux secondes
-				// Thread.sleep(2000);
+				Thread.sleep(2000);
 
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
