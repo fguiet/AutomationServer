@@ -117,7 +117,9 @@ public class TeleInfoService implements Runnable {
 					_logger.info("ok teleinfoservice stoppé!!");
 					Thread.sleep(2000);
 					continue;
-				} 
+				}
+				
+				Thread.sleep(2000);
 
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
@@ -131,12 +133,7 @@ public class TeleInfoService implements Runnable {
 						// _logger.info("Valorisation trame recu");
 						_lastTeleInfoTrameReceived = teleInfoTrame;
 					}
-				}
-
-				// On pause le Thread pendant deux secondes...
-				// recup des trames toutes les deux secondes
-				Thread.sleep(2000);
-
+				}				
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
 

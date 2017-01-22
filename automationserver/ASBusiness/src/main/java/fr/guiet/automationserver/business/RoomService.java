@@ -262,7 +262,8 @@ public class RoomService implements Runnable {
 		} else {
 			//ICi il faut tout coupé au cas ou des radiateurs soit allumés...
 			for (Heater h : _allHeaterList) {
-				h.SetOff();
+				if (h.isOn())
+					h.SetOff();
 			}			
 			
 			_logger.error("Derniere trame de teleinfo recue vide. Gestion des radiateurs impossible.");
