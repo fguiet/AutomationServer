@@ -14,7 +14,7 @@ public class RoomService implements Runnable {
 
 	private List<Room> _roomList = new ArrayList<Room>();
 	private boolean _isStopped = false; // Service arrete?
-	private TeleInfoService _teleInfoService;
+	private TeleInfoService _teleInfoService = null;
 	private List<Heater> _heaterListPhase1 = new ArrayList<Heater>();
 	private List<Heater> _heaterListPhase2 = new ArrayList<Heater>();
 	private List<Heater> _heaterListPhase3 = new ArrayList<Heater>();
@@ -222,8 +222,7 @@ public class RoomService implements Runnable {
 		Collections.reverse(_heaterListPhase2);
 		Collections.reverse(_heaterListPhase3);
 
-		//TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
-		TeleInfoTrameDto teleInfoTrame= null;
+		TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
 		if (teleInfoTrame != null) {
 			DelesteHeater(1, teleInfoTrame.IINST1, _heaterListPhase1);
 			DelesteHeater(2, teleInfoTrame.IINST2, _heaterListPhase2);
@@ -257,8 +256,7 @@ public class RoomService implements Runnable {
 		Collections.sort(_heaterListPhase2);
 		Collections.sort(_heaterListPhase3);
 
-		//TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
-		TeleInfoTrameDto teleInfoTrame = null;
+		TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
 		if (teleInfoTrame != null) {
 			ManagerHeatersByPhase(1, teleInfoTrame.IINST1, _heaterListPhase1);
 			ManagerHeatersByPhase(2, teleInfoTrame.IINST2, _heaterListPhase2);
