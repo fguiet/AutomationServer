@@ -119,6 +119,7 @@ public class TeleInfoService implements Runnable {
 					continue;
 				}
 				
+				//Necessary otherwire, serial reader stop
 				Thread.sleep(2000);
 
 				// Recuperation de la trame de teleinfo
@@ -302,13 +303,14 @@ public class TeleInfoService implements Runnable {
 			// bauds
 			// serial.open(_defaultDevice, _defaultBaud);
 			SerialConfig config = new SerialConfig();
-			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.NONE)
+			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
 					.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
 			sdl = CreateSerialListener();
 			serial.addListener(sdl);
 
 			serial.open(config);
+			serial.setBufferingDataReceived(false);
 			
 			//serial.discardAll();
 
