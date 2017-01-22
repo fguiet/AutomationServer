@@ -29,6 +29,9 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	@Override
 	public void OnCollectInfoStopped() {
 
+		
+		_logger.info("Hello from water heater");
+		
 		if (_waitForOn) {
 			_waitForOn = false;
 			TurnOn();
@@ -192,8 +195,6 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 
 		gpio.unprovisionPin(pin);
 		gpio.shutdown();
-
-		StartTeleInfoService();
 
 		Date currentDate = new Date();
 
