@@ -142,20 +142,22 @@ public class AutomationServer implements Daemon {
 			_roomService.StopService();
 			_waterHeater.StopService();
 
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Automation server has stopped...");
+			_smsGammuService.sendMessage(sms, true);
+			
+			//On attends 5 seconds pour l'envoi du sms
+			//Thread.sleep(5000);
+			
 			_isStopped = true;
 
 			_mainThread.join(5000); // Attend la fin de l'exécution du Thread
 									// principal (5 secondes)
-					
+			
 			_logger.info("Bye bye automation server stopped...");
 			
 		} catch (Exception e) {
 			_logger.error("Automation server has not stopped properly", e);
-		}
-		finally {
-			SMSDto sms = new SMSDto();
-			sms.setMessage("Automation server has stopped...");
-			_smsGammuService.sendMessage(sms, true);
 		}
 	}
 

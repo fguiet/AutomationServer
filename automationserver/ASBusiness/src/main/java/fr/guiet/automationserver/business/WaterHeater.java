@@ -12,7 +12,7 @@ import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 import org.apache.log4j.Logger;
 import java.util.Date;
 
-public class WaterHeater implements Runnable, ICollectInfoStopListener  {
+public class WaterHeater implements Runnable, ICollectInfoStopListener {
 
 	private static Logger _logger = Logger.getLogger(WaterHeater.class);
 
@@ -29,9 +29,8 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	@Override
 	public void OnCollectInfoStopped() {
 
-		
-		_logger.info("Hello from water heater");
-		
+		//_logger.info("Hello from water heater");
+
 		if (_waitForOn) {
 			_waitForOn = false;
 			TurnOn();
@@ -39,7 +38,7 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 		}
 
 		if (_waitForOff) {
-			_logger.info("Extinction water heater");
+			//_logger.info("Extinction water heater");
 			_waitForOff = false;
 			TurnOff();
 			StartTeleInfoService();
@@ -73,8 +72,8 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	public void run() {
 
 		_logger.info("Starting water heater management...");
-		
-		//By Default set off
+
+		// By Default set off
 		SetOff();
 
 		while (!_isStopped) {
@@ -202,8 +201,12 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 
 		Date currentDate = new Date();
 
-		long diff = currentDate.getTime() - _startTime.getTime();
-		long diffMinutes = diff / (60 * 1000);
+		long diffMinutes = 0;
+		if (_startTime != null) {
+			//occurs at launch of service
+			long diff = currentDate.getTime() - _startTime.getTime();
+		    diffMinutes = diff / (60 * 1000);
+		}
 
 		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
 
@@ -242,7 +245,7 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	private void SetOff() {
 
 		StopTeleInfoService();
-		_waitForOff=true;	
+		_waitForOff = true;
 
 	}
 

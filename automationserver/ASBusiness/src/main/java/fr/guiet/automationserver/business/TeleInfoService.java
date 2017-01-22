@@ -228,7 +228,7 @@ public class TeleInfoService implements Runnable {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					_logger.warn("carac recu: "+(int)receivedChar);
+					//_logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
 					// String decoded = String.valueOf(receivedChar);
@@ -382,14 +382,14 @@ public class TeleInfoService implements Runnable {
 			_logger.error("Exception dans GetTeleInfoTrame : ", e);
 			return null;
 		} finally {
-			_logger.info("shut down serial factory");
+			//_logger.info("shut down serial factory");
 			SerialFactory.shutdown();
 			if (serial != null) {
-				_logger.info("remove listener");
+				//_logger.info("remove listener");
 				serial.removeListener(_sdl);
 				try {
 					if (serial.isOpen()) {
-						_logger.info("fermeture port serie");
+						//_logger.info("fermeture port serie");
 						serial.close();
 					}
 				} catch (IOException ioe) {
