@@ -66,12 +66,12 @@ public class TeleInfoService implements Runnable {
 		_smsGammuService = smsGammuService;
 	}
 
-	public void StopCollectingTeleinfo(String initiator) {
+	public synchronized void StopCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
 		_startStopCounter++;
 	}
 
-	public void StartCollectingTeleinfo(String initiator) {
+	public synchronized void StartCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Starting collect of teleinfo (initiator is %s)", initiator));
 		_startStopCounter--;
 	}
@@ -114,7 +114,7 @@ public class TeleInfoService implements Runnable {
 
 			try {
 
-				if (_startStopCounter !=0) {
+				if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
 					NotifyCollectInfoStop();					
 					_logger.info("ok teleinfoservice stoppé!!");
 					Thread.sleep(2000);

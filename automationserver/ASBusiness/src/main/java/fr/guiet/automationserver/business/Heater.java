@@ -6,11 +6,10 @@ import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.Pin;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.io.serial.SerialFactory;
+
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
@@ -38,7 +37,7 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 
 	@Override
 	public void OnCollectInfoStopped() {
-
+		
 		if (_waitForOn) {
 			_waitForOn = false;
 			TurnOn();
