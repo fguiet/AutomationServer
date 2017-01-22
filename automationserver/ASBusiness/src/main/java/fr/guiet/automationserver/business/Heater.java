@@ -5,6 +5,10 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.Pin;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
 import fr.guiet.automationserver.dto.*;
@@ -16,7 +20,7 @@ import fr.guiet.automationserver.dataaccess.DbManager;
  * @author guiet
  *
  */
-public class Heater implements Comparable<Heater> {
+public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 
 	private long _heaterId;
 	private int _currentConsumption;
@@ -29,6 +33,24 @@ public class Heater implements Comparable<Heater> {
 	private boolean _isOffForced = false;
 	private TeleInfoService _teleInfoService = null;
 	private static Logger _logger = Logger.getLogger(Heater.class);
+	private boolean _waitForOn = false;
+	private boolean _waitForOff = false;
+
+	@Override
+	public void OnCollectInfoStopped() {
+
+		if (_waitForOn) {
+			_waitForOn = false;
+			TurnOn();
+			StartTeleInfoService();
+		}
+
+		if (_waitForOff) {
+			_waitForOff = false;
+			TurnOff();
+			StartTeleInfoService();
+		}
+	}
 
 	/**
 	 * @return Returns Heater name (value stored in PostgreSQL database)
@@ -77,7 +99,7 @@ public class Heater implements Comparable<Heater> {
 	 * Create a new heater
 	 * 
 	 * @param dto
-	 * @param room 
+	 * @param room
 	 */
 	private Heater(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
 
@@ -86,8 +108,9 @@ public class Heater implements Comparable<Heater> {
 		_currentConsumption = dto.currentConsumption;
 		_phase = dto.phase;
 		_raspberryPin = dto.raspberryPin;
-		_name = dto.name;		 
+		_name = dto.name;
 		_teleInfoService = teleInfoService;
+		_teleInfoService.addListener(this);
 
 		switch (_raspberryPin) {
 		case 1:
@@ -183,23 +206,23 @@ public class Heater implements Comparable<Heater> {
 		case 31:
 			_pin = RaspiPin.GPIO_31;
 			break;
-						
+
 		default:
 			// TODO : utiliser un throw ici!
-			_logger.error(String.format("Pin %d not managed !", _raspberryPin));			
-			break;		
+			_logger.error(String.format("Pin %d not managed !", _raspberryPin));
+			break;
 		}
 
 		// Set Heater off by default
 		SetOff();
 	}
-		
+
 	/**
 	 * @return Returns French heater state (ON or OFF)
 	 */
 	public String getEtatLabel() {
-		
-		//TODO : Rename this method getFRStateLabel()
+
+		// TODO : Rename this method getFRStateLabel()
 		if (_isOn)
 			return "ALLUME";
 		else
@@ -239,7 +262,7 @@ public class Heater implements Comparable<Heater> {
 
 		// 20160222 - Correction du bug null pointer exception
 		if (heaterPriority == null) {
-			_logger.error(String.format("Cannot retrieve %s heater priority", heater.getName()));			
+			_logger.error(String.format("Cannot retrieve %s heater priority", heater.getName()));
 			return EQUAL;
 		}
 
@@ -253,10 +276,10 @@ public class Heater implements Comparable<Heater> {
 
 		if (priority.equals(heaterPriority)) {
 			return EQUAL;
-		}		
-		
+		}
+
 		_logger.error(String.format("Cannot compare %s and %s heater priority", this._name, heater.getName()));
-		
+
 		return EQUAL;
 	}
 
@@ -267,16 +290,11 @@ public class Heater implements Comparable<Heater> {
 	 */
 	public static Heater LoadFromDto(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
 
-		return new Heater(dto, room, teleInfoService);		
+		return new Heater(dto, room, teleInfoService);
 	}
 
-	/**
-	 * Sets heater ON
-	 */
-	public void SetOn() {
+	private void TurnOn() {
 
-		StopTeleInfoService();
-		
 		_isOn = true;
 
 		// create gpio controller
@@ -295,39 +313,16 @@ public class Heater implements Comparable<Heater> {
 
 		gpio.shutdown();
 
-		StartTeleInfoService();
-		
 		if (_room != null)
 			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));
 	}
-	
-	private void StartTeleInfoService() {
-		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
-	}
-	
-	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));		
-		while (!_teleInfoService.IsTeleInfoCollectStopped()) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					_logger.error("Error in Heater::StopTeleInfoService method");
-					break;
-				}
-		}
-	}
-	
-	/**
-	 * Sets heater OFF
-	 */
-	public void SetOff() {
 
-		StopTeleInfoService();
+	private void TurnOff() {
 		
 		_isOn = false;
-		
-		//TODO : Faire une classe pour ,le gpio control!!!!
-		
+
+		// TODO : Faire une classe pour ,le gpio control!!!!
+
 		// create gpio controller
 		final GpioController gpio = GpioFactory.getInstance();
 
@@ -341,13 +336,43 @@ public class Heater implements Comparable<Heater> {
 		pin.high();
 
 		gpio.unprovisionPin(pin);
-		
+
 		gpio.shutdown();
 
-		StartTeleInfoService();
-		
 		if (_room != null)
 			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));
+	}
+
+	/**
+	 * Sets heater ON
+	 */
+	public void SetOn() {
+
+		StopTeleInfoService();
+		_waitForOn = true;
+	}
+
+	private void StartTeleInfoService() {
+		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
+	}
+
+	private void StopTeleInfoService() {
+		_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
+		/*
+		 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
+		 * Thread.sleep(500); } catch (InterruptedException e) {
+		 * _logger.error("Error in Heater::StopTeleInfoService method"); break;
+		 * } }
+		 */
+	}
+
+	/**
+	 * Sets heater OFF
+	 */
+	public void SetOff() {
+
+		StopTeleInfoService();
+		_waitForOff=true;		
 	}
 
 	/**
@@ -357,10 +382,10 @@ public class Heater implements Comparable<Heater> {
 	public void ActivateOffForced() {
 
 		_isOffForced = true;
-		
-		//If heater is ON, set it OFF...
+
+		// If heater is ON, set it OFF...
 		if (isOn())
-			SetOff();		
+			SetOff();
 
 		_logger.info(
 				String.format("Setting OFF automatic heater management. Heater %s from room %s is now OFF for ever...",
@@ -373,7 +398,7 @@ public class Heater implements Comparable<Heater> {
 	public void DesactivateOffForced() {
 
 		_isOffForced = false;
-		
+
 		_logger.info(String.format(
 				"Setting ON automatic heater management. Heater %s from room %s is now regulated automatically... ",
 				_name, _room.getName()));

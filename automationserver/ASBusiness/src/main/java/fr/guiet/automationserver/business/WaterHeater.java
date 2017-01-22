@@ -12,7 +12,7 @@ import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 import org.apache.log4j.Logger;
 import java.util.Date;
 
-public class WaterHeater implements Runnable {
+public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 
 	private static Logger _logger = Logger.getLogger(WaterHeater.class);
 
@@ -23,6 +23,24 @@ public class WaterHeater implements Runnable {
 	private TeleInfoService _teleInfoService = null;
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
+	private boolean _waitForOn = false;
+	private boolean _waitForOff = false;
+
+	@Override
+	public void OnCollectInfoStopped() {
+
+		if (_waitForOn) {
+			_waitForOn = false;
+			TurnOn();
+			StartTeleInfoService();
+		}
+
+		if (_waitForOff) {
+			_waitForOff = false;
+			TurnOff();
+			StartTeleInfoService();
+		}
+	}
 
 	/**
 	 * @return Returns whether heater is on or off
@@ -30,18 +48,21 @@ public class WaterHeater implements Runnable {
 	public boolean isOn() {
 		return _isOn;
 	}
-	
+
 	/**
 	 * Constructor
 	 * 
 	 * @param teleInfoService
 	 */
 	public WaterHeater(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
-		_teleInfoService = teleInfoService;		
+		_teleInfoService = teleInfoService;
+		_teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -58,9 +79,9 @@ public class WaterHeater implements Runnable {
 				// Sleep for 1 minutes
 				Thread.sleep(60000);
 
-			} catch (Exception e) { 
+			} catch (Exception e) {
 				_logger.error("Error occured in water heater management service", e);
-				
+
 				SMSDto sms = new SMSDto();
 				sms.setMessage("Error occured in water heater management service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
@@ -69,7 +90,7 @@ public class WaterHeater implements Runnable {
 	}
 
 	/**
-	 * Stops water heater properly 
+	 * Stops water heater properly
 	 */
 	public void StopService() {
 
@@ -79,7 +100,7 @@ public class WaterHeater implements Runnable {
 	}
 
 	/**
-	 *  Water heater main management method
+	 * Water heater main management method
 	 */
 	private void ManageWaterHeater() {
 
@@ -88,13 +109,14 @@ public class WaterHeater implements Runnable {
 		// On considere qu'il y a un probleme si le chauffe est allume et que
 		// l'intensite est inferieur a 3000wh
 		if (_teleInfoService.IsHeureCreuse() != null && _teleInfoService.IsHeureCreuse() && this.isOn()) {
-			// Verifie que le chauffe est bien demarre	
+			// Verifie que le chauffe est bien demarre
 			TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
-			
-			if (teleInfoTrame != null)			
+
+			if (teleInfoTrame != null)
 				CheckAndRestartIfNecessary(teleInfoTrame.PAPP);
 			else
-				_logger.error("Could not check and restart water heater boiler because no teleinfotrame is available...");
+				_logger.error(
+						"Could not check and restart water heater boiler because no teleinfotrame is available...");
 		}
 
 		if (_teleInfoService.IsHeureCreuse() != null && _teleInfoService.IsHeureCreuse() && !this.isOn()) {
@@ -147,10 +169,47 @@ public class WaterHeater implements Runnable {
 	private void SetOn() {
 
 		StopTeleInfoService();
-		
+		_waitForOn = true;
+	}
+
+	private void StopTeleInfoService() {
+		_teleInfoService.StopCollectingTeleinfo("WaterHeater");
+	}
+
+	private void TurnOff() {
+
+		// create gpio controller
+		final GpioController gpio = GpioFactory.getInstance();
+
+		// provision gpio pin #01 as an output pin and turn on
+		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
+
+		// set shutdown state for this pin
+		pin.setShutdownOptions(true, PinState.LOW);
+
+		// turn on gpio pin #00
+		pin.low();
+
+		gpio.unprovisionPin(pin);
+		gpio.shutdown();
+
+		StartTeleInfoService();
+
+		Date currentDate = new Date();
+
+		long diff = currentDate.getTime() - _startTime.getTime();
+		long diffMinutes = diff / (60 * 1000);
+
+		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
+
+		_isOn = false;
+
+	}
+
+	private void TurnOn() {
 		_isCheckedOk = false;
 
-		//TODO : faire une classe métier pour la gestion des PINS
+		// TODO : faire une classe métier pour la gestion des PINS
 		// create gpio controller
 		final GpioController gpio = GpioFactory.getInstance();
 
@@ -166,25 +225,10 @@ public class WaterHeater implements Runnable {
 		gpio.unprovisionPin(pin);
 		gpio.shutdown();
 
-		StartTeleInfoService();
-		
 		_logger.info("Turning ON water heater");
 
 		_startTime = new Date();
 		_isOn = true;
-
-	}
-	
-	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo("WaterHeater");		
-		while (!_teleInfoService.IsTeleInfoCollectStopped()) {
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				_logger.error("Error in StopTeleInfoService method");
-				break;
-			}
-		}
 	}
 
 	/**
@@ -193,34 +237,10 @@ public class WaterHeater implements Runnable {
 	private void SetOff() {
 
 		StopTeleInfoService();
-		
-		// create gpio controller
-		final GpioController gpio = GpioFactory.getInstance();
+		_waitForOff=true;	
 
-		// provision gpio pin #01 as an output pin and turn on
-		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
-
-		// set shutdown state for this pin
-		pin.setShutdownOptions(true, PinState.LOW);
-
-		// turn on gpio pin #00
-		pin.low();
-
-		gpio.unprovisionPin(pin);
-		gpio.shutdown();
-		
-		StartTeleInfoService();
-
-		Date currentDate = new Date();
-
-		long diff = currentDate.getTime() - _startTime.getTime();
-		long diffMinutes = diff / (60 * 1000);
-
-		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
-		
-		_isOn = false;
 	}
-	
+
 	private void StartTeleInfoService() {
 		_teleInfoService.StartCollectingTeleinfo("WaterHeater");
 	}

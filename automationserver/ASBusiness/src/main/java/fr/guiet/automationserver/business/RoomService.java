@@ -266,7 +266,7 @@ public class RoomService implements Runnable {
 
 	// Gestion des radiateurs par phase
 	private void ManagerHeatersByPhase(int phase, int intensitePhase, List<Heater> _heaterList) {
-		_logger.info("Je vais gérer les radiateurs maintenant...");
+		//_logger.info("Je vais gérer les radiateurs maintenant...");
 		// _logger.info("Intensite courante phase "+phase+" : "+intensitePhase);
 		for (Heater h : _heaterList) {
 

@@ -14,6 +14,7 @@ import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,25 +47,33 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
-	private boolean _stopCollectingTeleinfo = false;
-	private boolean _isCollectTeleInfoStopped = false;
+	private int _startStopCounter = 0;
+	//private boolean _isCollectTeleInfoStopped = false;
+	private List<ICollectInfoStopListener> _collectInfoStopListeners = new ArrayList<ICollectInfoStopListener>();
+	
+	public void addListener(ICollectInfoStopListener toAdd) {
+		_collectInfoStopListeners.add(toAdd);
+    }
 
+    private void NotifyCollectInfoStop() {
+
+        // Notify everybody that may be interested.
+        for (ICollectInfoStopListener l : _collectInfoStopListeners)
+        	l.OnCollectInfoStopped();
+    }
+	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
 
-	public synchronized void StopCollectingTeleinfo(String initiator) {
+	public void StopCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
-		_stopCollectingTeleinfo = true;
+		_startStopCounter++;
 	}
 
-	public synchronized void StartCollectingTeleinfo(String initiator) {
+	public void StartCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Starting collect of teleinfo (initiator is %s)", initiator));
-		_stopCollectingTeleinfo = false;
-	}
-
-	public synchronized boolean IsTeleInfoCollectStopped() {
-		return _isCollectTeleInfoStopped;
+		_startStopCounter--;
 	}
 
 	@Override
@@ -103,15 +112,12 @@ public class TeleInfoService implements Runnable {
 
 			try {
 
-				if (_stopCollectingTeleinfo) {
-					_isCollectTeleInfoStopped = true;
-					//_logger.info("ok teleinfoservice stoppé!!");
+				if (_startStopCounter !=0) {
+					NotifyCollectInfoStop();					
+					_logger.info("ok teleinfoservice stoppé!!");
 					Thread.sleep(2000);
 					continue;
-				} else {
-					//_logger.info("ok teleinfoservice reprise!!");
-					_isCollectTeleInfoStopped = false;
-				}
+				} 
 
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
@@ -172,7 +178,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Récupération de la dernière trame teleinfo recue
-	public synchronized TeleInfoTrameDto GetLastTrame() {
+	public TeleInfoTrameDto GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	}
 
@@ -282,7 +288,7 @@ public class TeleInfoService implements Runnable {
 		return sdl;
 	}
 
-	private synchronized String GetTeleInfoTrame() throws InterruptedException, IOException {
+	private String GetTeleInfoTrame() throws InterruptedException, IOException {
 		_trame = new ArrayList<Character>();
 		_beginTrameDetected = false;
 		_endTrameDetected = false;
@@ -319,7 +325,7 @@ public class TeleInfoService implements Runnable {
 			// _logger.info("*** ouverture du port serie reussir");
 
 			Date _startTime = new Date();
-			while (!_trameFullyReceived && !_stopCollectingTeleinfo) {
+			while (!_trameFullyReceived && _startStopCounter == 0) {
 				// _logger.info("Buffer Has Data : "+serial.read());
 				// System.out.println("Buffer Has Data :
 				// "+serial.availableBytes());
@@ -339,7 +345,7 @@ public class TeleInfoService implements Runnable {
 						_logger.warn(
 								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
 						
-						if (_stopCollectingTeleinfo)
+						if (_startStopCounter > 0)
 							_logger.warn("INFO : La collecte de teleinfo est stoppée");
 
 						SMSDto sms = new SMSDto();
@@ -356,7 +362,7 @@ public class TeleInfoService implements Runnable {
 				}
 			}
 
-			if (_stopCollectingTeleinfo) {
+			if (_startStopCounter > 0) {
 				_logger.info("Receive stop collecting teleinfotrame event!");
 				return null;
 			}
@@ -405,7 +411,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Décodage de la trame recue
-	private synchronized TeleInfoTrameDto DecodeTrame(String trame) {
+	private TeleInfoTrameDto DecodeTrame(String trame) {
 
 		boolean invalidChecksum = false;
 
