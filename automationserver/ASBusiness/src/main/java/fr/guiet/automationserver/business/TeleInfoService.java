@@ -36,7 +36,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	// private SerialDataEventListener _sdl = null;
+	private SerialDataEventListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -104,6 +104,8 @@ public class TeleInfoService implements Runnable {
 		// TODO : using String.format C# similar way to log pieces of
 		// information
 		_logger.info("Using serial device : " + _defaultDevice);
+		
+		CreateSerialListener();
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
@@ -204,9 +206,9 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Creation du listener sur le port serie
-	private SerialDataEventListener CreateSerialListener() {
+	private void CreateSerialListener() {
 
-		SerialDataEventListener sdl = new SerialDataEventListener() {
+		_sdl = new SerialDataEventListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
@@ -283,7 +285,7 @@ public class TeleInfoService implements Runnable {
 			}
 		};
 
-		return sdl;
+		//return sdl;
 	}
 
 	private String GetTeleInfoTrame() throws InterruptedException, IOException {
@@ -293,7 +295,7 @@ public class TeleInfoService implements Runnable {
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
 		Serial serial = null;
-		SerialDataEventListener sdl = null;
+		//SerialDataEventListener sdl = null;
 
 		try {
 			
@@ -306,8 +308,8 @@ public class TeleInfoService implements Runnable {
 			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
 					.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-			sdl = CreateSerialListener();
-			serial.addListener(sdl);
+			//sdl = CreateSerialListener();
+			serial.addListener(_sdl);
 
 			serial.open(config);
 			serial.setBufferingDataReceived(false);
@@ -353,6 +355,7 @@ public class TeleInfoService implements Runnable {
 						return null;
 					}
 				} catch (InterruptedException ie) {
+					_logger.error("TeleInfoService : Interrupted Exception",ie);
 					throw ie;
 				}
 			}
@@ -379,9 +382,11 @@ public class TeleInfoService implements Runnable {
 			_logger.error("Exception dans GetTeleInfoTrame : ", e);
 			return null;
 		} finally {
+			_logger.info("shut down serial factory");
+			SerialFactory.shutdown();
 			if (serial != null) {
 				_logger.info("remove listener");
-				serial.removeListener(sdl);
+				serial.removeListener(_sdl);
 				try {
 					if (serial.isOpen()) {
 						_logger.info("fermeture port serie");
@@ -391,6 +396,8 @@ public class TeleInfoService implements Runnable {
 					_logger.error("Impossible de fermer le port serie", ioe);
 				}
 			}
+			
+			serial =null;
 		}
 	}
 
