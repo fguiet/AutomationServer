@@ -146,6 +146,8 @@ public class WaterHeater implements Runnable {
 	 */
 	private void SetOn() {
 
+		StopTeleInfoService();
+		
 		_isCheckedOk = false;
 
 		//TODO : faire une classe métier pour la gestion des PINS
@@ -170,12 +172,19 @@ public class WaterHeater implements Runnable {
 		_isOn = true;
 
 	}
+	
+	private void StopTeleInfoService() {
+		_teleInfoService.StopCollectingTeleinfo();		
+		while (!_teleInfoService.IsTeleInfoCollectStopped());
+	}
 
 	/**
 	 * Turns water heater OFF
 	 */
 	private void SetOff() {
 
+		StopTeleInfoService();
+		
 		// create gpio controller
 		final GpioController gpio = GpioFactory.getInstance();
 

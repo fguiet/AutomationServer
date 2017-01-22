@@ -200,7 +200,7 @@ public class Room {
 		_sensor.StopService();
 	}
 
-	private Room(RoomDto dto, SMSGammuService gammuService) {
+	private Room(RoomDto dto, SMSGammuService gammuService, TeleInfoService teleInfoService) {
 
 		_id = dto.id;
 		_name = dto.name;
@@ -211,7 +211,7 @@ public class Room {
 		ArrayList<HeaterDto> heaterDtoList = dbManager.GetHeatersByRoomId(dto.id);
 		for (HeaterDto heaterDto : heaterDtoList) {
 
-			Heater heater = Heater.LoadFromDto(heaterDto, this);
+			Heater heater = Heater.LoadFromDto(heaterDto, this, teleInfoService);
 			_heaterList.add(heater);
 		}
 
@@ -228,9 +228,9 @@ public class Room {
 											// au demarrage
 	}
 
-	public static Room LoadFromDto(RoomDto dto, SMSGammuService gammuService) {
+	public static Room LoadFromDto(RoomDto dto, SMSGammuService gammuService, TeleInfoService teleInfoService) {
 
-		return new Room(dto, gammuService);
+		return new Room(dto, gammuService, teleInfoService);
 	}
 
 	private String GetDayName(int day) {

@@ -27,6 +27,7 @@ public class Heater implements Comparable<Heater> {
 	private Room _room = null;
 	private Pin _pin;
 	private boolean _isOffForced = false;
+	private TeleInfoService _teleInfoService = null;
 	private static Logger _logger = Logger.getLogger(Heater.class);
 
 	/**
@@ -78,7 +79,7 @@ public class Heater implements Comparable<Heater> {
 	 * @param dto
 	 * @param room 
 	 */
-	private Heater(HeaterDto dto, Room room) {
+	private Heater(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
 
 		_room = room;
 		_heaterId = dto.heaterId;
@@ -86,6 +87,7 @@ public class Heater implements Comparable<Heater> {
 		_phase = dto.phase;
 		_raspberryPin = dto.raspberryPin;
 		_name = dto.name;		 
+		_teleInfoService = teleInfoService;
 
 		switch (_raspberryPin) {
 		case 1:
@@ -263,9 +265,9 @@ public class Heater implements Comparable<Heater> {
 	 * @param room
 	 * @return Returns Heater object loaded from Dto
 	 */
-	public static Heater LoadFromDto(HeaterDto dto, Room room) {
+	public static Heater LoadFromDto(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
 
-		return new Heater(dto, room);		
+		return new Heater(dto, room, teleInfoService);		
 	}
 
 	/**
@@ -273,6 +275,8 @@ public class Heater implements Comparable<Heater> {
 	 */
 	public void SetOn() {
 
+		StopTeleInfoService();
+		
 		_isOn = true;
 
 		// create gpio controller
@@ -295,13 +299,23 @@ public class Heater implements Comparable<Heater> {
 			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));
 	}
 	
+	
+	private void StopTeleInfoService() {
+		_teleInfoService.StopCollectingTeleinfo();		
+		while (!_teleInfoService.IsTeleInfoCollectStopped());
+	}
+	
 	/**
 	 * Sets heater OFF
 	 */
 	public void SetOff() {
 
+		StopTeleInfoService();
+		
 		_isOn = false;
-
+		
+		//TODO : Faire une classe pour ,le gpio control!!!!
+		
 		// create gpio controller
 		final GpioController gpio = GpioFactory.getInstance();
 

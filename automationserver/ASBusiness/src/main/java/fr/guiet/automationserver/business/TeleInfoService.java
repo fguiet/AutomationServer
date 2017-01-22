@@ -46,11 +46,25 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
+	private boolean _stopCollectingTeleinfo = false;
+	private boolean _isCollectTeleInfoStopped = false;
 
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
-
+	
+	public void StopCollectingTeleinfo() {
+		_stopCollectingTeleinfo = true;	
+	}
+	
+	public void StartCollectingTeleinfo() {
+		_stopCollectingTeleinfo = false;
+	}
+	
+	public boolean IsTeleInfoCollectStopped() {
+		return _isCollectTeleInfoStopped;
+	}
+	
 	@Override
 	public void run() {
 
@@ -86,6 +100,15 @@ public class TeleInfoService implements Runnable {
 		while (!_isStopped) {
 
 			try {
+				
+				if (_stopCollectingTeleinfo) {				
+					_isCollectTeleInfoStopped = true;
+					Thread.sleep(2000);
+					continue;
+				}	
+				else {
+					_isCollectTeleInfoStopped = false;
+				}
 
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
@@ -294,7 +317,7 @@ public class TeleInfoService implements Runnable {
 			// _logger.info("*** ouverture du port serie reussir");
 
 			Date _startTime = new Date();
-			while (!_trameFullyReceived) {
+			while (!_trameFullyReceived && !_stopCollectingTeleinfo) {
 				// _logger.info("Buffer Has Data : "+serial.read());
 				// System.out.println("Buffer Has Data :
 				// "+serial.availableBytes());
@@ -328,12 +351,17 @@ public class TeleInfoService implements Runnable {
 				}
 			}
 
+			if (_stopCollectingTeleinfo) {
+				_logger.info("Receive stop collecting teleinfotrame event!");
+				return null;
+			}
+			
 			// serial.removeListener(_sdl);
 
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
-			_logger.info("Trame recue" + trame);
+			//_logger.info("Trame recue" + trame);
 
 			return trame;
 		}
