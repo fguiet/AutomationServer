@@ -294,10 +294,12 @@ public class TeleInfoService implements Runnable {
 		_endTrameDetected = false;
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
-		Serial serial = SerialFactory.createInstance();
+		Serial serial = null;
 		SerialDataEventListener sdl = null;
 
 		try {
+			
+			serial = SerialFactory.createInstance();
 
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
@@ -309,16 +311,9 @@ public class TeleInfoService implements Runnable {
 			sdl = CreateSerialListener();
 			serial.addListener(sdl);
 
-			// TODO : voir le probleme au demarrage de l'appli...Exception in
-			// thread "Thread-305"
-			// java.util.concurrent.RejectedExecutionException: Task
-			// com.pi4j.io.serial.tasks.SerialDataEventDispatchTaskImpl@736daa
-			// rejected from
-			// java.util.concurrent.ThreadPoolExecutor@1214351[Terminated, pool
-			// size = 0, active threads = 0, queued tasks = 0, completed tasks =
-			// 4]
 			serial.open(config);
-			serial.discardAll();
+			
+			//serial.discardAll();
 
 			// TODO : traduire tous les messages en anglais
 			// serial.close();
@@ -344,7 +339,7 @@ public class TeleInfoService implements Runnable {
 					// la première fois??
 					if (diffMinutes >= 1) {
 						_logger.warn(
-								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port..." + _startStopCounter);
+								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
 						
 						if (_startStopCounter > 0)
 							_logger.warn("INFO : La collecte de teleinfo est stoppée");
@@ -382,7 +377,8 @@ public class TeleInfoService implements Runnable {
 		// throw ioe;
 		// }
 		catch (Exception e) {
-			throw e;
+			_logger.error("Exception dans GetTeleInfoTrame : ", e);
+			return null;
 		} finally {
 			if (serial != null) {
 				_logger.info("remove listener");
