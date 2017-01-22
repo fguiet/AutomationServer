@@ -20,6 +20,8 @@ import fr.guiet.automationserver.dto.SMSDto;
  * 
  * @author guiet
  *
+ * TODO : faire en sorte que l'on puisse faire une file de SMS dans un thread...
+ *
  */
 public class SMSGammuService {
 	
@@ -93,7 +95,7 @@ public class SMSGammuService {
 		CommandLine cmdLine=makeCommand(sms);
 		
 		//Timeout set to 30s
-		ExecuteWatchdog watchdog = new ExecuteWatchdog(30000);
+		ExecuteWatchdog watchdog = new ExecuteWatchdog(10000);
 		
 		DefaultExecutor de = new DefaultExecutor();
 				
@@ -130,7 +132,7 @@ public class SMSGammuService {
 	    public void onProcessFailed(final ExecuteException e) {
 	        super.onProcessFailed(e);
 	        
-	        _logger.error(String.format("Error occured while sending SMS ! Recipient : %s; Message : %s", _sms.getRecipient(), _sms.getMessage()));
+	        _logger.error(String.format("Error occured while sending SMS ! Recipient : %s; Message : %s", _sms.getRecipient(), _sms.getMessage()),e);
 	    }
 	}
 	

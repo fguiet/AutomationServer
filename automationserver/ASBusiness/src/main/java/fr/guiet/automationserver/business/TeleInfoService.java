@@ -36,7 +36,7 @@ public class TeleInfoService implements Runnable {
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
 	private SerialDataEventListener _sdl = null;
-	private String _defaultDevice = ""; 
+	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
 	private boolean _endTrameDetected = false;
@@ -50,33 +50,35 @@ public class TeleInfoService implements Runnable {
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
-	
+
 	@Override
 	public void run() {
 
 		_logger.info("Démarrage du service TeleInfoService...");
-		
+
 		InputStream is = null;
-        try {
-        	String configPath = System.getProperty("automationserver.config.path");
-        	is = new FileInputStream(configPath);
-        	
-        	Properties prop = new Properties();            
-            prop.load(is);
-            
-            _defaultDevice = prop.getProperty("teleinfo.usbdevice");            
-            
-        } catch (FileNotFoundException e) {
-        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
-        } catch (IOException e) {
-        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
-        } 
-				
-		//TODO :  using String.format C# similar way to log pieces of information
-		_logger.info("Using serial device : " + _defaultDevice);
-		
-		// Creation de listener
-		CreateSerialListener();
+		try {
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+
+			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
+
+		} catch (FileNotFoundException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		} catch (IOException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		}
+
+		// TODO : using String.format C# similar way to log pieces of
+		// information
+		_logger.info("Using serial device : " + _defaultDevice);		
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
@@ -102,9 +104,10 @@ public class TeleInfoService implements Runnable {
 				// On pause le Thread pendant deux secondes...
 				// recup des trames toutes les deux secondes
 				Thread.sleep(2000);
+				
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
-				
+
 				SMSDto sms = new SMSDto();
 				sms.setMessage("Error occured in TeleInfo services service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
@@ -130,7 +133,7 @@ public class TeleInfoService implements Runnable {
 		// Toutes les minutes on enregistre une trame
 		_timer.schedule(teleInfoTask, 5000, 60000);
 
-	}	
+	}
 
 	// Arret du service TeleInfoService
 	public void StopService() {
@@ -160,46 +163,46 @@ public class TeleInfoService implements Runnable {
 
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
-		
+
 		DbManager dbManager = new DbManager();
-		dbManager.SaveTeleInfoTrame(teleInfoTrame);		
-		//_logger.info("Sauvegarde de la trame teleinfo en base de données");
-		
-		//if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
-			dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
-		//_logger.info("Sauvegarde de la trame teleinfo dans InfluxDB");
-		//}
+		dbManager.SaveTeleInfoTrame(teleInfoTrame);
+		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
+
+		// if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
+		dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
+		// _logger.info("Sauvegarde de la trame teleinfo dans InfluxDB");
+		// }
 	}
 
 	// Creation du listener sur le port serie
-	private void CreateSerialListener() {
+	private SerialDataEventListener CreateSerialListener() {
 
-		_sdl = new SerialDataEventListener() {
+		SerialDataEventListener sdl = new SerialDataEventListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
 				if (_trameFullyReceived)
 					return;
-				
+
 				String dataSZ = "";
 				try {
 					dataSZ = event.getAsciiString();
 				} catch (IOException e) {
 					_logger.error("Unable de read serial port", e);
 				}
-				
+
 				char[] data = dataSZ.toCharArray();
 
 				for (int i = 0; i < data.length; i++) {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					//_logger.info("carac recu: "+(int)receivedChar);
+					// _logger.info("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					//String decoded = String.valueOf(receivedChar);
-					//_logger.warn("carac recu: "+decoded);
-					//System.out.println(decoded);
+					// String decoded = String.valueOf(receivedChar);
+					// _logger.warn("carac recu: "+decoded);
+					// System.out.println(decoded);
 
 					// Reception indicateur debut trame
 					if (receivedChar == 0x02) {
@@ -250,9 +253,11 @@ public class TeleInfoService implements Runnable {
 					_trameFullyReceived = true;
 			}
 		};
+		
+		return sdl;
 	}
 
-	private synchronized String GetTeleInfoTrame() throws InterruptedException,IOException {
+	private synchronized String GetTeleInfoTrame() throws InterruptedException, IOException {
 		_trame = new ArrayList<Character>();
 		_beginTrameDetected = false;
 		_endTrameDetected = false;
@@ -264,22 +269,26 @@ public class TeleInfoService implements Runnable {
 
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
-			//serial.open(_defaultDevice, _defaultBaud);
+			// serial.open(_defaultDevice, _defaultBaud);
 			SerialConfig config = new SerialConfig();
-			config.device(_defaultDevice)
-                  .baud(Baud._1200)
-                  .dataBits(DataBits._7)
-                  .parity(Parity.NONE)
-                  .stopBits(StopBits._1)
-                  .flowControl(FlowControl.NONE);
-					
-			serial.open(config);
-			
-			serial.addListener(_sdl);
+			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.NONE)
+					.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-			//TODO :  traduire tous les messages en anglais
+			serial.addListener(CreateSerialListener());
+
+			// TODO : voir le probleme au demarrage de l'appli...Exception in
+			// thread "Thread-305"
+			// java.util.concurrent.RejectedExecutionException: Task
+			// com.pi4j.io.serial.tasks.SerialDataEventDispatchTaskImpl@736daa
+			// rejected from
+			// java.util.concurrent.ThreadPoolExecutor@1214351[Terminated, pool
+			// size = 0, active threads = 0, queued tasks = 0, completed tasks =
+			// 4]
+			serial.open(config);
+
+			// TODO : traduire tous les messages en anglais
 			// serial.close();
-			//serial.open("/dev/serial0", 1200);
+			// serial.open("/dev/serial0", 1200);
 			// _logger.info("*** ouverture du port serie reussir");
 
 			Date _startTime = new Date();
@@ -302,19 +311,27 @@ public class TeleInfoService implements Runnable {
 					if (diffMinutes >= 1) {
 						_logger.warn(
 								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
+						
+						SMSDto sms = new SMSDto();
+						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");
+						_smsGammuService.sendMessage(sms, true);
+						
+						//Reinitialisation de la denrière trame reçue!
+						_lastTeleInfoTrameReceived = null;
+						
 						return null;
 					}
 				} catch (InterruptedException ie) {
 					throw ie;
 				}
 			}
-  
-			//serial.removeListener(_sdl);
+
+			// serial.removeListener(_sdl);
 
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
-			//_logger.info("Trame recue" + trame);
+			// _logger.info("Trame recue" + trame);
 
 			return trame;
 		}
@@ -329,14 +346,13 @@ public class TeleInfoService implements Runnable {
 				_logger.info("remove listener");
 				serial.removeListener(_sdl);
 				try {
-				   if (serial.isOpen()) {
-					   _logger.info("fermeture port serie");
-					   serial.close();
-				   }
+					if (serial.isOpen()) {
+						_logger.info("fermeture port serie");
+						serial.close();
+					}
+				} catch (IOException ioe) {
+					_logger.error("Impossible de fermer le port serie", ioe);
 				}
-				catch(IOException ioe) {
-				 _logger.error("Impossible de fermer le port serie",ioe);
-				 }
 			}
 		}
 	}

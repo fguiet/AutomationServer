@@ -176,7 +176,6 @@ public class Sensor implements IXBeeListener {
 					break;
 				}
 				  
-				_logger.info("Saving sensor info to InfluxDB");
 				dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
 				
 				//Envoi des infos reçues vers le broker Mqtt
