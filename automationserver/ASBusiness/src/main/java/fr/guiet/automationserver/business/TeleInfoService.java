@@ -53,13 +53,13 @@ public class TeleInfoService implements Runnable {
 		_smsGammuService = smsGammuService;
 	}
 
-	public void StopCollectingTeleinfo() {
-		_logger.info("Stopping collecting teleinfo...");
+	public void StopCollectingTeleinfo(String initiator) {
+		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
 		_stopCollectingTeleinfo = true;
 	}
 
-	public void StartCollectingTeleinfo() {
-		_logger.info("Starting collecting teleinfo...");
+	public void StartCollectingTeleinfo(String initiator) {
+		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
 		_stopCollectingTeleinfo = false;
 	}
 
@@ -105,9 +105,11 @@ public class TeleInfoService implements Runnable {
 
 				if (_stopCollectingTeleinfo) {
 					_isCollectTeleInfoStopped = true;
+					_logger.info("ok teleinfoservice stoppé!!");
 					Thread.sleep(2000);
 					continue;
 				} else {
+					_logger.info("ok teleinfoservice reprise!!");
 					_isCollectTeleInfoStopped = false;
 				}
 

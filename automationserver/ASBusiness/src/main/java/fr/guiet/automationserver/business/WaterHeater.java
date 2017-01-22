@@ -176,7 +176,7 @@ public class WaterHeater implements Runnable {
 	}
 	
 	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo();		
+		_teleInfoService.StopCollectingTeleinfo("WaterHeater");		
 		while (!_teleInfoService.IsTeleInfoCollectStopped());
 	}
 
@@ -215,6 +215,6 @@ public class WaterHeater implements Runnable {
 	}
 	
 	private void StartTeleInfoService() {
-		_teleInfoService.StartCollectingTeleinfo();
+		_teleInfoService.StartCollectingTeleinfo("WaterHeater");
 	}
 }

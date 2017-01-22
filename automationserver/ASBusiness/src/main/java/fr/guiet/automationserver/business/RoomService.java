@@ -266,23 +266,9 @@ public class RoomService implements Runnable {
 
 	// Gestion des radiateurs par phase
 	private void ManagerHeatersByPhase(int phase, int intensitePhase, List<Heater> _heaterList) {
-		// _logger.info("Je vais gérer les radiateurs maintenant...");
+		_logger.info("Je vais gérer les radiateurs maintenant...");
 		// _logger.info("Intensite courante phase "+phase+" : "+intensitePhase);
 		for (Heater h : _heaterList) {
-			// _logger.info("Radiateur de la piece : "+h.getRoom().getName()+",
-			// Etat : "+h.getEtat());
-			// Si intensite de radiateur + intensite phase < intensite max et si
-			// radiateur eteint et si temp de la chambre < temp desire alors
-			// on allume le radiateur
-
-			/*
-			 * if (!h.getRoom().IsTempInfoOk()) { //Extinction du radiateur par
-			 * securite h.SetOff(); _logger.
-			 * warn("La valeur temp. actuelle ou temp. desiree est non renseignee pour la piece : "
-			 * +h.getRoom().getName()+
-			 * ". Impossible de gerer le radiateur. Extinction du radiateur par sécurité"
-			 * ); continue; }
-			 */
 
 			Float roomWantedTemp = h.getRoom().ComputeWantedTemp();
 			Float roomActualTemp = h.getRoom().getActualTemp();
@@ -366,6 +352,8 @@ public class RoomService implements Runnable {
 						+ (intensitePhase - h.getCurrentConsumption()));
 			}
 		}
+		
+		_logger.info("je sors");
 	}
 
 	private void LoadRoomList() {

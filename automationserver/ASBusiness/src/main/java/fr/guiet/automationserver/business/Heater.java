@@ -302,11 +302,11 @@ public class Heater implements Comparable<Heater> {
 	}
 	
 	private void StartTeleInfoService() {
-		_teleInfoService.StartCollectingTeleinfo();
+		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
 	}
 	
 	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo();		
+		_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));		
 		while (!_teleInfoService.IsTeleInfoCollectStopped());
 	}
 	
