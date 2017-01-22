@@ -7,6 +7,7 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
 import fr.guiet.automationserver.dto.SMSDto;
+import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 
 import org.apache.log4j.Logger;
 import java.util.Date;
@@ -87,8 +88,13 @@ public class WaterHeater implements Runnable {
 		// On considere qu'il y a un probleme si le chauffe est allume et que
 		// l'intensite est inferieur a 3000wh
 		if (_teleInfoService.IsHeureCreuse() != null && _teleInfoService.IsHeureCreuse() && this.isOn()) {
-			// Verifie que le chauffe est bien demarre
-			CheckAndRestartIfNecessary(_teleInfoService.GetLastTrame().PAPP);
+			// Verifie que le chauffe est bien demarre	
+			TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
+			
+			if (teleInfoTrame != null)			
+				CheckAndRestartIfNecessary(teleInfoTrame.PAPP);
+			else
+				_logger.error("Could not check and restart water heater boiler because no teleinfotrame is available...");
 		}
 
 		if (_teleInfoService.IsHeureCreuse() != null && _teleInfoService.IsHeureCreuse() && !this.isOn()) {

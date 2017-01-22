@@ -188,8 +188,6 @@ public class RoomService implements Runnable {
 				AddHeater(h);
 		}
 
-		// Extinction des radiateurs par defaut
-
 		while (!_isStopped) {
 
 			try {
