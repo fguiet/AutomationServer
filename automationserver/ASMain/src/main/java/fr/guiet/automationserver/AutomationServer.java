@@ -72,36 +72,36 @@ public class AutomationServer implements Daemon {
 					// Starting teleinfo service
 					_teleInfoService = new TeleInfoService(_smsGammuService);
 					_teleInfoServiceThread = new Thread(_teleInfoService);
-					_teleInfoServiceThread.start();					
-					
+					_teleInfoServiceThread.start();	
+									
 					// Starting room service
-					//_roomService = new RoomService(_teleInfoService, _smsGammuService);
-					//_roomServiceThread = new Thread(_roomService);
-					//_roomServiceThread.start();
+					_roomService = new RoomService(_teleInfoService, _smsGammuService);
+					_roomServiceThread = new Thread(_roomService);
+					_roomServiceThread.start();
 
 					// Starting warter heater
-					//_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
-					//_waterHeaterServiceThread = new Thread(_waterHeater);
-					//_waterHeaterServiceThread.start();
+					_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
+					_waterHeaterServiceThread = new Thread(_waterHeater);
+					_waterHeaterServiceThread.start();
 
 					// TODO : Replace this server by MQTT subscribe
 					ServerSocket socket = new ServerSocket(4310);
 					_logger.info("Starting messages management queue...");
 
-					//SMSDto sms = new SMSDto();
-					//sms.setMessage("Automation server has started...");
-					//_smsGammuService.sendMessage(sms, true);
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Automation server has started...");
+					_smsGammuService.sendMessage(sms, true);
 					
 					while (!_isStopped) {
 
 						Socket connection = socket.accept();
 
-						//AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
-						//		_teleInfoService);
-						//ast.start();
+						AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
+								_teleInfoService);
+						ast.start();
 						
 						//TODO : A supprimer , pour test
-						Thread.sleep(3000);
+						//Thread.sleep(3000);
 
 					}
 

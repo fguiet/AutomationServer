@@ -147,7 +147,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Récupération de la dernière trame teleinfo recue
-	public synchronized TeleInfoTrameDto GetLastTrame() {
+	public TeleInfoTrameDto GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	}
 
