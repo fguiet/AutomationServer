@@ -72,6 +72,9 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener  {
 	public void run() {
 
 		_logger.info("Starting water heater management...");
+		
+		//By Default set off
+		SetOff();
 
 		while (!_isStopped) {
 
