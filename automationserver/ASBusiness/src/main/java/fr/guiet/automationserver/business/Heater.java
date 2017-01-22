@@ -295,10 +295,15 @@ public class Heater implements Comparable<Heater> {
 
 		gpio.shutdown();
 
+		StartTeleInfoService();
+		
 		if (_room != null)
 			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));
 	}
 	
+	private void StartTeleInfoService() {
+		_teleInfoService.StartCollectingTeleinfo();
+	}
 	
 	private void StopTeleInfoService() {
 		_teleInfoService.StopCollectingTeleinfo();		
@@ -332,6 +337,8 @@ public class Heater implements Comparable<Heater> {
 		
 		gpio.shutdown();
 
+		StartTeleInfoService();
+		
 		if (_room != null)
 			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));
 	}

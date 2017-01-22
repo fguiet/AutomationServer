@@ -166,6 +166,8 @@ public class WaterHeater implements Runnable {
 		gpio.unprovisionPin(pin);
 		gpio.shutdown();
 
+		StartTeleInfoService();
+		
 		_logger.info("Turning ON water heater");
 
 		_startTime = new Date();
@@ -199,6 +201,8 @@ public class WaterHeater implements Runnable {
 
 		gpio.unprovisionPin(pin);
 		gpio.shutdown();
+		
+		StartTeleInfoService();
 
 		Date currentDate = new Date();
 
@@ -206,7 +210,11 @@ public class WaterHeater implements Runnable {
 		long diffMinutes = diff / (60 * 1000);
 
 		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
-
+		
 		_isOn = false;
+	}
+	
+	private void StartTeleInfoService() {
+		_teleInfoService.StartCollectingTeleinfo();
 	}
 }

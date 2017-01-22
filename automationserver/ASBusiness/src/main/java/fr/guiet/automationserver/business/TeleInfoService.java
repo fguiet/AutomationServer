@@ -35,7 +35,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	//private SerialDataEventListener _sdl = null;
+	// private SerialDataEventListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -52,19 +52,21 @@ public class TeleInfoService implements Runnable {
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
-	
+
 	public void StopCollectingTeleinfo() {
-		_stopCollectingTeleinfo = true;	
+		_logger.info("Stopping collecting teleinfo...");
+		_stopCollectingTeleinfo = true;
 	}
-	
+
 	public void StartCollectingTeleinfo() {
+		_logger.info("Starting collecting teleinfo...");
 		_stopCollectingTeleinfo = false;
 	}
-	
+
 	public boolean IsTeleInfoCollectStopped() {
 		return _isCollectTeleInfoStopped;
 	}
-	
+
 	@Override
 	public void run() {
 
@@ -92,7 +94,7 @@ public class TeleInfoService implements Runnable {
 
 		// TODO : using String.format C# similar way to log pieces of
 		// information
-		_logger.info("Using serial device : " + _defaultDevice);		
+		_logger.info("Using serial device : " + _defaultDevice);
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
@@ -100,13 +102,12 @@ public class TeleInfoService implements Runnable {
 		while (!_isStopped) {
 
 			try {
-				
-				if (_stopCollectingTeleinfo) {				
+
+				if (_stopCollectingTeleinfo) {
 					_isCollectTeleInfoStopped = true;
 					Thread.sleep(2000);
 					continue;
-				}	
-				else {
+				} else {
 					_isCollectTeleInfoStopped = false;
 				}
 
@@ -126,8 +127,8 @@ public class TeleInfoService implements Runnable {
 
 				// On pause le Thread pendant deux secondes...
 				// recup des trames toutes les deux secondes
-				//Thread.sleep(2000);
-				
+				// Thread.sleep(2000);
+
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
 
@@ -147,7 +148,6 @@ public class TeleInfoService implements Runnable {
 				if (_lastTeleInfoTrameReceived != null) {
 					// Sauvegarde en bdd
 					SaveTrameToDb(_lastTeleInfoTrameReceived);
-
 				}
 			}
 		};
@@ -276,7 +276,7 @@ public class TeleInfoService implements Runnable {
 					_trameFullyReceived = true;
 			}
 		};
-		
+
 		return sdl;
 	}
 
@@ -336,14 +336,14 @@ public class TeleInfoService implements Runnable {
 					if (diffMinutes >= 1) {
 						_logger.warn(
 								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
-						
+
 						SMSDto sms = new SMSDto();
 						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");
 						_smsGammuService.sendMessage(sms, true);
-						
-						//Reinitialisation de la denrière trame reçue!
+
+						// Reinitialisation de la denrière trame reçue!
 						_lastTeleInfoTrameReceived = null;
-						
+
 						return null;
 					}
 				} catch (InterruptedException ie) {
@@ -355,13 +355,13 @@ public class TeleInfoService implements Runnable {
 				_logger.info("Receive stop collecting teleinfotrame event!");
 				return null;
 			}
-			
+
 			// serial.removeListener(_sdl);
 
 			// System.out.println("Trame recue :
 			// "+TeleInfoService.ArrayListToStringHelper(trame));
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
-			//_logger.info("Trame recue" + trame);
+			// _logger.info("Trame recue" + trame);
 
 			return trame;
 		}
@@ -373,11 +373,11 @@ public class TeleInfoService implements Runnable {
 			throw e;
 		} finally {
 			if (serial != null) {
-				//_logger.info("remove listener");
+				// _logger.info("remove listener");
 				serial.removeListener(sdl);
 				try {
 					if (serial.isOpen()) {
-						//_logger.info("fermeture port serie");
+						// _logger.info("fermeture port serie");
 						serial.close();
 					}
 				} catch (IOException ioe) {
