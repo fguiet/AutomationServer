@@ -35,7 +35,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	private SerialDataEventListener _sdl = null;
+	//private SerialDataEventListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -103,7 +103,7 @@ public class TeleInfoService implements Runnable {
 
 				// On pause le Thread pendant deux secondes...
 				// recup des trames toutes les deux secondes
-				Thread.sleep(2000);
+				//Thread.sleep(2000);
 				
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
@@ -264,6 +264,7 @@ public class TeleInfoService implements Runnable {
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
 		Serial serial = SerialFactory.createInstance();
+		SerialDataEventListener sdl = null;
 
 		try {
 
@@ -274,7 +275,8 @@ public class TeleInfoService implements Runnable {
 			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.NONE)
 					.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-			serial.addListener(CreateSerialListener());
+			sdl = CreateSerialListener();
+			serial.addListener(sdl);
 
 			// TODO : voir le probleme au demarrage de l'appli...Exception in
 			// thread "Thread-305"
@@ -344,7 +346,7 @@ public class TeleInfoService implements Runnable {
 		} finally {
 			if (serial != null) {
 				_logger.info("remove listener");
-				serial.removeListener(_sdl);
+				serial.removeListener(sdl);
 				try {
 					if (serial.isOpen()) {
 						_logger.info("fermeture port serie");
