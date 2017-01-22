@@ -228,7 +228,7 @@ public class TeleInfoService implements Runnable {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					// _logger.info("carac recu: "+(int)receivedChar);
+					_logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
 					// String decoded = String.valueOf(receivedChar);
@@ -343,7 +343,7 @@ public class TeleInfoService implements Runnable {
 					// la première fois??
 					if (diffMinutes >= 1) {
 						_logger.warn(
-								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
+								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port..." + _startStopCounter);
 						
 						if (_startStopCounter > 0)
 							_logger.warn("INFO : La collecte de teleinfo est stoppée");
