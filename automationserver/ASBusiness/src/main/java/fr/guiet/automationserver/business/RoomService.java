@@ -369,7 +369,7 @@ public class RoomService implements Runnable {
 
 		for (RoomDto dtoRoom : roomDtoList) {
 
-			Room r = Room.LoadFromDto(dtoRoom, _smsGammuService, _teleInfoService);
+			Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);
 			_roomList.add(r);
 		}
 	}

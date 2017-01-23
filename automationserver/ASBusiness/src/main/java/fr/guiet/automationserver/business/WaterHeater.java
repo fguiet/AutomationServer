@@ -12,7 +12,7 @@ import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 import org.apache.log4j.Logger;
 import java.util.Date;
 
-public class WaterHeater implements Runnable, ICollectInfoStopListener {
+public class WaterHeater implements Runnable {
 
 	private static Logger _logger = Logger.getLogger(WaterHeater.class);
 
@@ -23,27 +23,20 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener {
 	private TeleInfoService _teleInfoService = null;
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
-	private boolean _waitForOn = false;
-	private boolean _waitForOff = false;
+	// private boolean _waitForOn = false;
+	// private boolean _waitForOff = false;
+	private final String PIN_WATER_HEATER_NAME = "PIN_CHAUFFE_EAU";
 
-	@Override
-	public void OnCollectInfoStopped() {
-
-		//_logger.info("Hello from water heater");
-
-		if (_waitForOn) {
-			_waitForOn = false;
-			TurnOn();
-			StartTeleInfoService();
-		}
-
-		if (_waitForOff) {
-			//_logger.info("Extinction water heater");
-			_waitForOff = false;
-			TurnOff();
-			StartTeleInfoService();
-		}
-	}
+	/*
+	 * @Override public void OnCollectInfoStopped() {
+	 * 
+	 * //_logger.info("Hello from water heater");
+	 * 
+	 * if (_waitForOn) { _waitForOn = false; TurnOn(); StartTeleInfoService(); }
+	 * 
+	 * if (_waitForOff) { //_logger.info("Extinction water heater"); _waitForOff
+	 * = false; TurnOff(); StartTeleInfoService(); } }
+	 */
 
 	/**
 	 * @return Returns whether heater is on or off
@@ -59,7 +52,7 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener {
 	 */
 	public WaterHeater(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
 		_teleInfoService = teleInfoService;
-		_teleInfoService.addListener(this);
+		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
 	}
 
@@ -173,84 +166,58 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener {
 	 * Turns water heater ON
 	 */
 	private void SetOn() {
-
-		StopTeleInfoService();
-		_waitForOn = true;
-	}
-
-	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo("WaterHeater");
-	}
-
-	private void TurnOff() {
-
-		// create gpio controller
-		final GpioController gpio = GpioFactory.getInstance();
-
-		// provision gpio pin #01 as an output pin and turn on
-		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
-
-		// set shutdown state for this pin
-		pin.setShutdownOptions(true, PinState.LOW);
-
-		// turn on gpio pin #00
-		pin.low();
-
-		gpio.unprovisionPin(pin);
-		gpio.shutdown();
-
-		Date currentDate = new Date();
-
-		long diffMinutes = 0;
-		if (_startTime != null) {
-			//occurs at launch of service
-			long diff = currentDate.getTime() - _startTime.getTime();
-		    diffMinutes = diff / (60 * 1000);
-		}
-
-		_logger.info("Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes");
-
-		_isOn = false;
-
-	}
-
-	private void TurnOn() {
 		_isCheckedOk = false;
+
+		String logMessage = "Turning ON water heater";
+		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.HIGH,
+				PIN_WATER_HEATER_NAME, logMessage);
+
+		// TODO : réecriture les méthodes java sans majuscule au debut
 
 		// TODO : faire une classe métier pour la gestion des PINS
 		// create gpio controller
-		final GpioController gpio = GpioFactory.getInstance();
+		/*
+		 * final GpioController gpio = GpioFactory.getInstance();
+		 * 
+		 * // provision gpio pin #01 as an output pin and turn on final
+		 * GpioPinDigitalOutput pin =
+		 * gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
+		 * 
+		 * // set shutdown state for this pin pin.setShutdownOptions(true,
+		 * PinState.LOW);
+		 * 
+		 * // turn on gpio pin #00 pin.high();
+		 * 
+		 * gpio.unprovisionPin(pin); gpio.shutdown();
+		 */
 
-		// provision gpio pin #01 as an output pin and turn on
-		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
-
-		// set shutdown state for this pin
-		pin.setShutdownOptions(true, PinState.LOW);
-
-		// turn on gpio pin #00
-		pin.high();
-
-		gpio.unprovisionPin(pin);
-		gpio.shutdown();
-
-		_logger.info("Turning ON water heater");
+		// _logger.info("Turning ON water heater");
 
 		_startTime = new Date();
+
 		_isOn = true;
+
 	}
+
 
 	/**
 	 * Turns water heater OFF
 	 */
 	private void SetOff() {
 
-		StopTeleInfoService();
-		_waitForOff = true;
+		Date currentDate = new Date();
 
-	}
+		long diffMinutes = 0;
+		if (_startTime != null) {
+			// occurs at launch of service
+			long diff = currentDate.getTime() - _startTime.getTime();
+			diffMinutes = diff / (60 * 1000);
+		}
 
-	private void StartTeleInfoService() {
-		//_logger.info("Start collect");
-		_teleInfoService.StartCollectingTeleinfo("WaterHeater");
+		String logMessage = "Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes";
+		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.LOW,
+				PIN_WATER_HEATER_NAME, logMessage);
+		_isOn = false;
+
 	}
 }

@@ -17,9 +17,11 @@ import fr.guiet.automationserver.dataaccess.DbManager;
  * Handles heater management
  * 
  * @author guiet
+ * 
+ * TODO : Creer une classe GpioHelper
  *
  */
-public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
+public class Heater implements Comparable<Heater> {
 
 	private long _heaterId;
 	private int _currentConsumption;
@@ -30,12 +32,13 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 	private Room _room = null;
 	private Pin _pin;
 	private boolean _isOffForced = false;
-	private TeleInfoService _teleInfoService = null;
+	//private TeleInfoService _teleInfoService = null;
 	private static Logger _logger = Logger.getLogger(Heater.class);
-	private boolean _waitForOn = false;
-	private boolean _waitForOff = false;
+	//private boolean _waitForOn = false;
+	//private boolean _waitForOff = false;
+	private final String PIN_CHAUFFAGE_NAME ="PIN_CHAUFFAGE";
 
-	@Override
+	/*@Override
 	public void OnCollectInfoStopped() {
 		
 		if (_waitForOn) {
@@ -49,7 +52,7 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 			TurnOff();
 			StartTeleInfoService();
 		}
-	}
+	}*/
 
 	/**
 	 * @return Returns Heater name (value stored in PostgreSQL database)
@@ -100,7 +103,7 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 	 * @param dto
 	 * @param room
 	 */
-	private Heater(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
+	private Heater(HeaterDto dto, Room room) {
 
 		_room = room;
 		_heaterId = dto.heaterId;
@@ -108,8 +111,8 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 		_phase = dto.phase;
 		_raspberryPin = dto.raspberryPin;
 		_name = dto.name;
-		_teleInfoService = teleInfoService;
-		_teleInfoService.addListener(this);
+		//_teleInfoService = teleInfoService;
+		//_teleInfoService.addListener(this);
 
 		switch (_raspberryPin) {
 		case 1:
@@ -287,17 +290,26 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 	 * @param room
 	 * @return Returns Heater object loaded from Dto
 	 */
-	public static Heater LoadFromDto(HeaterDto dto, Room room, TeleInfoService teleInfoService) {
+	public static Heater LoadFromDto(HeaterDto dto, Room room) {
 
-		return new Heater(dto, room, teleInfoService);
+		return new Heater(dto, room);
 	}
 
-	private void TurnOn() {
+	/**
+	 * Sets heater ON
+	 */
+	public void SetOn() {
 
 		_isOn = true;
+		String logMessage = "";
+		
+		if (_room != null)
+			logMessage = String.format("Turning ON heater %s from room %s", _name, _room.getName());
+		
+		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW, PIN_CHAUFFAGE_NAME + _heaterId, logMessage);
 
 		// create gpio controller
-		final GpioController gpio = GpioFactory.getInstance();
+		/*final GpioController gpio = GpioFactory.getInstance();
 
 		// provision gpio pin #01 as an output pin and turn on
 		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin, "PIN_CHAUFFAGE_ID" + _heaterId);
@@ -310,20 +322,42 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 
 		gpio.unprovisionPin(pin);
 
-		gpio.shutdown();
+		gpio.shutdown();*/
 
-		if (_room != null)
-			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));
+		/*if (_room != null)
+			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));*/
 	}
 
-	private void TurnOff() {
-		
-		_isOn = false;
+	/*private void StartTeleInfoService() {
+		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
+	}*/
 
+	//private void StopTeleInfoService() {
+		//_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
+		/*
+		 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
+		 * Thread.sleep(500); } catch (InterruptedException e) {
+		 * _logger.error("Error in Heater::StopTeleInfoService method"); break;
+		 * } }
+		 */
+	//}
+
+	/**
+	 * Sets heater OFF
+	 */
+	public void SetOff() {
+
+		_isOn = false;
+		String logMessage = "";
+
+		if (_room != null)
+			logMessage = String.format("Turning OFF heater %s from room %s", _name, _room.getName());
+		
+		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH, PIN_CHAUFFAGE_NAME + _heaterId, logMessage);
 		// TODO : Faire une classe pour ,le gpio control!!!!
 
 		// create gpio controller
-		final GpioController gpio = GpioFactory.getInstance();
+		/*final GpioController gpio = GpioFactory.getInstance();
 
 		// provision gpio pin #01 as an output pin and turn on
 		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin, "PIN_CHAUFFAGE_ID" + _heaterId);
@@ -339,39 +373,7 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 		gpio.shutdown();
 
 		if (_room != null)
-			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));
-	}
-
-	/**
-	 * Sets heater ON
-	 */
-	public void SetOn() {
-
-		StopTeleInfoService();
-		_waitForOn = true;
-	}
-
-	private void StartTeleInfoService() {
-		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
-	}
-
-	private void StopTeleInfoService() {
-		_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
-		/*
-		 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
-		 * Thread.sleep(500); } catch (InterruptedException e) {
-		 * _logger.error("Error in Heater::StopTeleInfoService method"); break;
-		 * } }
-		 */
-	}
-
-	/**
-	 * Sets heater OFF
-	 */
-	public void SetOff() {
-
-		StopTeleInfoService();
-		_waitForOff=true;		
+			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));*/
 	}
 
 	/**

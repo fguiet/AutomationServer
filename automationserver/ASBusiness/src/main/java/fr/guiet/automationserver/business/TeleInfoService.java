@@ -49,26 +49,26 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
-	private int _startStopCounter = 0;
+	//private int _startStopCounter = 0;
 	//private boolean _isCollectTeleInfoStopped = false;
-	private List<ICollectInfoStopListener> _collectInfoStopListeners = new ArrayList<ICollectInfoStopListener>();
+	//private List<ICollectInfoStopListener> _collectInfoStopListeners = new ArrayList<ICollectInfoStopListener>();
 	
-	public void addListener(ICollectInfoStopListener toAdd) {
+	/*public void addListener(ICollectInfoStopListener toAdd) {
 		_collectInfoStopListeners.add(toAdd);
-    }
+    }*/
 
-    private void NotifyCollectInfoStop() {
+    /*private void NotifyCollectInfoStop() {
 
         // Notify everybody that may be interested.
         for (ICollectInfoStopListener l : _collectInfoStopListeners)
         	l.OnCollectInfoStopped();
-    }
+    }*/
 	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
 
-	public synchronized void StopCollectingTeleinfo(String initiator) {
+	/*public synchronized void StopCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
 		_startStopCounter++;
 	}
@@ -76,7 +76,7 @@ public class TeleInfoService implements Runnable {
 	public synchronized void StartCollectingTeleinfo(String initiator) {
 		_logger.info(String.format("Starting collect of teleinfo (initiator is %s)", initiator));
 		_startStopCounter--;
-	}
+	}*/
 
 	@Override
 	public void run() {
@@ -117,16 +117,13 @@ public class TeleInfoService implements Runnable {
 			try {
 
 				//if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
-				if (_startStopCounter > 0) {
+				/*if (_startStopCounter > 0) {
 					NotifyCollectInfoStop();					
 					_logger.info("ok teleinfoservice stoppé!! (start_stop_counter :)" + _startStopCounter);
 					Thread.sleep(2000);
 					continue;
-				}
-				
-				//Necessary otherwire, serial reader stop
-				Thread.sleep(2000);
-
+				}*/
+							
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
 				// _logger.error("Test TeleInfoService...");
@@ -139,7 +136,11 @@ public class TeleInfoService implements Runnable {
 						// _logger.info("Valorisation trame recu");
 						_lastTeleInfoTrameReceived = teleInfoTrame;
 					}
-				}				
+				}
+				
+				//Necessary otherwire, serial reader stop
+				Thread.sleep(2000);
+
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
 
@@ -328,7 +329,7 @@ public class TeleInfoService implements Runnable {
 			// _logger.info("*** ouverture du port serie reussir");
 
 			Date _startTime = new Date();
-			while (!_trameFullyReceived && _startStopCounter == 0) {
+			while (!_trameFullyReceived) {
 				// _logger.info("Buffer Has Data : "+serial.read());
 				// System.out.println("Buffer Has Data :
 				// "+serial.availableBytes());
@@ -346,10 +347,7 @@ public class TeleInfoService implements Runnable {
 					// la première fois??
 					if (diffMinutes >= 1) {
 						_logger.warn(
-								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
-						
-						if (_startStopCounter > 0)
-							_logger.warn("INFO : La collecte de teleinfo est stoppée");
+								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");						
 
 						SMSDto sms = new SMSDto();
 						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");
@@ -366,10 +364,10 @@ public class TeleInfoService implements Runnable {
 				}
 			}
 
-			if (_startStopCounter > 0) {
+			/*if (_startStopCounter > 0) {
 				_logger.info("Receive stop collecting teleinfotrame event!");
 				return null;
-			}
+			}*/
 
 			// serial.removeListener(_sdl);
 
