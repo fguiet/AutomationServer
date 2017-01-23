@@ -8,7 +8,7 @@ import com.pi4j.io.gpio.Pin;
 
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
-import com.pi4j.io.serial.SerialFactory;
+//import com.pi4j.io.serial.SerialFactory;
 
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -199,12 +199,12 @@ public class Heater implements Comparable<Heater>, ICollectInfoStopListener {
 		case 29:
 			_pin = RaspiPin.GPIO_29;
 			break;
-		case 30:
+		/*case 30:
 			_pin = RaspiPin.GPIO_30;
 			break;
 		case 31:
 			_pin = RaspiPin.GPIO_31;
-			break;
+			break;*/
 
 		default:
 			// TODO : utiliser un throw ici!

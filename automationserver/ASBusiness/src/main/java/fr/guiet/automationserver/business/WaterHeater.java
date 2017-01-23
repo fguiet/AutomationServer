@@ -250,7 +250,7 @@ public class WaterHeater implements Runnable, ICollectInfoStopListener {
 	}
 
 	private void StartTeleInfoService() {
-		_logger.info("Start collect");
+		//_logger.info("Start collect");
 		_teleInfoService.StartCollectingTeleinfo("WaterHeater");
 	}
 }

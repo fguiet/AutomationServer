@@ -2,15 +2,16 @@ package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
 
-import com.pi4j.io.serial.SerialConfig;
+//import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
-import com.pi4j.io.serial.StopBits;
-import com.pi4j.io.serial.Baud;
-import com.pi4j.io.serial.DataBits;
-import com.pi4j.io.serial.FlowControl;
-import com.pi4j.io.serial.Parity;
+//import com.pi4j.io.serial.StopBits;
+//import com.pi4j.io.serial.Baud;
+//import com.pi4j.io.serial.DataBits;
+//import com.pi4j.io.serial.FlowControl;
+//import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
-import com.pi4j.io.serial.SerialDataEventListener;
+//import com.pi4j.io.serial.SerialDataEventListener;
+import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
@@ -36,7 +37,8 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	private SerialDataEventListener _sdl = null;
+	//private SerialDataEventListener _sdl = null;
+	private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -114,7 +116,8 @@ public class TeleInfoService implements Runnable {
 
 			try {
 
-				if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
+				//if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
+				if (_startStopCounter > 0) {
 					NotifyCollectInfoStop();					
 					_logger.info("ok teleinfoservice stoppé!! (start_stop_counter :)" + _startStopCounter);
 					Thread.sleep(2000);
@@ -208,7 +211,8 @@ public class TeleInfoService implements Runnable {
 	// Creation du listener sur le port serie
 	private void CreateSerialListener() {
 
-		_sdl = new SerialDataEventListener() {
+		//_sdl = new SerialDataEventListener() {
+		_sdl = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
@@ -216,11 +220,12 @@ public class TeleInfoService implements Runnable {
 					return;
 
 				String dataSZ = "";
-				try {
-					dataSZ = event.getAsciiString();
-				} catch (IOException e) {
-					_logger.error("Unable de read serial port", e);
-				}
+				//try {
+					//dataSZ = event.getAsciiString();
+					dataSZ = event.getData();
+				//} catch (IOException e) {
+				//	_logger.error("Unable de read serial port", e);
+				//}
 
 				char[] data = dataSZ.toCharArray();
 
@@ -304,15 +309,16 @@ public class TeleInfoService implements Runnable {
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
 			// serial.open(_defaultDevice, _defaultBaud);
-			SerialConfig config = new SerialConfig();
-			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
-					.stopBits(StopBits._1).flowControl(FlowControl.NONE);
+			//SerialConfig config = new SerialConfig();
+			//config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
+				//	.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
 			//sdl = CreateSerialListener();
 			serial.addListener(_sdl);
 
-			serial.open(config);
-			serial.setBufferingDataReceived(false);
+			//serial.open(config);
+			serial.open(_defaultDevice, 1200);
+			//serial.setBufferingDataReceived(false);
 			
 			//serial.discardAll();
 
@@ -383,18 +389,18 @@ public class TeleInfoService implements Runnable {
 			return null;
 		} finally {
 			//_logger.info("shut down serial factory");
-			SerialFactory.shutdown();
+			//SerialFactory.shutdown();
 			if (serial != null) {
 				//_logger.info("remove listener");
 				serial.removeListener(_sdl);
-				try {
+				//try {
 					if (serial.isOpen()) {
 						//_logger.info("fermeture port serie");
 						serial.close();
 					}
-				} catch (IOException ioe) {
-					_logger.error("Impossible de fermer le port serie", ioe);
-				}
+				//} catch (IOException ioe) {
+					//_logger.error("Impossible de fermer le port serie", ioe);
+				//}
 			}
 			
 			serial =null;
