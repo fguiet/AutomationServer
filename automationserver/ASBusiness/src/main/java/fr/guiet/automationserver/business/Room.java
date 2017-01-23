@@ -202,6 +202,7 @@ public class Room {
 
 	private Room(RoomDto dto, SMSGammuService gammuService) {
 
+		
 		_id = dto.id;
 		_name = dto.name;
 
