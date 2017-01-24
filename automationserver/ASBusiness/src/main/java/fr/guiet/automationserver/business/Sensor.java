@@ -24,15 +24,19 @@ public class Sensor implements IXBeeListener {
 	private float _actualHumidity;
 	private Room _room = null;
 	private SMSGammuService _smsGammuService = null;
-	private boolean _alertSent = false;
+	private boolean _alertSent5 = false;
+	private boolean _alertSent10 = false;
+	private boolean _alertSentMore = false;
 	private MqttHelper _mqttHelper = null;
-	
-	/*public Sensor(SMSGammuService smsGammuService) {
-		
-		_smsGammuService = smsGammuService;
-		_mqttHelper = new MqttHelper();
-	}*/
-	
+	// private int _sendAlertInMinute = 5; //envoie d'une alerte au bout de 5
+	// minutes par defaut
+
+	/*
+	 * public Sensor(SMSGammuService smsGammuService) {
+	 * 
+	 * _smsGammuService = smsGammuService; _mqttHelper = new MqttHelper(); }
+	 */
+
 	public float getActualTemp() {
 		return _actualTemp;
 	}
@@ -62,54 +66,62 @@ public class Sensor implements IXBeeListener {
 		long diff = currentDate.getTime() - _lastInfoReceived.getTime();
 		long diffMinutes = diff / (60 * 1000);
 
-		// Timeout si aucune info recu du capteur au bout de 5 minutes
-		if (diffMinutes >= 5) {
-			
-			if (!_alertSent) {
-			
+		if (diffMinutes > 5 && diffMinutes < 10) {
+
+			if (!_alertSent5) {
+
 				SMSDto sms = new SMSDto();
-				String message = String.format("Sensor "+_room.getName()+" does not send messages anymore...");						
+				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)",
+						_room.getName());
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
-				
-				_alertSent = true;
-			}
-			
-			return true;
-		} else {
-			_alertSent = false; //Réinitialisation
-			return false;
-		}
-	}
 
-	/*
-	 * private void SendSMS() { try {
-	 * 
-	 * String freeSMSUser = System.getProperty("freeSMSUser"); String
-	 * freeSMSPass = System.getProperty("freeSMSPass");
-	 * 
-	 * String url = targetURL.replace("@user@",freeSMSUser); url =
-	 * url.replace("@pass@",freeSMSPass); url =
-	 * url.replace("@msg@",URLEncoder.encode("Le capteur de la pièce "+_room.
-	 * getName()+" ne répond plus"));
-	 * 
-	 * URL restServiceURL = new URL(url);
-	 * 
-	 * HttpURLConnection httpConnection = (HttpURLConnection)
-	 * restServiceURL.openConnection(); httpConnection.setRequestMethod("GET");
-	 * //httpConnection.setRequestProperty("Accept", "application/json");
-	 * 
-	 * if (httpConnection.getResponseCode() != 200) {
-	 * _logger.error("Code retour incorrect lors de l'envoi du SMS Free ("
-	 * +httpConnection.getResponseCode()+"), Url : "+url); } else { _alertSent =
-	 * true; } httpConnection.disconnect();
-	 * 
-	 * } catch (MalformedURLException e) {
-	 * 
-	 * _logger.error(e.getMessage()); } catch (IOException e) {
-	 * 
-	 * _logger.error(e.getMessage()); } }
-	 */
+				_alertSent5 = true;
+			}
+
+			return true;
+		}
+
+		if (diffMinutes >= 10 && diffMinutes < 20) {
+
+			if (!_alertSent10) {
+
+				SMSDto sms = new SMSDto();
+				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)",
+						_room.getName());
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSent10 = true;
+			}
+
+			return true;
+		}
+
+		if (diffMinutes >= 20) {
+
+			if (!_alertSentMore) {
+
+				SMSDto sms = new SMSDto();
+				String message = String.format(
+						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something",
+						_room.getName());
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSentMore = true;
+			}
+
+			return true;
+		}
+
+		_alertSent5 = false; // Réinitialisation
+		_alertSent10 = false; // Réinitialisation
+		_alertSentMore = false; // Réinitialisation
+
+		return false;
+
+	}
 
 	// Reception d'un message
 	public void processResponse(String message) {
@@ -146,15 +158,15 @@ public class Sensor implements IXBeeListener {
 				DbManager dbManager = new DbManager();
 				dbManager.SaveSensorInfo(_idSensor, _actualTemp, _room.getWantedTemp(), _actualHumidity);
 				_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " + _room.getName()
-				+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
-				+ ", Humidité : " + _actualHumidity);
+						+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
+						+ ", Humidité : " + _actualHumidity);
 
 				String sensorName = "";
 				String sensorMqttTopic = "";
 				String id = String.valueOf(_idSensor);
 				switch (id) {
 				case "5":
-					//TODO : Store sensor name into database
+					// TODO : Store sensor name into database
 					sensorName = "sensor_dht22_chambre_parents";
 					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_parents";
 					break;
@@ -175,12 +187,12 @@ public class Sensor implements IXBeeListener {
 					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_manon";
 					break;
 				}
-				  
+
 				dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
-				
-				//Envoi des infos reçues vers le broker Mqtt
+
+				// Envoi des infos reçues vers le broker Mqtt
 				_mqttHelper.Publish(sensorMqttTopic, message);
-				
+
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()

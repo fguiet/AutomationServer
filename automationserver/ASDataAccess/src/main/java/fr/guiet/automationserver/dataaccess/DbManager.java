@@ -43,6 +43,7 @@ public class DbManager {
 	private static String _userNameInfluxDB = null; //"user_automation";
 	private static String _passwordInfluxDB = null; //"raspberry";
 	private static String _influxdbEnable = null;
+	private static String _retentionPolicy = null;
 	
 	private InfluxDB _influxDB = null;
 		
@@ -82,6 +83,7 @@ public class DbManager {
             _databaseInfluxDB = prop.getProperty("influxdb.database");                    
             _userNameInfluxDB = prop.getProperty("influxdb.username");
             _passwordInfluxDB = prop.getProperty("influxdb.password");
+            _retentionPolicy = prop.getProperty("influxdb.retentionpolicy");
             _influxdbEnable = prop.getProperty("influxdb.enable");
             
         } catch (FileNotFoundException e) {
@@ -111,7 +113,7 @@ public class DbManager {
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
-			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).tag("async", "true").retentionPolicy("default")
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
@@ -148,7 +150,7 @@ public class DbManager {
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
-			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).tag("async", "true").retentionPolicy("default")
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 			Point point1 = Point.measurement("teleinfo").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
