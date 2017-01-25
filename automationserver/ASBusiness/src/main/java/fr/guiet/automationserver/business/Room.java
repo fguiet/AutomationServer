@@ -18,14 +18,28 @@ public class Room {
 	// private Timer _timer = null;
 	private Float _userWantedTemp = null;
 	private Float _lastDefaultTemp = null;
+	private String _mqttTopic;
+	private String _influxdbMeasurement;
 
 	// Retourne la liste des radiateurs de la piece
 	public List<Heater> getHeaterList() {
 		return _heaterList;
 	}
+	
+	public Sensor getSensor() {
+		return _sensor;
+	}
+	
+	public String getInfluxdbMeasurement() {
+		return _influxdbMeasurement;
+	}
 
 	public long getRoomId() {
 		return _id;
+	}
+	
+	public String getMqttTopic() {
+		return _mqttTopic;
 	}
 
 	public String getName() {
@@ -205,6 +219,8 @@ public class Room {
 		
 		_id = dto.id;
 		_name = dto.name;
+		_mqttTopic = dto.mqttTopic;
+		_influxdbMeasurement = dto.influxdbMeasurement;
 
 		DbManager dbManager = new DbManager();
 		SensorDto sensorDto = dbManager.GetSensorByRoomId(dto.idSensor);

@@ -1,6 +1,8 @@
 package fr.guiet.automationserver.business;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.log4j.Logger;
@@ -21,6 +23,7 @@ public class RoomService implements Runnable {
 	private List<Heater> _allHeaterList = new ArrayList<Heater>();
 	private static final int MAX_INTENSITE_PAR_PHASE = 25;
 	private SMSGammuService _smsGammuService = null;
+	private Timer _timer = null;
 
 	// Constructeur
 	/**
@@ -53,6 +56,10 @@ public class RoomService implements Runnable {
 		}
 
 		_allHeaterList.add(heater);
+	}
+
+	public List<Room> GetRooms() {
+		return _roomList;
 	}
 
 	private Room GetRoomById(long roomId) {
@@ -166,6 +173,9 @@ public class RoomService implements Runnable {
 	// Arret du service RoomService
 	public void StopService() {
 
+		if (_timer != null)
+			_timer.cancel();
+
 		for (Room r : _roomList) {
 			r.StopService();
 		}
@@ -175,11 +185,39 @@ public class RoomService implements Runnable {
 		_isStopped = true;
 	}
 
+	// Création de la tache de sauvegarde en bdd
+	private void CreateSaveToDBTask() {
+
+		TimerTask roomServiceTask = new TimerTask() {
+			@Override
+			public void run() {
+
+				for (Room room : _roomList) {
+
+					DbManager dbManager = new DbManager();
+					dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(), room.getWantedTemp(), room.getActualHumidity());
+					_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
+							+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
+							+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
+
+					dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(), room.getWantedTemp(),
+							room.getActualHumidity());
+				}
+			}
+		};
+
+		_timer = new Timer(true);
+		// Toutes les minutes on enregistre
+		_timer.schedule(roomServiceTask, 5000, 60000);
+
+	}
+
 	@Override
 	public void run() {
 
 		_logger.info("Starting Room Service...");
-		// Date startTime = new Date();
+
+		CreateSaveToDBTask();
 
 		LoadRoomList();
 
@@ -260,19 +298,19 @@ public class RoomService implements Runnable {
 			ManagerHeatersByPhase(2, teleInfoTrame.IINST2, _heaterListPhase2);
 			ManagerHeatersByPhase(3, teleInfoTrame.IINST3, _heaterListPhase3);
 		} else {
-			//ICi il faut tout coupé au cas ou des radiateurs soit allumés...
+			// ICi il faut tout coupé au cas ou des radiateurs soit allumés...
 			for (Heater h : _allHeaterList) {
 				if (h.isOn())
 					h.SetOff();
-			}			
-			
+			}
+
 			_logger.error("Derniere trame de teleinfo recue vide. Gestion des radiateurs impossible.");
 		}
 	}
 
 	// Gestion des radiateurs par phase
 	private void ManagerHeatersByPhase(int phase, int intensitePhase, List<Heater> _heaterList) {
-		//_logger.info("Je vais gérer les radiateurs maintenant...");
+		// _logger.info("Je vais gérer les radiateurs maintenant...");
 		// _logger.info("Intensite courante phase "+phase+" : "+intensitePhase);
 		for (Heater h : _heaterList) {
 
@@ -295,8 +333,9 @@ public class RoomService implements Runnable {
 			if (roomActualTemp != null)
 				actualTemp = "" + roomActualTemp;
 
-			_logger.info("***LOG : Radiateur  " + h.getName() + " de la pièce " + h.getRoom().getName() + ", Etat : " + h.getEtatLabel()
-					+ ", T° prog :" + tempProg + ", T° piece : " + actualTemp + ", T° desire : " + calcProg);
+			_logger.info("***LOG : Radiateur  " + h.getName() + " de la pièce " + h.getRoom().getName() + ", Etat : "
+					+ h.getEtatLabel() + ", T° prog :" + tempProg + ", T° piece : " + actualTemp + ", T° desire : "
+					+ calcProg);
 
 			// On arrive pas a obtenir la temperature courante de la piece donc
 			// on eteint le radiateur
@@ -358,8 +397,8 @@ public class RoomService implements Runnable {
 						+ (intensitePhase - h.getCurrentConsumption()));
 			}
 		}
-		
-		//_logger.info("je sors");
+
+		// _logger.info("je sors");
 	}
 
 	private void LoadRoomList() {

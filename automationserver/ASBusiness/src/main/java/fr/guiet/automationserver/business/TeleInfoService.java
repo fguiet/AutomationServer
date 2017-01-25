@@ -49,34 +49,11 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
-	//private int _startStopCounter = 0;
-	//private boolean _isCollectTeleInfoStopped = false;
-	//private List<ICollectInfoStopListener> _collectInfoStopListeners = new ArrayList<ICollectInfoStopListener>();
 	
-	/*public void addListener(ICollectInfoStopListener toAdd) {
-		_collectInfoStopListeners.add(toAdd);
-    }*/
-
-    /*private void NotifyCollectInfoStop() {
-
-        // Notify everybody that may be interested.
-        for (ICollectInfoStopListener l : _collectInfoStopListeners)
-        	l.OnCollectInfoStopped();
-    }*/
 	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 	}
-
-	/*public synchronized void StopCollectingTeleinfo(String initiator) {
-		_logger.info(String.format("Stopping collect of teleinfo (initiator is %s)", initiator));
-		_startStopCounter++;
-	}
-
-	public synchronized void StartCollectingTeleinfo(String initiator) {
-		_logger.info(String.format("Starting collect of teleinfo (initiator is %s)", initiator));
-		_startStopCounter--;
-	}*/
 
 	@Override
 	public void run() {

@@ -14,6 +14,7 @@ public class Sensor implements IXBeeListener {
 	private static Logger _logger = Logger.getLogger(Sensor.class);
 
 	private long _idSensor;
+	private String _name;
 	private XBeeAddress64 _sensorAddress;
 	private Timer _timer = null;
 	private static XBeeService _XBeeInstance = null;
@@ -27,7 +28,7 @@ public class Sensor implements IXBeeListener {
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
 	private boolean _alertSentMore = false;
-	private MqttHelper _mqttHelper = null;
+	//private MqttHelper _mqttHelper = null;
 	// private int _sendAlertInMinute = 5; //envoie d'une alerte au bout de 5
 	// minutes par defaut
 
@@ -72,7 +73,7 @@ public class Sensor implements IXBeeListener {
 
 				SMSDto sms = new SMSDto();
 				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)",
-						_room.getName());
+						_name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -88,7 +89,7 @@ public class Sensor implements IXBeeListener {
 
 				SMSDto sms = new SMSDto();
 				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)",
-						_room.getName());
+						_name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -105,7 +106,7 @@ public class Sensor implements IXBeeListener {
 				SMSDto sms = new SMSDto();
 				String message = String.format(
 						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something",
-						_room.getName());
+						_name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -155,44 +156,13 @@ public class Sensor implements IXBeeListener {
 				_actualTemp = Float.parseFloat(actualTemp);
 				_actualHumidity = Float.parseFloat(actualHumidity);
 
-				DbManager dbManager = new DbManager();
+		/*		DbManager dbManager = new DbManager();
 				dbManager.SaveSensorInfo(_idSensor, _actualTemp, _room.getWantedTemp(), _actualHumidity);
 				_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " + _room.getName()
 						+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
 						+ ", Humidité : " + _actualHumidity);
 
-				String sensorName = "";
-				String sensorMqttTopic = "";
-				String id = String.valueOf(_idSensor);
-				switch (id) {
-				case "5":
-					// TODO : Store sensor name into database
-					sensorName = "sensor_dht22_chambre_parents";
-					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_parents";
-					break;
-				case "1":
-					sensorName = "sensor_dht22_bureau";
-					sensorMqttTopic = "guiet/home/devices/sensors/dht22bureau";
-					break;
-				case "2":
-					sensorName = "sensor_dht22_salon";
-					sensorMqttTopic = "guiet/home/devices/sensors/dht22salon";
-					break;
-				case "3":
-					sensorName = "sensor_dht22_chambre_nohe";
-					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_nohe";
-					break;
-				case "4":
-					sensorName = "sensor_dht22_chambre_manon";
-					sensorMqttTopic = "guiet/home/devices/sensors/dht22chambre_manon";
-					break;
-				}
-
-				dbManager.SaveSensorInfoInfluxDB(sensorName, _actualTemp, _room.getWantedTemp(), _actualHumidity);
-
-				// Envoi des infos reçues vers le broker Mqtt
-				_mqttHelper.Publish(sensorMqttTopic, message);
-
+				dbManager.SaveSensorInfoInfluxDB(_influxdbMeasurement, _actualTemp, _room.getWantedTemp(), _actualHumidity);*/
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()
@@ -231,7 +201,7 @@ public class Sensor implements IXBeeListener {
 
 		_timer = new Timer(true);
 		// Toutes les minutes on enregistre une trame
-		_timer.schedule(getSensorInfoTask, 5000, 60000);
+		_timer.schedule(getSensorInfoTask, 5000, 30000);
 	}
 
 	// Envoi d'un message pour recuperer les infos du capteur
@@ -245,8 +215,9 @@ public class Sensor implements IXBeeListener {
 
 		_idSensor = dto.sensorId;
 		_room = room;
+		_name = dto.name;
 		_smsGammuService = gammuService;
-		_mqttHelper = new MqttHelper(gammuService);
+		//_mqttHelper = new MqttHelper(gammuService);
 
 		String[] address = dto.sensorAddress.split(" ");
 

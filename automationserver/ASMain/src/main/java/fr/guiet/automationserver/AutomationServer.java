@@ -31,6 +31,7 @@ public class AutomationServer implements Daemon {
 	private Thread _teleInfoServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private SMSGammuService _smsGammuService = null;
+	private MqttHelper _mqttHelper = null;
 
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);
@@ -85,8 +86,10 @@ public class AutomationServer implements Daemon {
 					_waterHeaterServiceThread.start();
 
 					// TODO : Replace this server by MQTT subscribe
-					ServerSocket socket = new ServerSocket(4310);
-					_logger.info("Starting messages management queue...");
+					//ServerSocket socket = new ServerSocket(4310);
+					//_logger.info("Starting messages management queue...");
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService);
+					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();
 					sms.setMessage("Automation server has started...");
@@ -94,23 +97,24 @@ public class AutomationServer implements Daemon {
 					
 					while (!_isStopped) {
 
-						Socket connection = socket.accept();
+						//Socket connection = socket.accept();
 
-						AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
-								_teleInfoService);
-						ast.start();
+						//AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
+							//	_teleInfoService);
+						//ast.start();
+						_mqttHelper.PublishRoomsInfo();
 						
-						//TODO : A supprimer , pour test
-						//Thread.sleep(3000);
+						//Publication des données toutes les 30s
+						Thread.sleep(3000);
 
 					}
 
-					try {
+					/*try {
 						socket.close();
 					} catch (IOException e) {
 						_logger.error("Error occured when closing message management queue socket...", e);
 						socket = null;
-					}
+					}*/
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
 
@@ -141,6 +145,7 @@ public class AutomationServer implements Daemon {
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
+			_mqttHelper.disconnect();
 
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Automation server has stopped...");
@@ -168,6 +173,7 @@ public class AutomationServer implements Daemon {
 		_teleInfoService = null;
 		_roomService = null;
 		_waterHeater = null;
+		_mqttHelper = null;
 	}
 
 }

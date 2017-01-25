@@ -141,6 +141,10 @@ fichier de config : /etc/influxdb/influxdb.conf
 Video intéressante influxdb, mqtt, openhab
 https://www.youtube.com/watch?v=-4aRaCAbZxU
 
+Creer un base influxdb
+https://docs.influxdata.com/influxdb/v0.9/introduction/getting_started/
+https://docs.influxdata.com/influxdb/v0.9/administration/authentication_and_authorization/
+
 Maven
 -----
 
@@ -233,6 +237,11 @@ http://docs.openhab.org/configuration/sitemaps.html
 Addon ici
 /usr/share/openhab/addons
 
+Transformations (js, map, json)
+//Config des addons (ajout via paperui/addons/transformations)
+/etc/openhab2/services/addons.cfg
+/etc/openhab2/transform => repertoire de depot JS, etc
+
 
 J'ai du ajouter JAVA_HOME et LANG=fr_FR.UTF8 dans nano /usr/share/openhab2/start.sh
 
@@ -261,3 +270,19 @@ guiet/home/devices/sensors/dht22chambre_parents
 
 Info
 http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
+
+//Souscrire à un topic
+mosquitto_sub -v -h localhost -t guiet/home/devices/sensors/xxxtest
+
+//Publier un message
+mosquitto_pub -t guiet/home/devices/sensors/dht22salon -m 22
+
+ESP8266
+-------
+
+Pour voir les problèmes de boot se mettre en 74880 baud...
+Pour reset le bouzin (pin Reset sur ground pendant 2sec)
+Pour programmer le bouzon (GPIO00 sur ground) puis reset, puis téléversement
+
+
+https://iothacking.wordpress.com/2016/11/08/mqtt-reed-switch/

@@ -101,7 +101,7 @@ public class DbManager {
 	 * @param wantedTemp
 	 * @param humidity
 	 */
-	public void SaveSensorInfoInfluxDB(String sensorName, Float actualTemp, Float wantedTemp, float humidity) {
+	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity) {
 		
 		try {
 			if (!_influxdbEnable.equals("true")) 
@@ -117,7 +117,7 @@ public class DbManager {
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(sensorName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+			Point point1 = Point.measurement(roomName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 					.addField("actual_temp", actualTemp).addField("wanted_temp", wantedTemp)
 					.addField("humidity", humidity).build();
 
@@ -200,7 +200,7 @@ public class DbManager {
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String stm = "INSERT INTO teleinfo.sensor_entry("
+			String stm = "INSERT INTO automation.sensor_entry("
 					+ "id_sensor, actual_temp, wanted_temp, humidity, received_date)" + "VALUES (?, ?, ?, ?, ?);";
 
 			pst = connection.prepareStatement(stm);
@@ -253,7 +253,7 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from teleinfo.room_heater a, teleinfo.heater b "
+			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from automation.room_heater a, automation.heater b "
 					+ "where a.id_heater = b.id_heater and a.id_room=?";
 
 			pst = connection.prepareStatement(query);
@@ -308,7 +308,7 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "SELECT c.id_sensor, c.sensor_address FROM teleinfo.sensor c " + "where c.id_sensor = ? ";
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name FROM automation.sensor c " + "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
 			pst.setLong(1, sensorId);
@@ -319,6 +319,8 @@ public class DbManager {
 			dto = new SensorDto();
 			dto.sensorId = rs.getLong("id_sensor");
 			dto.sensorAddress = rs.getString("sensor_address");
+			dto.name =  rs.getString("name");
+			
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
@@ -353,7 +355,7 @@ public class DbManager {
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "select temp from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
+			String query = "select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
 			pst = connection.prepareStatement(query);
 			pst.setLong(1, roomId);
@@ -400,7 +402,7 @@ public class DbManager {
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "select priority from teleinfo.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
+			String query = "select priority from automation.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
 			pst = connection.prepareStatement(query);
 			// pst.setLong(1, heaterId);
@@ -448,7 +450,7 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "SELECT a.id_room, a.name, a.id_sensor FROM teleinfo.room a ";
+			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic, a.influxdb_measurement FROM automation.room a ";
 
 			pst = connection.prepareStatement(query);
 
@@ -460,6 +462,8 @@ public class DbManager {
 				r.id = rs.getLong("id_room");
 				r.name = rs.getString("name");
 				r.idSensor = rs.getLong("id_sensor");
+				r.mqttTopic =  rs.getString("mqtt_topic");
+				r.influxdbMeasurement = rs.getString("influxdb_measurement");
 
 				roomList.add(r);
 			}
@@ -503,13 +507,13 @@ public class DbManager {
 
 			if (dayOfWeek == dow) {
 
-				query = "select temp, hour_begin, hour_end, day_of_week " + "from teleinfo.temp_schedule "
+				query = "select temp, hour_begin, hour_end, day_of_week " + "from automation.temp_schedule "
 						+ "where id_room=? and day_of_week=date_part('dow',now())+1 " + "and "
-						+ "(temp!=(select temp from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
+						+ "(temp!=(select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "and "
-						+ "(day_of_week=(select day_of_week from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
+						+ "(day_of_week=(select day_of_week from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "and "
-						+ "(hour_begin > (select hour_end from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
+						+ "(hour_begin > (select hour_end from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "order by day_of_week,hour_begin asc " + "limit 1 ";
 
 				pst = connection.prepareStatement(query);
@@ -518,9 +522,9 @@ public class DbManager {
 				pst.setLong(3, roomId);
 				pst.setLong(4, roomId);
 			} else {
-				query = "select temp, hour_begin, hour_end, day_of_week " + "from teleinfo.temp_schedule "
+				query = "select temp, hour_begin, hour_end, day_of_week " + "from automation.temp_schedule "
 						+ "where id_room=? and day_of_week=? " + "and "
-						+ "(temp!=(select temp from teleinfo.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
+						+ "(temp!=(select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "order by hour_begin asc " + "limit 1 ";
 
 				pst = connection.prepareStatement(query);
@@ -576,7 +580,7 @@ public class DbManager {
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String stm = "INSERT INTO teleinfo.trame_teleinfo("
+			String stm = "INSERT INTO automation.trame_teleinfo("
 					+ "date_reception, adco, optarif, isousc, hchc, hchp, ptec, iinst1, "
 					+ "iinst2, iinst3, imax1, imax2, imax3, pmax, papp, hhphc, motdetat, " + "ppot)"
 					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";

@@ -7,67 +7,176 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class MqttHelper {
-	
+public class MqttHelper implements MqttCallback {
+
 	private static Logger _logger = Logger.getLogger(MqttClient.class);
 	private String _uri = "tcp://%s:%s";
 	private final String CLIENT_ID = "Java Automation Server";
 	private SMSGammuService _smsGammuService = null;
-		
-	public MqttHelper(SMSGammuService gammuService) {
-		
+	private MqttClient _client = null;
+	private String[] _topics = null;
+	private RoomService _roomService = null;
+	private TeleInfoService _teleInfoService = null;
+
+	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
+
 		InputStream is = null;
-        try {
-        	
-        	String configPath = System.getProperty("automationserver.config.path");
-        	is = new FileInputStream(configPath);
-        	
-        	Properties prop = new Properties();        	
-            prop.load(is);
-            
-            String host = prop.getProperty("mqtt.host");    
-            String port = prop.getProperty("mqtt.port");
-            _uri = String.format(_uri, host, port);
-            
-            _smsGammuService = gammuService;
-            
-        } catch (FileNotFoundException e) {
-        	_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
-        } catch (IOException e) {
-        	_logger.error("Error in reading configuration file classpath_folder/config/automationserver.properties", e);
-        } 	
-		
+		try {
+
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+
+			String host = prop.getProperty("mqtt.host");
+			String port = prop.getProperty("mqtt.port");
+			_uri = String.format(_uri, host, port);
+			_topics = prop.getProperty("mqtt.topics").split(";");
+
+			_smsGammuService = gammuService;
+			_roomService = roomService;
+			_teleInfoService = teleInfoService;
+
+		} catch (FileNotFoundException e) {
+			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
+		} catch (IOException e) {
+			_logger.error("Error in reading configuration file classpath_folder/config/automationserver.properties", e);
+		}
+
 	}
-	
+
+	public void connectAndSubscribe() {
+		try {
+			_client = new MqttClient(_uri, CLIENT_ID);
+			_client.connect();
+			int subQoS = 0;
+
+			for (String topic : _topics) {
+				_client.subscribe(topic, subQoS);
+			}
+
+		} catch (MqttException me) {
+			_logger.error("Error connecting to mqtt broker", me);
+
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in mqtt helper, review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		}
+	}
+
+	public void disconnect() {
+		try {
+			_client.disconnect();
+		} catch (MqttException me) {
+			_logger.error("Error disconnecting to mqtt broker", me);
+		}
+	}
+
 	/**
 	 * Publishes message to Mqtt broker
 	 * 
 	 * @param topic
 	 * @param message
 	 */
-	public void Publish(String topic, String message) {
-		
+	public void PublishRoomsInfo() {
+
 		try {
-			MqttClient client = new MqttClient(_uri, CLIENT_ID);				
-		    client.connect();
-		    MqttMessage mqttMessage = new MqttMessage();
-		    mqttMessage.setPayload(message.getBytes());
-		    client.publish(topic, mqttMessage);
-		    client.disconnect();
-		}
-		catch (MqttException me) {
-			_logger.error("Error sending sensor value to mqtt broker", me);
+			MqttMessage mqttMessage = new MqttMessage();
 			
+			for (Room room : _roomService.GetRooms()) {
+				String message = FormatRoomInfoMessage(room.getRoomId());
+				mqttMessage.setPayload(message.getBytes());
+				_client.publish(room.getMqttTopic(), mqttMessage);
+				//Thread.sleep(1000);
+			}			
+		} catch (MqttException me) {
+			_logger.error("Error sending sensor value to mqtt broker", me);
+
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Error occured in mqtt helper, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
-		}		
+		}
 	}
-	
+
+	@Override
+	public void connectionLost(Throwable arg0) {
+		_logger.warn("Mqtt connection lost...reconnecting...");
+		connectAndSubscribe();
+	}
+
+	@Override
+	public void deliveryComplete(IMqttDeliveryToken arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
+		_logger.info(String.format("Received topic : %s, Message : %s", arg0, new String(arg1.getPayload())));
+	}
+
+	private String FormatRoomInfoMessage(long roomId) {
+
+		String actualTemp = "NA";
+		if (_roomService.GetActualTemp(roomId) != null) {
+			actualTemp = String.format("%.2f", _roomService.GetActualTemp(roomId));
+		}
+
+		String wantedTemp = "NA";
+		if (_roomService.GetWantedTemp(roomId) != null) {
+			wantedTemp = String.format("%.2f", _roomService.GetWantedTemp(roomId));
+		}
+
+		String actualHumidity = "NA";
+		if (_roomService.GetActualHumidity(roomId) != null) {
+			actualHumidity = String.format("%.2f", _roomService.GetActualHumidity(roomId));
+		}
+
+		String nextDefaultTemp = _roomService.NextChangeDefaultTemp(roomId);
+
+		String hasHeaterOn = "HEATEROFF";
+		if (_roomService.AtLeastOneHeaterOn(roomId)) {
+			hasHeaterOn = "HEATERON";
+		}
+
+		String progTemp = "NA";
+		Float tempProg = _roomService.GetTempProg(roomId);
+		if (tempProg != null) {
+			progTemp = String.format("%.2f", tempProg);
+		}
+
+		String offForced = "FORCEDHEATEROFF";
+		if (_roomService.IsOffForced(roomId)) {
+			offForced = "FORCEDHEATERON";
+		}
+
+		String sensorKO = "SENSORKO";
+		if (_roomService.IsSensorResponding(roomId)) {
+			sensorKO = "SENSOROK";
+		}
+
+		/*
+		 * String papp = "NA"; String hchc = "NA"; String hchp = "NA";
+		 * 
+		 * if (_teleInfoService.GetLastTrame() != null) { hchc =
+		 * Integer.toString(_teleInfoService.GetLastTrame().HCHC); hchp =
+		 * Integer.toString(_teleInfoService.GetLastTrame().HCHP); papp =
+		 * Integer.toString(_teleInfoService.GetLastTrame().PAPP); }
+		 */
+
+		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
+				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp;
+
+		return message;
+	}
+
 }
