@@ -61,7 +61,9 @@ public class MqttHelper implements MqttCallback {
 			int subQoS = 0;
 
 			for (String topic : _topics) {
-				_client.subscribe(topic, subQoS);
+				if (!topic.equals("")) {
+					_client.subscribe(topic, subQoS);
+				}
 			}
 
 		} catch (MqttException me) {
@@ -91,13 +93,13 @@ public class MqttHelper implements MqttCallback {
 
 		try {
 			MqttMessage mqttMessage = new MqttMessage();
-			
+
 			for (Room room : _roomService.GetRooms()) {
 				String message = FormatRoomInfoMessage(room.getRoomId());
 				mqttMessage.setPayload(message.getBytes());
 				_client.publish(room.getMqttTopic(), mqttMessage);
-				//Thread.sleep(1000);
-			}			
+				// Thread.sleep(1000);
+			}
 		} catch (MqttException me) {
 			_logger.error("Error sending sensor value to mqtt broker", me);
 
