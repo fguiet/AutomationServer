@@ -63,6 +63,7 @@ public class MqttHelper implements MqttCallback {
 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
+					_logger.info("Subscribing to topic"+topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
