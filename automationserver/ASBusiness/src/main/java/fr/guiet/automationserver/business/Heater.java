@@ -241,6 +241,10 @@ public class Heater implements Comparable<Heater> {
 		DbManager dbManager = new DbManager();
 		return dbManager.GetCurrentPriorityByHeaterId(_heaterId);
 	}
+	
+	public long getId() {
+		return _heaterId;
+	}
 
 	/*
 	 * (non-Javadoc)
