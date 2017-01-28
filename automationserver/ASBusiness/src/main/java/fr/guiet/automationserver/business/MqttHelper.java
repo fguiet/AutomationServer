@@ -58,6 +58,7 @@ public class MqttHelper implements MqttCallback {
 	public void connectAndSubscribe() {
 		try {
 			_client = new MqttClient(_uri, CLIENT_ID);
+			_client.setCallback(this);
 			_client.connect();
 			int subQoS = 0;
 
