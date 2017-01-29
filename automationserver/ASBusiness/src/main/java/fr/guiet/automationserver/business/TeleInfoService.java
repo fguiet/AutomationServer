@@ -15,7 +15,6 @@ import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

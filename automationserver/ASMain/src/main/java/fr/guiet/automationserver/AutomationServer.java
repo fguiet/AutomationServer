@@ -5,9 +5,6 @@ import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
 import java.util.Locale;
 import org.apache.log4j.Logger;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import fr.guiet.automationserver.business.*;
 import fr.guiet.automationserver.dto.SMSDto;
 

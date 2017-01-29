@@ -7,7 +7,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Date;
 import fr.guiet.automationserver.dto.*;
-import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class Sensor implements IXBeeListener {
 
