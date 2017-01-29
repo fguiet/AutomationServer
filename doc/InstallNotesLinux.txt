@@ -1,0 +1,8 @@
+Maven
+-----
+
+Déployer un JAR dans un repo MAVEN
+1.Copier les JAR dans le répertoire ou vous êtes (pwd)
+2.Lancer les commandes suivantes:
+mvn deploy:deploy-file -Durl=file:///home/guiet/projets/AutomationServer/automationserver/ASBusiness/repo/ -Dfile=RXTXComm-1.0.jar -DgroupId=com.rapplogic.xbee -DartifactId=RXTXComm -Dpackaging=jar -Dversion=1.0
+mvn deploy:deploy-file -Durl=file:///home/guiet/projets/AutomationServer/automationserver/ASBusiness/repo/ -Dfile=RXTXComm-1.0.jar -DgroupId=com.rapplogic.xbee-api -DartifactId=xbee-api -Dpackaging=jar -Dversion=0.9
