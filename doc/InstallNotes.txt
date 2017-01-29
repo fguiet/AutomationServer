@@ -191,8 +191,8 @@ java -Dlog4j.configuration=file:/home/fred/automationserver/config/log4j.xml -cl
 
 Mosquito (MQTT)
 ---------------
-apt-get install mosquito
-apt-get install mosquito-clients
+apt-get install mosquitto
+apt-get install mosquitto-clients
 
 sudo systemctl enable mosquitto (a voir si faut le faire)
 fichier de conf = /etc/mosquitto/mosquitto.conf
@@ -231,8 +231,9 @@ Configuration :
 /etc/openhab2
 /var/lib/openhab2
 
-Sitemaps:
+Sitemaps et items:
 http://docs.openhab.org/configuration/sitemaps.html
+
 
 Addon ici
 /usr/share/openhab/addons
@@ -253,7 +254,11 @@ installer l'addon via PaperUI puis configuration /etc/openhab2/services/mqtt.cfg
 
 items:/etc/openhab2/items
 
+Icons
+https://github.com/eclipse/smarthome/tree/master/extensions/ui/iconset/org.eclipse.smarthome.ui.iconset.classic/icons
 
+Pour ouvrir la console de debug : ssh openhab@localhost -p 8101 (pwd:habopen)
+http://docs.openhab.org/administration/logging.html => log via console
 
 Mosquitto (MQTT)
 ---------------
@@ -286,3 +291,4 @@ Pour programmer le bouzon (GPIO00 sur ground) puis reset, puis téléversement
 
 
 https://iothacking.wordpress.com/2016/11/08/mqtt-reed-switch/
+https://github.com/hamityanik/ULP-Weather-Logger

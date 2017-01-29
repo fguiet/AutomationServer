@@ -169,6 +169,16 @@ public class RoomService implements Runnable {
 			r.DesactiveExtinctionForceRadiateurs();
 		}
 	}
+	
+	public Heater getHeaterById(long heaterId) {
+		for (Heater h : _allHeaterList) {
+			if (h.getId()==heaterId) {
+				return h;
+			}
+		}
+		
+		return null;
+	}
 
 	// Arret du service RoomService
 	public void StopService() {

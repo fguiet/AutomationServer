@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -57,11 +58,13 @@ public class MqttHelper implements MqttCallback {
 	public void connectAndSubscribe() {
 		try {
 			_client = new MqttClient(_uri, CLIENT_ID);
+			_client.setCallback(this);
 			_client.connect();
 			int subQoS = 0;
 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
+					_logger.info("Subscribing to topic"+topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
@@ -96,7 +99,7 @@ public class MqttHelper implements MqttCallback {
 
 			for (Room room : _roomService.GetRooms()) {
 				String message = FormatRoomInfoMessage(room.getRoomId());
-				mqttMessage.setPayload(message.getBytes());
+				mqttMessage.setPayload(message.getBytes("UTF8"));
 				_client.publish(room.getMqttTopic(), mqttMessage);
 				// Thread.sleep(1000);
 			}
@@ -106,6 +109,8 @@ public class MqttHelper implements MqttCallback {
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Error occured in mqtt helper, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
+		} catch (UnsupportedEncodingException e) {
+			_logger.error("Error when encoding message in UTF8", e);
 		}
 	}
 
@@ -124,6 +129,32 @@ public class MqttHelper implements MqttCallback {
 	@Override
 	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
 		_logger.info(String.format("Received topic : %s, Message : %s", arg0, new String(arg1.getPayload())));
+		
+		ProcessMessageReceived(new String(arg1.getPayload()));
+
+	}
+
+	private void ProcessMessageReceived(String message) {
+
+		String[] messageContent = message.split(";");
+
+		if (messageContent != null && messageContent.length > 0) {
+			String action = messageContent[0];
+
+			switch (action) {
+				case "SETROOMTEMP":
+					long roomId=Long.parseLong(messageContent[1]);
+					
+					try {
+						float wantedTempFloat = Float.parseFloat(messageContent[2]);
+						_roomService.SetWantedTemp(roomId, wantedTempFloat);
+					} catch (Exception e) {
+						_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur",e);
+					}
+					
+					break;
+				}
+		}
 	}
 
 	private String FormatRoomInfoMessage(long roomId) {
