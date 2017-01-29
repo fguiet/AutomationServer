@@ -6,3 +6,36 @@ Déployer un JAR dans un repo MAVEN
 2.Lancer les commandes suivantes:
 mvn deploy:deploy-file -Durl=file:///home/guiet/projets/AutomationServer/automationserver/ASBusiness/repo/ -Dfile=RXTXComm-1.0.jar -DgroupId=com.rapplogic.xbee -DartifactId=RXTXComm -Dpackaging=jar -Dversion=1.0
 mvn deploy:deploy-file -Durl=file:///home/guiet/projets/AutomationServer/automationserver/ASBusiness/repo/ -Dfile=RXTXComm-1.0.jar -DgroupId=com.rapplogic.xbee-api -DartifactId=xbee-api -Dpackaging=jar -Dversion=0.9
+
+Yahoo/Wunderground (Meteo)
+--------------------------
+
+Meteo
+WOEID = 576786
+
+Suivre ce topic pour l'installation
+
+1.Installer le binding weather
+2.Configurer weather.cfg dans /etc/openhab2/services
+3.Suivre ce tuto https://github.com/openhab/openhab1-addons/issues/4532
+4.Attention ne marche pas avec Yahoo!! => utiliser wunderground
+
+Artenay latitude/longitude = 48.0772971,1.8441498
+
+Grafana/Openhab
+---------------
+
+https://community.openhab.org/t/influxdb-grafana-persistence-and-graphing/13761
+
+Grafana
+-------
+
+Pour permettre l'authentification anonyme
+
+[auth.anonymous]
+# enable anonymous access
+;enabled = true 
+
+Les graphes Grafana sont crées pour des organizations...on définit une organisation pour laquelle l'authentification anonyme est permise (voir fichier de config pour définir l'organisation)
+
+

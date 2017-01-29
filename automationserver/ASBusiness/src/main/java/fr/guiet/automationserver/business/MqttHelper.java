@@ -64,7 +64,7 @@ public class MqttHelper implements MqttCallback {
 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
-					_logger.info("Subscribing to topic"+topic);
+					_logger.info("Subscribing to topic" + topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
@@ -129,7 +129,7 @@ public class MqttHelper implements MqttCallback {
 	@Override
 	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
 		_logger.info(String.format("Received topic : %s, Message : %s", arg0, new String(arg1.getPayload())));
-		
+
 		ProcessMessageReceived(new String(arg1.getPayload()));
 
 	}
@@ -142,18 +142,18 @@ public class MqttHelper implements MqttCallback {
 			String action = messageContent[0];
 
 			switch (action) {
-				case "SETROOMTEMP":
-					long roomId=Long.parseLong(messageContent[1]);
-					
-					try {
-						float wantedTempFloat = Float.parseFloat(messageContent[2]);
-						_roomService.SetWantedTemp(roomId, wantedTempFloat);
-					} catch (Exception e) {
-						_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur",e);
-					}
-					
-					break;
+			case "SETROOMTEMP":
+				long roomId = Long.parseLong(messageContent[1]);
+
+				try {
+					float wantedTempFloat = Float.parseFloat(messageContent[2]);
+					_roomService.SetWantedTemp(roomId, wantedTempFloat);
+				} catch (Exception e) {
+					_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur", e);
 				}
+
+				break;
+			}
 		}
 	}
 
@@ -197,17 +197,18 @@ public class MqttHelper implements MqttCallback {
 			sensorKO = "SENSOROK";
 		}
 
-		/*
-		 * String papp = "NA"; String hchc = "NA"; String hchp = "NA";
-		 * 
-		 * if (_teleInfoService.GetLastTrame() != null) { hchc =
-		 * Integer.toString(_teleInfoService.GetLastTrame().HCHC); hchp =
-		 * Integer.toString(_teleInfoService.GetLastTrame().HCHP); papp =
-		 * Integer.toString(_teleInfoService.GetLastTrame().PAPP); }
-		 */
+		String papp = "NA";
+		String hchc = "NA";
+		String hchp = "NA";
+
+		if (_teleInfoService.GetLastTrame() != null) {
+			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
+			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
+			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);
+		}
 
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp;
+				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp;
 
 		return message;
 	}
