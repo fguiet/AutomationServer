@@ -33,6 +33,7 @@ public class Heater implements Comparable<Heater> {
 	//private boolean _waitForOn = false;
 	//private boolean _waitForOff = false;
 	private final String PIN_CHAUFFAGE_NAME ="PIN_CHAUFFAGE";
+	private DbManager _dbManager = null;
 
 	/*@Override
 	public void OnCollectInfoStopped() {
@@ -107,6 +108,7 @@ public class Heater implements Comparable<Heater> {
 		_phase = dto.phase;
 		_raspberryPin = dto.raspberryPin;
 		_name = dto.name;
+		_dbManager = new DbManager();
 		//_teleInfoService = teleInfoService;
 		//_teleInfoService.addListener(this);
 
@@ -234,8 +236,8 @@ public class Heater implements Comparable<Heater> {
 	 * @return Returns heater priority value regarding current datetime
 	 */
 	public Integer GetCurrentPriority() {
-		DbManager dbManager = new DbManager();
-		return dbManager.GetCurrentPriorityByHeaterId(_heaterId);
+		//DbManager dbManager = new DbManager();
+		return _dbManager.GetCurrentPriorityByHeaterId(_heaterId);
 	}
 	
 	public long getId() {

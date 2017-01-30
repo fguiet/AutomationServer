@@ -48,10 +48,12 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
+	private DbManager _dbManager = null;
 	
 	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
+		_dbManager = new DbManager();
 	}
 
 	@Override
@@ -175,12 +177,12 @@ public class TeleInfoService implements Runnable {
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		DbManager dbManager = new DbManager();
-		dbManager.SaveTeleInfoTrame(teleInfoTrame);
+		
+		_dbManager.SaveTeleInfoTrame(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
 
 		// if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
-		dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
+		_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo dans InfluxDB");
 		// }
 	}

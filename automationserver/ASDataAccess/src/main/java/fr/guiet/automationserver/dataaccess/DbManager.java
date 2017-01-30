@@ -134,6 +134,39 @@ public class DbManager {
 		}
 	}
 	
+	public void SaveCaveInfoToInfluxDb(Float temp, Float humidity, String extractorState) {
+		
+		try {
+			if (!_influxdbEnable.equals("true")) 
+				return;
+			
+			_logger.info("Saving cave info to InfluxDB");
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("basement").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("temperature", temp).addField("humidity", humidity)
+					.addField("extractor_state", extractorState).build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+	}
+	
 	/**
 	 * Saves teleinfo framework into InfluxDB
 	 * 
