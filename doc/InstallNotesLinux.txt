@@ -1,4 +1,4 @@
-Maven
+﻿Maven
 -----
 
 Déployer un JAR dans un repo MAVEN
@@ -51,3 +51,12 @@ ESP8266
 
 http://www.fais-le-toi-meme.fr/fr/electronique/tutoriel/programmes-arduino-executes-sur-esp8266-arduino-ide
 
+Probleme de reset intempestif
+https://iotbytes.wordpress.com/3-3v-power-supply-for-esp-8266/
+Interessant resume plein de choses
+http://www.riyas.org/2016/12/quickly-test-bare-esp8266-esp12-module.html
+
+Transistor
+----------
+
+Pour comprendre les calculs : http://xizard.chez.com/Cours/transistor_commutation.htm

@@ -20,6 +20,7 @@ public class Room {
 	private Float _lastDefaultTemp = null;
 	private String _mqttTopic;
 	private String _influxdbMeasurement;
+	private DbManager _dbManager = null;
 
 	// Retourne la liste des radiateurs de la piece
 	public List<Heater> getHeaterList() {
@@ -59,7 +60,7 @@ public class Room {
 	 */
 	public String NextChangeDefaultTemp() {
 
-		DbManager dbManager = new DbManager();
+		//DbManager dbManager = new DbManager();
 		String result = "NA";
 		boolean found = false;
 		// Date du jour
@@ -73,7 +74,7 @@ public class Room {
 
 		while (!found) {
 
-			TempScheduleDto ts = dbManager.GetNextDefaultTempByRoom(_id, dayOfWeek);
+			TempScheduleDto ts = _dbManager.GetNextDefaultTempByRoom(_id, dayOfWeek);
 
 			if (ts != null) {
 				found = true;
@@ -198,8 +199,8 @@ public class Room {
 	}
 
 	private Float GetDefaultTempByDayAndTime() {
-		DbManager dbManager = new DbManager();
-		Float defaultTemp = dbManager.GetDefaultTempByRoom(_id);
+		//DbManager dbManager = new DbManager();
+		Float defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
 
 		if (defaultTemp == null) {
 			_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
@@ -222,10 +223,10 @@ public class Room {
 		_mqttTopic = dto.mqttTopic;
 		_influxdbMeasurement = dto.influxdbMeasurement;
 
-		DbManager dbManager = new DbManager();
-		SensorDto sensorDto = dbManager.GetSensorByRoomId(dto.idSensor);
+		_dbManager = new DbManager();
+		SensorDto sensorDto = _dbManager.GetSensorByRoomId(dto.idSensor);
 
-		ArrayList<HeaterDto> heaterDtoList = dbManager.GetHeatersByRoomId(dto.id);
+		ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
 		for (HeaterDto heaterDto : heaterDtoList) {
 
 			Heater heater = Heater.LoadFromDto(heaterDto, this);

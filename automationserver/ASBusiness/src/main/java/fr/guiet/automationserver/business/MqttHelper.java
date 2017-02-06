@@ -14,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class MqttHelper implements MqttCallback {
@@ -26,6 +27,7 @@ public class MqttHelper implements MqttCallback {
 	private String[] _topics = null;
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
+	private DbManager _dbManager = null;
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
 
@@ -46,6 +48,7 @@ public class MqttHelper implements MqttCallback {
 			_smsGammuService = gammuService;
 			_roomService = roomService;
 			_teleInfoService = teleInfoService;
+			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
 			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
@@ -64,7 +67,7 @@ public class MqttHelper implements MqttCallback {
 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
-					_logger.info("Subscribing to topic" + topic);
+					_logger.info("Subscribing to topic : " + topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
@@ -152,6 +155,20 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur", e);
 				}
 
+				break;
+			case "SETCAVEINFO":
+				try {
+					float temp = Float.parseFloat(messageContent[1]);
+					float humi = Float.parseFloat(messageContent[2]);
+					String extractorState = messageContent[3];
+					
+			
+					_dbManager.SaveCaveInfoToInfluxDb(temp, humi, extractorState);
+					
+					 
+				} catch (Exception e) {
+					_logger.error("Could not read or save information received from basement", e);
+				}
 				break;
 			}
 		}

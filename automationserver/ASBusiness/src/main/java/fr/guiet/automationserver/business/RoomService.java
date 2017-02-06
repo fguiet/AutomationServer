@@ -24,6 +24,7 @@ public class RoomService implements Runnable {
 	private static final int MAX_INTENSITE_PAR_PHASE = 25;
 	private SMSGammuService _smsGammuService = null;
 	private Timer _timer = null;
+	private DbManager _dbManager = null;
 
 	// Constructeur
 	/**
@@ -34,6 +35,7 @@ public class RoomService implements Runnable {
 	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
 		_teleInfoService = teleInfoService;
 		_smsGammuService = smsGammuService;
+		_dbManager = new DbManager();
 	}
 
 	/**
@@ -207,14 +209,14 @@ public class RoomService implements Runnable {
 					//Pas de sauvegarde si une valeur est nulle
 					if (room.getActualTemp() != null && room.getWantedTemp() != null
 							&& room.getActualHumidity() != null) {
-						DbManager dbManager = new DbManager();
-						dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
+						//DbManager dbManager = new DbManager();
+						_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());
 						_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
 								+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
 								+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
 
-						dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
+						_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());
 					}
 				}
@@ -418,8 +420,8 @@ public class RoomService implements Runnable {
 
 	private void LoadRoomList() {
 		// Initialisation des pieces et chauffages
-		DbManager dbManager = new DbManager();
-		List<RoomDto> roomDtoList = dbManager.GetRooms();
+		//DbManager dbManager = new DbManager();
+		List<RoomDto> roomDtoList = _dbManager.GetRooms();
 
 		for (RoomDto dtoRoom : roomDtoList) {
 
