@@ -38,4 +38,16 @@ Pour permettre l'authentification anonyme
 
 Les graphes Grafana sont crées pour des organizations...on définit une organisation pour laquelle l'authentification anonyme est permise (voir fichier de config pour définir l'organisation)
 
+InfluxDB
+--------
+
+Activation de l'interface d'admin /etc/influxdb/influxdb.conf
+# [admin]
+  # Determines whether the admin service is enabled.
+  enabled = true 
+
+ESP8266
+-------
+
+http://www.fais-le-toi-meme.fr/fr/electronique/tutoriel/programmes-arduino-executes-sur-esp8266-arduino-ide
 

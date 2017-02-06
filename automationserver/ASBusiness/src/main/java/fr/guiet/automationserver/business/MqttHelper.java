@@ -201,6 +201,7 @@ public class MqttHelper implements MqttCallback {
 		String hchc = "NA";
 		String hchp = "NA";
 
+		//TODO : Creer un message mqtt /guiet/sensors/teleinfo
 		if (_teleInfoService.GetLastTrame() != null) {
 			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
