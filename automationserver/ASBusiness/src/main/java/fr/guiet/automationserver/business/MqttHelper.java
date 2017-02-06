@@ -67,7 +67,7 @@ public class MqttHelper implements MqttCallback {
 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
-					_logger.info("Subscribing to topic" + topic);
+					_logger.info("Subscribing to topic : " + topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
@@ -165,7 +165,7 @@ public class MqttHelper implements MqttCallback {
 			
 					_dbManager.SaveCaveInfoToInfluxDb(temp, humi, extractorState);
 					
-					
+					 
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from basement", e);
 				}
