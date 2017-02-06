@@ -1,4 +1,4 @@
-Maven
+﻿Maven
 -----
 
 Déployer un JAR dans un repo MAVEN
@@ -38,4 +38,15 @@ Pour permettre l'authentification anonyme
 
 Les graphes Grafana sont crées pour des organizations...on définit une organisation pour laquelle l'authentification anonyme est permise (voir fichier de config pour définir l'organisation)
 
+ESP8266
+-------
 
+Probleme de reset intempestif
+https://iotbytes.wordpress.com/3-3v-power-supply-for-esp-8266/
+Interessant resume plein de choses
+http://www.riyas.org/2016/12/quickly-test-bare-esp8266-esp12-module.html
+
+Transistor
+----------
+
+Pour comprendre les calculs : http://xizard.chez.com/Cours/transistor_commutation.htm
