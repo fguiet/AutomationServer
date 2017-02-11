@@ -82,6 +82,11 @@
 			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
 			<version>${mqttv3.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>${mail-api.version}</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>

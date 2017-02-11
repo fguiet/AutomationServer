@@ -145,6 +145,23 @@ public class MqttHelper implements MqttCallback {
 			String action = messageContent[0];
 
 			switch (action) {
+			case "SETGOTMAIL":
+				try {
+					float vcc = Float.parseFloat(messageContent[1]);
+					
+					_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
+					
+					String mess = "Hey! you got mail ! by the way, vcc sensor is "+vcc;
+					MailService mailService= new MailService();
+					mailService.SendMailSSL("Hey! you got mail", mess);
+					
+					SMSDto sms = new SMSDto();
+					sms.setMessage(mess);
+					_smsGammuService.sendMessage(sms, true);
+					
+				} catch (Exception e) {
+					_logger.error("Could not read or save information received from mailbox", e);
+				}
 			case "SETROOMTEMP":
 				long roomId = Long.parseLong(messageContent[1]);
 
@@ -161,11 +178,9 @@ public class MqttHelper implements MqttCallback {
 					float temp = Float.parseFloat(messageContent[1]);
 					float humi = Float.parseFloat(messageContent[2]);
 					String extractorState = messageContent[3];
-					
-			
+
 					_dbManager.SaveCaveInfoToInfluxDb(temp, humi, extractorState);
-					
-					 
+
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from basement", e);
 				}
@@ -218,7 +233,7 @@ public class MqttHelper implements MqttCallback {
 		String hchc = "NA";
 		String hchp = "NA";
 
-		//TODO : Creer un message mqtt /guiet/sensors/teleinfo
+		// TODO : Creer un message mqtt /guiet/sensors/teleinfo
 		if (_teleInfoService.GetLastTrame() != null) {
 			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);

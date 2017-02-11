@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import fr.guiet.automationserver.dto.*;
 
 /**
- * Handles database management 
+ * Handles database management
  * 
  * @author guiet
  *
@@ -31,22 +31,22 @@ import fr.guiet.automationserver.dto.*;
 public class DbManager {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(DbManager.class);	
-	
+	private static Logger _logger = Logger.getLogger(DbManager.class);
+
 	private static String _postgresqlConnectionString = "jdbc:postgresql://%s:%s/%s";
-	private static String _userName = null; 
+	private static String _userName = null;
 	private static String _password = null;
 	private static String _postgresqlEnable = null;
-	
+
 	private static String _influxdbConnectionString = "http://%s:%s";
-	private static String _databaseInfluxDB = null; //"user_automation";
-	private static String _userNameInfluxDB = null; //"user_automation";
-	private static String _passwordInfluxDB = null; //"raspberry";
+	private static String _databaseInfluxDB = null; // "user_automation";
+	private static String _userNameInfluxDB = null; // "user_automation";
+	private static String _passwordInfluxDB = null; // "raspberry";
 	private static String _influxdbEnable = null;
 	private static String _retentionPolicy = null;
-	
+
 	private InfluxDB _influxDB = null;
-		
+
 	/**
 	 * Constructor
 	 */
@@ -54,43 +54,78 @@ public class DbManager {
 		try {
 			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
-			_logger.error("Impossible de trouver le driver PostgreSQL JDBC, il faut l'inclure dans le library path", e);		
+			_logger.error("Impossible de trouver le driver PostgreSQL JDBC, il faut l'inclure dans le library path", e);
 		}
-		
+
 		InputStream is = null;
-        try {
-        	String configPath = System.getProperty("automationserver.config.path");
-        	is = new FileInputStream(configPath);
-        	
-        	Properties prop = new Properties();            
-            prop.load(is);
-            
-            //PostgreSQL            
-            String host = prop.getProperty("postgresql.host");
-            String port = prop.getProperty("postgresql.port");
-            String database = prop.getProperty("postgresql.database");
-                                 
-            //TODO : Checker les valeurs null
-            _postgresqlConnectionString = String.format(_postgresqlConnectionString,host,port,database);            
-            _userName = prop.getProperty("postgresql.username");
-            _password = prop.getProperty("postgresql.password");
-            _postgresqlEnable = prop.getProperty("postgresql.enable");
-                        
-            //InfluxDB
-            host = prop.getProperty("influxdb.host");
-            port = prop.getProperty("influxdb.port");            
-            _influxdbConnectionString = String.format(_influxdbConnectionString,host,port);
-            _databaseInfluxDB = prop.getProperty("influxdb.database");                    
-            _userNameInfluxDB = prop.getProperty("influxdb.username");
-            _passwordInfluxDB = prop.getProperty("influxdb.password");
-            _retentionPolicy = prop.getProperty("influxdb.retentionpolicy");
-            _influxdbEnable = prop.getProperty("influxdb.enable");
-            
-        } catch (FileNotFoundException e) {
-        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
-        } catch (IOException e) {
-        	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
-        }        
+		try {
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+
+			// PostgreSQL
+			String host = prop.getProperty("postgresql.host");
+			String port = prop.getProperty("postgresql.port");
+			String database = prop.getProperty("postgresql.database");
+
+			// TODO : Checker les valeurs null
+			_postgresqlConnectionString = String.format(_postgresqlConnectionString, host, port, database);
+			_userName = prop.getProperty("postgresql.username");
+			_password = prop.getProperty("postgresql.password");
+			_postgresqlEnable = prop.getProperty("postgresql.enable");
+
+			// InfluxDB
+			host = prop.getProperty("influxdb.host");
+			port = prop.getProperty("influxdb.port");
+			_influxdbConnectionString = String.format(_influxdbConnectionString, host, port);
+			_databaseInfluxDB = prop.getProperty("influxdb.database");
+			_userNameInfluxDB = prop.getProperty("influxdb.username");
+			_passwordInfluxDB = prop.getProperty("influxdb.password");
+			_retentionPolicy = prop.getProperty("influxdb.retentionpolicy");
+			_influxdbEnable = prop.getProperty("influxdb.enable");
+
+		} catch (FileNotFoundException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		} catch (IOException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		}
+	}
+
+	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+
+			_logger.info("Saving sensor info to InfluxDB");
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("mailbox").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("vcc", vcc).build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
 	}
 
 	/**
@@ -102,11 +137,11 @@ public class DbManager {
 	 * @param humidity
 	 */
 	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity) {
-		
+
 		try {
-			if (!_influxdbEnable.equals("true")) 
+			if (!_influxdbEnable.equals("true"))
 				return;
-			
+
 			_logger.info("Saving sensor info to InfluxDB");
 
 			// _logger.info("InfluxDB connecting..");
@@ -133,13 +168,13 @@ public class DbManager {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
 	}
-	
+
 	public void SaveCaveInfoToInfluxDb(Float temp, Float humidity, String extractorState) {
-		
+
 		try {
-			if (!_influxdbEnable.equals("true")) 
+			if (!_influxdbEnable.equals("true"))
 				return;
-			
+
 			_logger.info("Saving cave info to InfluxDB");
 
 			// _logger.info("InfluxDB connecting..");
@@ -166,18 +201,18 @@ public class DbManager {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
 	}
-	
+
 	/**
 	 * Saves teleinfo framework into InfluxDB
 	 * 
 	 * @param teleInfoTrameDto
 	 */
 	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
-				
+
 		try {
-			
-			if (!_influxdbEnable.equals("true")) 
-				return;			
+
+			if (!_influxdbEnable.equals("true"))
+				return;
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
@@ -197,7 +232,7 @@ public class DbManager {
 					.addField("HHPHC", teleInfoTrameDto.HHPHC).addField("MOTETAT", teleInfoTrameDto.MOTDETAT)
 					.addField("PPOT", teleInfoTrameDto.PPOT).build();
 
-			batchPoints.point(point1);			
+			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
 			_influxDB.write(batchPoints);
@@ -210,7 +245,7 @@ public class DbManager {
 		}
 
 	}
-	
+
 	/**
 	 * Saves sensor information into PostgreSQL
 	 * 
@@ -219,16 +254,16 @@ public class DbManager {
 	 * @param wantedTemp
 	 * @param humidity
 	 */
-	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {		
-		
-		//TODO : revoir le modèle de données de la base Postgres
-		
+	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
+
+		// TODO : revoir le modèle de données de la base Postgres
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 
 		try {
-			
-			if (!_postgresqlEnable.equals("true")) 
+
+			if (!_postgresqlEnable.equals("true"))
 				return;
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
@@ -341,7 +376,8 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name FROM automation.sensor c " + "where c.id_sensor = ? ";
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name FROM automation.sensor c "
+					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
 			pst.setLong(1, sensorId);
@@ -352,8 +388,7 @@ public class DbManager {
 			dto = new SensorDto();
 			dto.sensorId = rs.getLong("id_sensor");
 			dto.sensorAddress = rs.getString("sensor_address");
-			dto.name =  rs.getString("name");
-			
+			dto.name = rs.getString("name");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
@@ -495,7 +530,7 @@ public class DbManager {
 				r.id = rs.getLong("id_room");
 				r.name = rs.getString("name");
 				r.idSensor = rs.getLong("id_sensor");
-				r.mqttTopic =  rs.getString("mqtt_topic");
+				r.mqttTopic = rs.getString("mqtt_topic");
 				r.influxdbMeasurement = rs.getString("influxdb_measurement");
 
 				roomList.add(r);
@@ -596,7 +631,6 @@ public class DbManager {
 		return ts;
 
 	}
-	
 
 	/***
 	 * /* /* Sauvegarde de la trame en bdd /*
@@ -607,8 +641,8 @@ public class DbManager {
 		PreparedStatement pst = null;
 
 		try {
-			
-			if (!_postgresqlEnable.equals("true")) 
+
+			if (!_postgresqlEnable.equals("true"))
 				return;
 
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
