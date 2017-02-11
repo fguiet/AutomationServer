@@ -21,7 +21,7 @@ ADC_MODE(ADC_VCC); //vcc read mode
 #define mqtt_server "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
-#define mailboxnotifier_topic "guiet/mailbox/gotmail"
+#define mailboxnotifier_topic "/guiet/mailbox/gotmail"
 
 // WiFi settings
 const char* ssid = "DUMBLEDORE";

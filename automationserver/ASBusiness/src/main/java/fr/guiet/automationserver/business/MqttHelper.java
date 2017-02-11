@@ -185,7 +185,12 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Could not read or save information received from basement", e);
 				}
 				break;
+			default:
+				_logger.error("Could not process MQTT message : "+message);
 			}
+		}
+		else {
+			_logger.error("Could not process MQTT message : "+message);
 		}
 	}
 

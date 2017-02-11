@@ -55,8 +55,9 @@ public class MailService {
 			message.setSubject(subject);
 			message.setText(body);
 
+			_logger.info("Sending mail to "+recipients+"\n\nBODY : " + body);
 			Transport.send(message);
-            
+            _logger.info("Message sent");
             
         } catch (FileNotFoundException e) {
         	_logger.error("Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties", e);
