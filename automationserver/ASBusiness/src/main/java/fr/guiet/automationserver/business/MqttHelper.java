@@ -119,7 +119,7 @@ public class MqttHelper implements MqttCallback {
 
 	@Override
 	public void connectionLost(Throwable arg0) {
-		_logger.warn("Mqtt connection lost...reconnecting...");
+		_logger.warn("Mqtt connection lost...reconnecting...", arg0);
 		connectAndSubscribe();
 	}
 
@@ -162,6 +162,8 @@ public class MqttHelper implements MqttCallback {
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from mailbox", e);
 				}
+				break;
+				
 			case "SETROOMTEMP":
 				long roomId = Long.parseLong(messageContent[1]);
 
