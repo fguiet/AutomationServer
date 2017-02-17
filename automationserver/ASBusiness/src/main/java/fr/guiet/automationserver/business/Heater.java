@@ -35,22 +35,6 @@ public class Heater implements Comparable<Heater> {
 	private final String PIN_CHAUFFAGE_NAME ="PIN_CHAUFFAGE";
 	private DbManager _dbManager = null;
 
-	/*@Override
-	public void OnCollectInfoStopped() {
-		
-		if (_waitForOn) {
-			_waitForOn = false;
-			TurnOn();
-			StartTeleInfoService();
-		}
-
-		if (_waitForOff) {
-			_waitForOff = false;
-			TurnOff();
-			StartTeleInfoService();
-		}
-	}*/
-
 	/**
 	 * @return Returns Heater name (value stored in PostgreSQL database)
 	 */

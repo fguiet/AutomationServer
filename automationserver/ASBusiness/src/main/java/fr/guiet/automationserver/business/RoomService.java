@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -276,6 +278,18 @@ public class RoomService implements Runnable {
 		for (Room r : _roomList) {
 			for (Heater h : r.getHeaterList())
 				AddHeater(h);
+		}
+		
+		Date startDate = new Date();
+		//Wait for first electrical information to arrive (timeout 1 minute) in order to avoid error message during startup
+		while (!_isStopped && _teleInfoService.GetLastTrame() == null) {
+			
+			Date currentDate = new Date();
+			long diff = currentDate.getTime() - startDate.getTime();
+			long diffMinutes = diff / (60 * 1000);
+			
+			if (diffMinutes >= 1) break;
+			
 		}
 
 		while (!_isStopped) {
