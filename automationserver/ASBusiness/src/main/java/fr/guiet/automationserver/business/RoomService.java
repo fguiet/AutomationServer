@@ -1,8 +1,13 @@
 package fr.guiet.automationserver.business;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.log4j.Logger;
@@ -25,6 +30,7 @@ public class RoomService implements Runnable {
 	private SMSGammuService _smsGammuService = null;
 	private Timer _timer = null;
 	private DbManager _dbManager = null;
+	private Float _hysteresis = null;
 
 	// Constructeur
 	/**
@@ -33,6 +39,35 @@ public class RoomService implements Runnable {
 	 * @param teleInfoService
 	 */
 	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
+
+		InputStream is = null;
+		try {
+
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+
+			String hysteresis = prop.getProperty("heater.hysteresis");
+			if (hysteresis != null)
+				_hysteresis = Float.parseFloat(hysteresis);
+			else
+				_hysteresis = Float.parseFloat("0");
+
+		} catch (FileNotFoundException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		} catch (IOException e) {
+			_logger.error(
+					"Erreur lors de la lecture du fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+		} catch(NumberFormatException nfe) {
+			_hysteresis = Float.parseFloat("0");
+			_logger.warn("Bad hysteresis defined in config file !, set to 0 by default", nfe);
+		}
+
 		_teleInfoService = teleInfoService;
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
@@ -171,14 +206,14 @@ public class RoomService implements Runnable {
 			r.DesactiveExtinctionForceRadiateurs();
 		}
 	}
-	
+
 	public Heater getHeaterById(long heaterId) {
 		for (Heater h : _allHeaterList) {
-			if (h.getId()==heaterId) {
+			if (h.getId() == heaterId) {
 				return h;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -206,10 +241,10 @@ public class RoomService implements Runnable {
 
 				for (Room room : _roomList) {
 
-					//Pas de sauvegarde si une valeur est nulle
+					// Pas de sauvegarde si une valeur est nulle
 					if (room.getActualTemp() != null && room.getWantedTemp() != null
 							&& room.getActualHumidity() != null) {
-						//DbManager dbManager = new DbManager();
+						// DbManager dbManager = new DbManager();
 						_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());
 						_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
@@ -383,7 +418,7 @@ public class RoomService implements Runnable {
 
 			// Le radiateur est eteint
 			if (!h.isOn()) {
-				if (roomActualTemp < roomWantedTemp) {
+				if (roomActualTemp < roomWantedTemp - _hysteresis) {
 					if (h.getCurrentConsumption() + intensitePhase < MAX_INTENSITE_PAR_PHASE) {
 
 						if (!h.IsOffForced()) {
@@ -406,7 +441,7 @@ public class RoomService implements Runnable {
 
 			// Si radiateur allume on etient (on positionne un delta d'inertie
 			// de chaleur de 0.2 degre)
-			if (h.isOn() && roomActualTemp >= roomWantedTemp) {
+			if (h.isOn() && roomActualTemp >= roomWantedTemp + _hysteresis) {
 				h.SetOff();
 				_logger.info("EXTINCTION Radiateur " + h.getName() + ", Temp. de la pièce : " + roomActualTemp
 						+ ", Temp. desiree : " + roomWantedTemp);
@@ -420,7 +455,7 @@ public class RoomService implements Runnable {
 
 	private void LoadRoomList() {
 		// Initialisation des pieces et chauffages
-		//DbManager dbManager = new DbManager();
+		// DbManager dbManager = new DbManager();
 		List<RoomDto> roomDtoList = _dbManager.GetRooms();
 
 		for (RoomDto dtoRoom : roomDtoList) {

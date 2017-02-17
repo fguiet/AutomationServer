@@ -95,7 +95,7 @@ public class SMSGammuService {
 		CommandLine cmdLine=makeCommand(sms);
 		
 		//Timeout set to 30s
-		ExecuteWatchdog watchdog = new ExecuteWatchdog(10000);
+		ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
 		
 		DefaultExecutor de = new DefaultExecutor();
 				
