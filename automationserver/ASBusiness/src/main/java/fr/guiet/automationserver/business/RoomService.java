@@ -33,6 +33,8 @@ public class RoomService implements Runnable {
 	private Timer _timer = null;
 	private DbManager _dbManager = null;
 	private Float _hysteresis = null;
+	private Float _awayTemp = null;
+	private boolean _awayModeStatus = false;
 
 	// Constructeur
 	/**
@@ -51,11 +53,28 @@ public class RoomService implements Runnable {
 			Properties prop = new Properties();
 			prop.load(is);
 
-			String hysteresis = prop.getProperty("heater.hysteresis");
-			if (hysteresis != null)
-				_hysteresis = Float.parseFloat(hysteresis);
-			else
+			try {
+				String hysteresis = prop.getProperty("heater.hysteresis");
+				if (hysteresis != null)
+					_hysteresis = Float.parseFloat(hysteresis);
+				else
+					_hysteresis = Float.parseFloat("0");
+			} catch (NumberFormatException nfe) {
 				_hysteresis = Float.parseFloat("0");
+				_logger.warn("Bad hysteresis defined in config file !, set to 0 by default", nfe);
+			}
+			
+			try {
+				String awayTemp = prop.getProperty("away.temp");
+				if (awayTemp != null)
+					_awayTemp = Float.parseFloat(awayTemp);
+				else
+					_awayTemp = Float.parseFloat("0");
+			} catch (NumberFormatException nfe) {
+				_awayTemp = Float.parseFloat("17.0");
+				_logger.warn("Bad away temp defined in config file !, set to 17.0°C by default", nfe);
+			}
+			
 
 		} catch (FileNotFoundException e) {
 			_logger.error(
@@ -65,9 +84,6 @@ public class RoomService implements Runnable {
 			_logger.error(
 					"Erreur lors de la lecture du fichier de configuration classpath_folder/config/automationserver.properties",
 					e);
-		} catch(NumberFormatException nfe) {
-			_hysteresis = Float.parseFloat("0");
-			_logger.warn("Bad hysteresis defined in config file !, set to 0 by default", nfe);
 		}
 
 		_teleInfoService = teleInfoService;
@@ -75,6 +91,23 @@ public class RoomService implements Runnable {
 		_dbManager = new DbManager();
 	}
 
+	public void SetAwayModeOn() {
+		_awayModeStatus = true;
+	}
+	
+	public void SetAwayModeOff() {
+		_awayModeStatus = false;
+	}
+	
+	public String GetAwayModeStatus() {
+		if (_awayModeStatus) {
+			return "ON";
+		}
+		else {
+			return "OFF";
+		}
+	}
+	
 	/**
 	 * Add heater to a list according to which phase the heater is link with Add
 	 * heater to the global list
@@ -279,17 +312,19 @@ public class RoomService implements Runnable {
 			for (Heater h : r.getHeaterList())
 				AddHeater(h);
 		}
-		
+
 		Date startDate = new Date();
-		//Wait for first electrical information to arrive (timeout 1 minute) in order to avoid error message during startup
+		// Wait for first electrical information to arrive (timeout 1 minute) in
+		// order to avoid error message during startup
 		while (!_isStopped && _teleInfoService.GetLastTrame() == null) {
-			
+
 			Date currentDate = new Date();
 			long diff = currentDate.getTime() - startDate.getTime();
 			long diffMinutes = diff / (60 * 1000);
-			
-			if (diffMinutes >= 1) break;
-			
+
+			if (diffMinutes >= 1)
+				break;
+
 		}
 
 		while (!_isStopped) {
@@ -380,7 +415,14 @@ public class RoomService implements Runnable {
 		// _logger.info("Intensite courante phase "+phase+" : "+intensitePhase);
 		for (Heater h : _heaterList) {
 
-			Float roomWantedTemp = h.getRoom().ComputeWantedTemp();
+			Float roomWantedTemp = null;
+			if (!_awayModeStatus) {
+				roomWantedTemp = h.getRoom().ComputeWantedTemp();
+			} else {
+				h.getRoom().SetWantedTemp(_awayTemp);
+				roomWantedTemp = _awayTemp;
+			}
+
 			Float roomActualTemp = h.getRoom().getActualTemp();
 
 			/*

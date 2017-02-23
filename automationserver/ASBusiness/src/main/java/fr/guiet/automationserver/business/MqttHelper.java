@@ -145,6 +145,19 @@ public class MqttHelper implements MqttCallback {
 			String action = messageContent[0];
 
 			switch (action) {
+			case "SETAWAYMODE":
+				String awayMode = messageContent[1];
+				
+				if (awayMode.equals("ON")) {
+					_roomService.SetAwayModeOn();
+					_logger.info("Setting away mode ON");
+				}
+				else {
+					_roomService.SetAwayModeOff();
+					_logger.info("Setting away mode OFF");
+				}
+				
+				break;
 			case "SETGOTMAIL":
 				try {
 					float vcc = Float.parseFloat(messageContent[1]);
@@ -173,8 +186,8 @@ public class MqttHelper implements MqttCallback {
 				} catch (Exception e) {
 					_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur", e);
 				}
-
 				break;
+				
 			case "SETCAVEINFO":
 				try {
 					float temp = Float.parseFloat(messageContent[1]);
@@ -240,16 +253,18 @@ public class MqttHelper implements MqttCallback {
 		String hchc = "NA";
 		String hchp = "NA";
 
-		// TODO : Creer un message mqtt /guiet/sensors/teleinfo
+		// TODO : Creer un message mqtt /guiet/home/info
 		if (_teleInfoService.GetLastTrame() != null) {
 			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
 			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);
 		}
+		
+		//TODO : Creer un message mqtt /guiet/home/info
+		String awayModeStatus = _roomService.GetAwayModeStatus();
 
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp;
-
+				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus;
 		return message;
 	}
 
