@@ -63,7 +63,7 @@ public class RoomService implements Runnable {
 				_hysteresis = Float.parseFloat("0");
 				_logger.warn("Bad hysteresis defined in config file !, set to 0 by default", nfe);
 			}
-			
+
 			try {
 				String awayTemp = prop.getProperty("away.temp");
 				if (awayTemp != null)
@@ -74,7 +74,6 @@ public class RoomService implements Runnable {
 				_awayTemp = Float.parseFloat("17.0");
 				_logger.warn("Bad away temp defined in config file !, set to 17.0°C by default", nfe);
 			}
-			
 
 		} catch (FileNotFoundException e) {
 			_logger.error(
@@ -93,21 +92,28 @@ public class RoomService implements Runnable {
 
 	public void SetAwayModeOn() {
 		_awayModeStatus = true;
+
+		for (Room r : _roomList) {
+			r.SetWantedTemp(_awayTemp);
+		}
 	}
-	
+
 	public void SetAwayModeOff() {
 		_awayModeStatus = false;
+
+		for (Room r : _roomList) {
+			r.ResetWantedTempToDefault();
+		}
 	}
-	
+
 	public String GetAwayModeStatus() {
 		if (_awayModeStatus) {
 			return "ON";
-		}
-		else {
+		} else {
 			return "OFF";
 		}
 	}
-	
+
 	/**
 	 * Add heater to a list according to which phase the heater is link with Add
 	 * heater to the global list
@@ -415,19 +421,8 @@ public class RoomService implements Runnable {
 		// _logger.info("Intensite courante phase "+phase+" : "+intensitePhase);
 		for (Heater h : _heaterList) {
 
-			Float roomWantedTemp = null;
-			if (!_awayModeStatus) {
-				roomWantedTemp = h.getRoom().ComputeWantedTemp();
-			} else {
-				h.getRoom().SetWantedTemp(_awayTemp);
-				roomWantedTemp = _awayTemp;
-			}
-
+			Float roomWantedTemp = h.getRoom().ComputeWantedTemp(_awayModeStatus, _awayTemp);
 			Float roomActualTemp = h.getRoom().getActualTemp();
-
-			/*
-			 * String etat = "ALLUME"; if (!h.isOn()) { etat = "ETEINT"; }
-			 */
 
 			String tempProg = "NA";
 			if (h.getRoom().GetTempProg() != null)

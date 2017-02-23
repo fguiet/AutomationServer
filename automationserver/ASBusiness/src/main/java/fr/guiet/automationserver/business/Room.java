@@ -26,11 +26,11 @@ public class Room {
 	public List<Heater> getHeaterList() {
 		return _heaterList;
 	}
-	
+
 	public Sensor getSensor() {
 		return _sensor;
 	}
-	
+
 	public String getInfluxdbMeasurement() {
 		return _influxdbMeasurement;
 	}
@@ -38,7 +38,7 @@ public class Room {
 	public long getRoomId() {
 		return _id;
 	}
-	
+
 	public String getMqttTopic() {
 		return _mqttTopic;
 	}
@@ -60,7 +60,7 @@ public class Room {
 	 */
 	public String NextChangeDefaultTemp() {
 
-		//DbManager dbManager = new DbManager();
+		// DbManager dbManager = new DbManager();
 		String result = "NA";
 		boolean found = false;
 		// Date du jour
@@ -166,8 +166,16 @@ public class Room {
 			return currentDefaultTemp;
 	}
 
+	public void ResetWantedTempToDefault() {
+
+		Float currentDefaultTemp = GetDefaultTempByDayAndTime();
+		_userWantedTemp = currentDefaultTemp;
+		_lastDefaultTemp = currentDefaultTemp;
+
+	}
+
 	// Calcul de la temperature desiree pour la piece
-	public Float ComputeWantedTemp() {
+	public Float ComputeWantedTemp(boolean awayMode, float awayModeTemp) {
 
 		Float currentDefaultTemp = GetDefaultTempByDayAndTime();
 
@@ -180,26 +188,32 @@ public class Room {
 			return null;
 		}
 
-		// la temperature par defaut a changer, on reinitialise la temperature
-		// voulu par l'utilisateur
-		if (currentDefaultTemp.compareTo(_lastDefaultTemp) != 0) {
-			_logger.info(currentDefaultTemp + ", " + _lastDefaultTemp
-					+ " Réinitialisation de la température désirée par l'utilisateur car il y a un changement de la température par défaut pour la pièce : "
-					+ _name);
-			_userWantedTemp = currentDefaultTemp;
-			_lastDefaultTemp = currentDefaultTemp;
-		}
+		if (!awayMode) {
 
-		// si l'utilisateur a modifie la temperature voulue on la retourne
-		if (_userWantedTemp.compareTo(currentDefaultTemp) != 0) {
-			return _userWantedTemp;
-		} else {
-			return currentDefaultTemp;
+			// la temperature par defaut a changer, on reinitialise la
+			// temperature
+			// voulu par l'utilisateur
+			if (currentDefaultTemp.compareTo(_lastDefaultTemp) != 0) {
+				_logger.info(currentDefaultTemp + ", " + _lastDefaultTemp
+						+ " Réinitialisation de la température désirée par l'utilisateur car il y a un changement de la température par défaut pour la pièce : "
+						+ _name);
+				_userWantedTemp = currentDefaultTemp;
+				_lastDefaultTemp = currentDefaultTemp;
+			}
+
+			// si l'utilisateur a modifie la temperature voulue on la retourne
+			if (_userWantedTemp.compareTo(currentDefaultTemp) != 0) {
+				return _userWantedTemp;
+			} else {
+				return currentDefaultTemp;
+			}
 		}
+		else 
+			return awayModeTemp;
 	}
 
 	private Float GetDefaultTempByDayAndTime() {
-		//DbManager dbManager = new DbManager();
+		// DbManager dbManager = new DbManager();
 		Float defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
 
 		if (defaultTemp == null) {
@@ -217,7 +231,6 @@ public class Room {
 
 	private Room(RoomDto dto, SMSGammuService gammuService) {
 
-		
 		_id = dto.id;
 		_name = dto.name;
 		_mqttTopic = dto.mqttTopic;
