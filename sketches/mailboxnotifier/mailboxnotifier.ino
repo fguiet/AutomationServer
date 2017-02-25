@@ -108,7 +108,7 @@ void reconnect() {
 
   int retry = 0;
   // Loop until we're reconnected
-  while (!client.connected() && retry < 100) {
+  while (!client.connected() && retry < 10) {
     Serial.print("Attempting MQTT connection...");
     
     if (client.connect("ESP8266_Mailboxnotifier")) {

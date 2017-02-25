@@ -147,36 +147,35 @@ public class MqttHelper implements MqttCallback {
 			switch (action) {
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
-				
+
 				if (awayMode.equals("ON")) {
 					_roomService.SetAwayModeOn();
 					_logger.info("Setting away mode ON");
-				}
-				else {
+				} else {
 					_roomService.SetAwayModeOff();
 					_logger.info("Setting away mode OFF");
 				}
-				
+
 				break;
 			case "SETGOTMAIL":
 				try {
 					float vcc = Float.parseFloat(messageContent[1]);
-					
+
 					_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
-					
-					String mess = "Hey! you got mail ! by the way, vcc sensor is "+vcc;
-					MailService mailService= new MailService();
+
+					String mess = "Hey! you got mail ! by the way, vcc sensor is " + vcc;
+					MailService mailService = new MailService();
 					mailService.SendMailSSL("Hey! you got mail", mess);
-					
+
 					SMSDto sms = new SMSDto();
 					sms.setMessage(mess);
 					_smsGammuService.sendMessage(sms, true);
-					
+
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from mailbox", e);
 				}
 				break;
-				
+
 			case "SETROOMTEMP":
 				long roomId = Long.parseLong(messageContent[1]);
 
@@ -187,7 +186,7 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Erreur de conversion dans la temp désirée par l'utilisateur", e);
 				}
 				break;
-				
+
 			case "SETCAVEINFO":
 				try {
 					float temp = Float.parseFloat(messageContent[1]);
@@ -200,12 +199,25 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Could not read or save information received from basement", e);
 				}
 				break;
+			case "SETOUTSIDEINFO":
+
+				try {
+					float garageTemp = Float.parseFloat(messageContent[1]);
+					int pressure = Integer.parseInt(messageContent[2]);
+					float altitude = Float.parseFloat(messageContent[3]);
+					float outsideTemp = Float.parseFloat(messageContent[3]);
+
+					_dbManager.SaveOutsideSensorsInfo(outsideTemp, garageTemp, pressure, altitude);
+				} catch (Exception e) {
+					_logger.error("Could not read or save information received from outside", e);
+				}
+				break;
+
 			default:
-				_logger.error("Could not process MQTT message : "+message);
+				_logger.error("Could not process MQTT message : " + message);
 			}
-		}
-		else {
-			_logger.error("Could not process MQTT message : "+message);
+		} else {
+			_logger.error("Could not process MQTT message : " + message);
 		}
 	}
 
@@ -259,12 +271,13 @@ public class MqttHelper implements MqttCallback {
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
 			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);
 		}
-		
-		//TODO : Creer un message mqtt /guiet/home/info
+
+		// TODO : Creer un message mqtt /guiet/home/info
 		String awayModeStatus = _roomService.GetAwayModeStatus();
 
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus;
+				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";"
+				+ awayModeStatus;
 		return message;
 	}
 

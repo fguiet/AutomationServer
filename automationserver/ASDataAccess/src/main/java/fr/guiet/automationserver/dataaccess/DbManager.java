@@ -96,6 +96,42 @@ public class DbManager {
 					e);
 		}
 	}
+	
+	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, int pressure, float altitude) {
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+
+			_logger.info("Saving outside info to InfluxDB");
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("outside").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("outside_temp", outsideTemp)
+					.addField("garage_temp", garageTemp)
+					.addField("pressure", pressure)
+					.addField("altitude", altitude)
+					.build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		
+	}
 
 	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
 		try {
