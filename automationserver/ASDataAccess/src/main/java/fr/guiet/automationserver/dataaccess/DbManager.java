@@ -97,7 +97,7 @@ public class DbManager {
 		}
 	}
 	
-	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, int pressure, float altitude) {
+	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;

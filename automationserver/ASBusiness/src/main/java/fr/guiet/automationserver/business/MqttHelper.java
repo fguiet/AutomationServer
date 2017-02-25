@@ -203,7 +203,7 @@ public class MqttHelper implements MqttCallback {
 
 				try {
 					float garageTemp = Float.parseFloat(messageContent[1]);
-					int pressure = Integer.parseInt(messageContent[2]);
+					float pressure = Float.parseFloat(messageContent[2]);
 					float altitude = Float.parseFloat(messageContent[3]);
 					float outsideTemp = Float.parseFloat(messageContent[3]);
 
