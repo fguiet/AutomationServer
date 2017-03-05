@@ -60,3 +60,8 @@ Transistor
 ----------
 
 Pour comprendre les calculs : http://xizard.chez.com/Cours/transistor_commutation.htm
+
+BMP180 (pression atmos)
+-----------------------
+
+https://wiki.mchobby.be/index.php?title=FEATHER-MICROPYTHON-BMP180
