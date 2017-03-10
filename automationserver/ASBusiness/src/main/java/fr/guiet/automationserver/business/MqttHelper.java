@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ public class MqttHelper implements MqttCallback {
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
 	private DbManager _dbManager = null;
+	private Date _lastGotMailMessage = null;
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
 
@@ -159,17 +161,36 @@ public class MqttHelper implements MqttCallback {
 				break;
 			case "SETGOTMAIL":
 				try {
-					float vcc = Float.parseFloat(messageContent[1]);
 
-					_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
+					long diffMinutes = 0;
+					if (_lastGotMailMessage != null) {
+						Date currentDate = new Date();
+						long diff = currentDate.getTime() - _lastGotMailMessage.getTime();
+						diffMinutes = diff / (60 * 1000);
+					}
 
-					String mess = "Hey! you got mail ! by the way, vcc sensor is " + vcc;
-					MailService mailService = new MailService();
-					mailService.SendMailSSL("Hey! you got mail", mess);
+					// Send new SMS only if last message was sent more then one
+					// hour before
+					// Need to do that so I am not receiving lot of messages
+					// during strong wind (it opens my mailbox!!)
+					if (_lastGotMailMessage == null || diffMinutes > 60) {
 
-					SMSDto sms = new SMSDto();
-					sms.setMessage(mess);
-					_smsGammuService.sendMessage(sms, true);
+						float vcc = Float.parseFloat(messageContent[1]);
+
+						_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
+
+						String mess = "Hey! you got mail ! by the way, vcc sensor is " + vcc;
+						/*
+						 * MailService mailService = new MailService();
+						 * mailService.SendMailSSL("Hey! you got mail", mess);
+						 */
+
+						SMSDto sms = new SMSDto();
+						sms.setMessage(mess);
+						_smsGammuService.sendMessage(sms, true);
+					}
+					
+					_lastGotMailMessage = new Date();
 
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from mailbox", e);
@@ -216,7 +237,9 @@ public class MqttHelper implements MqttCallback {
 			default:
 				_logger.error("Could not process MQTT message : " + message);
 			}
-		} else {
+		} else
+
+		{
 			_logger.error("Could not process MQTT message : " + message);
 		}
 	}
