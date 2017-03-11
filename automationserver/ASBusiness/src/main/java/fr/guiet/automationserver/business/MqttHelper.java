@@ -233,6 +233,23 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Could not read or save information received from outside", e);
 				}
 				break;
+			case "SETINSIDEINFO":
+				try {
+					long sensorId = Long.parseLong(messageContent[1]);
+					float temp = Float.parseFloat(messageContent[2]);
+					float humidity = Float.parseFloat(messageContent[3]);
+					
+					for (Room room : _roomService.GetRooms()) {
+						if (room.getSensor().getIdSendor()==sensorId) {
+							room.getSensor().setReceivedValue(temp, humidity);
+							_logger.info("Received WiFi sensor info => id: " + sensorId+ ", temp: "+temp+", hum: "+humidity);
+							break;
+						}
+					}					
+				} catch (Exception e) {
+					_logger.error("Could not process message : "+message, e);
+				}
+				break;
 
 			default:
 				_logger.error("Could not process MQTT message : " + message);

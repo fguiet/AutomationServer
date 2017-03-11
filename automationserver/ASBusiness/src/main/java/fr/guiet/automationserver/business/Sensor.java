@@ -27,7 +27,7 @@ public class Sensor implements IXBeeListener {
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
 	private boolean _alertSentMore = false;
-	//private MqttHelper _mqttHelper = null;
+	// private MqttHelper _mqttHelper = null;
 	// private int _sendAlertInMinute = 5; //envoie d'une alerte au bout de 5
 	// minutes par defaut
 
@@ -39,6 +39,12 @@ public class Sensor implements IXBeeListener {
 
 	public float getActualTemp() {
 		return _actualTemp;
+	}
+
+	public void setReceivedValue(float actualTemp, float actualHumidity) {
+		_actualHumidity = actualHumidity;
+		_actualTemp = actualTemp;
+		_lastInfoReceived = new Date();
 	}
 
 	public float getActualHumidity() {
@@ -55,6 +61,8 @@ public class Sensor implements IXBeeListener {
 		return _XBeeInstance;
 	}
 
+	// TODO : Timeout must be handled by sensor itself (via timer, not by
+	// method)
 	public boolean HasTimeoutOccured() {
 
 		// Si pas encore recu d'info, on considere que c'est un timeout
@@ -71,8 +79,7 @@ public class Sensor implements IXBeeListener {
 			if (!_alertSent5) {
 
 				SMSDto sms = new SMSDto();
-				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)",
-						_name);
+				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)", _name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -87,8 +94,7 @@ public class Sensor implements IXBeeListener {
 			if (!_alertSent10) {
 
 				SMSDto sms = new SMSDto();
-				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)",
-						_name);
+				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)", _name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -104,8 +110,7 @@ public class Sensor implements IXBeeListener {
 
 				SMSDto sms = new SMSDto();
 				String message = String.format(
-						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something",
-						_name);
+						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something", _name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
 
@@ -155,13 +160,18 @@ public class Sensor implements IXBeeListener {
 				_actualTemp = Float.parseFloat(actualTemp);
 				_actualHumidity = Float.parseFloat(actualHumidity);
 
-		/*		DbManager dbManager = new DbManager();
-				dbManager.SaveSensorInfo(_idSensor, _actualTemp, _room.getWantedTemp(), _actualHumidity);
-				_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : " + _room.getName()
-						+ ", Temp actuelle : " + _actualTemp + ", Temp désirée : " + _room.getWantedTemp()
-						+ ", Humidité : " + _actualHumidity);
-
-				dbManager.SaveSensorInfoInfluxDB(_influxdbMeasurement, _actualTemp, _room.getWantedTemp(), _actualHumidity);*/
+				/*
+				 * DbManager dbManager = new DbManager();
+				 * dbManager.SaveSensorInfo(_idSensor, _actualTemp,
+				 * _room.getWantedTemp(), _actualHumidity); _logger.
+				 * info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
+				 * + _room.getName() + ", Temp actuelle : " + _actualTemp +
+				 * ", Temp désirée : " + _room.getWantedTemp() + ", Humidité : "
+				 * + _actualHumidity);
+				 * 
+				 * dbManager.SaveSensorInfoInfluxDB(_influxdbMeasurement,
+				 * _actualTemp, _room.getWantedTemp(), _actualHumidity);
+				 */
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()
@@ -216,23 +226,27 @@ public class Sensor implements IXBeeListener {
 		_room = room;
 		_name = dto.name;
 		_smsGammuService = gammuService;
-		//_mqttHelper = new MqttHelper(gammuService);
+		// _mqttHelper = new MqttHelper(gammuService);
 
-		String[] address = dto.sensorAddress.split(" ");
+		//TODO : soon each sensor will wifi sensor no more xbee
+		if (dto.sensorAddress != null) {
 
-		int i1 = Integer.parseInt(address[0], 16);
-		int i2 = Integer.parseInt(address[1], 16);
-		int i3 = Integer.parseInt(address[2], 16);
-		int i4 = Integer.parseInt(address[3], 16);
-		int i5 = Integer.parseInt(address[4], 16);
-		int i6 = Integer.parseInt(address[5], 16);
-		int i7 = Integer.parseInt(address[6], 16);
-		int i8 = Integer.parseInt(address[7], 16);
+			String[] address = dto.sensorAddress.split(" ");
 
-		_sensorAddress = new XBeeAddress64(i1, i2, i3, i4, i5, i6, i7, i8);
+			int i1 = Integer.parseInt(address[0], 16);
+			int i2 = Integer.parseInt(address[1], 16);
+			int i3 = Integer.parseInt(address[2], 16);
+			int i4 = Integer.parseInt(address[3], 16);
+			int i5 = Integer.parseInt(address[4], 16);
+			int i6 = Integer.parseInt(address[5], 16);
+			int i7 = Integer.parseInt(address[6], 16);
+			int i8 = Integer.parseInt(address[7], 16);
 
-		CreateGetSensorInfoTask();
-		XBeeInstance().addXBeeListener(this);
+			_sensorAddress = new XBeeAddress64(i1, i2, i3, i4, i5, i6, i7, i8);
+
+			CreateGetSensorInfoTask();
+			XBeeInstance().addXBeeListener(this);
+		}
 	}
 
 	public static Sensor LoadFromDto(SensorDto dto, Room room, SMSGammuService gammuService) {
@@ -240,9 +254,9 @@ public class Sensor implements IXBeeListener {
 		return new Sensor(dto, room, gammuService);
 	}
 
-	public XBeeAddress64 getSensorAddress() {
+	/*public XBeeAddress64 getSensorAddress() {
 		return _sensorAddress;
-	}
+	}*/
 
 	public long getIdSendor() {
 		return _idSensor;
