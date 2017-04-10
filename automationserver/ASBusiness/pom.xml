@@ -56,11 +56,11 @@
 			<artifactId>automationserver-dataaccess</artifactId>
 			<version>${automationserver-dataaccess.version}</version>
 		</dependency>
-		<dependency>
+<!--  		<dependency>
 			<groupId>com.rapplogic</groupId>
 			<artifactId>xbee-api</artifactId>
 			<version>${xbee-api.version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>com.rapplogic.xbee</groupId>
 			<artifactId>RXTXComm</artifactId>

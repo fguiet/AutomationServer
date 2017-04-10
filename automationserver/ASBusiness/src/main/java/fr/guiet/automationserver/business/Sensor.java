@@ -1,19 +1,19 @@
 package fr.guiet.automationserver.business;
 
-import com.rapplogic.xbee.api.XBeeAddress64;
+//import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
 
-import java.util.Timer;
 import java.util.Date;
 import fr.guiet.automationserver.dto.*;
 
-public class Sensor implements IXBeeListener {
+//public class Sensor implements IXBeeListener {
+public class Sensor {
 
 	private static Logger _logger = Logger.getLogger(Sensor.class);
 
 	private long _idSensor;
 	private String _name;
-	private XBeeAddress64 _sensorAddress;
+	//private XBeeAddress64 _sensorAddress;
 	//private Timer _timer = null;
 	//private static XBeeService _XBeeInstance = null;
 	//private static Object _lockObj = new Object();
@@ -180,9 +180,9 @@ public class Sensor implements IXBeeListener {
 
 	}
 
-	public String sensorAddress() {
+	/*public String sensorAddress() {
 		return _sensorAddress.toString();
-	}
+	}*/
 
 	public void StopService() {
 
@@ -228,7 +228,7 @@ public class Sensor implements IXBeeListener {
 		// _mqttHelper = new MqttHelper(gammuService);
 
 		//TODO : soon each sensor will wifi sensor no more xbee
-		if (dto.sensorAddress != null) {
+		/*if (dto.sensorAddress != null) {
 
 			String[] address = dto.sensorAddress.split(" ");
 
@@ -245,7 +245,7 @@ public class Sensor implements IXBeeListener {
 
 			//CreateGetSensorInfoTask();
 			//XBeeInstance().addXBeeListener(this);
-		}
+		}*/
 	}
 
 	public static Sensor LoadFromDto(SensorDto dto, Room room, SMSGammuService gammuService) {
