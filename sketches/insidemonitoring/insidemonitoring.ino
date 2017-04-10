@@ -11,15 +11,15 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 //#define SENSORID 5 //Parents
-//#define SENSORID 4 //Manon
+#define SENSORID 4 //Manon
 //#define SENSORID 3 //Nohé
-#define SENSORID 2 //Salon
+//#define SENSORID 2 //Salon
 //#define SENSORID 1 //Bureau
 
 //#define MQTT_CLIENT_ID "ParentsSensor"
-//#define MQTT_CLIENT_ID "ManonSensor"
+#define MQTT_CLIENT_ID "ManonSensor"
 //#define MQTT_CLIENT_ID "NoheSensor"
-#define MQTT_CLIENT_ID  "SalonSensor"
+//#define MQTT_CLIENT_ID "SalonSensor"
 //#define MQTT_CLIENT_ID "BureauSensor"
 
 //Mqtt settings

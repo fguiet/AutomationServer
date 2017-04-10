@@ -101,8 +101,8 @@ public class AutomationServer implements Daemon {
 						//ast.start();
 						_mqttHelper.PublishRoomsInfo();
 						
-						//Publication des données toutes les 30s
-						Thread.sleep(30000);
+						//Publication des données toutes les 10s
+						Thread.sleep(10000);
 
 					}
 
