@@ -94,8 +94,6 @@ public class MqttHelper implements MqttCallback {
 	/**
 	 * Publishes message to Mqtt broker
 	 * 
-	 * @param topic
-	 * @param message
 	 */
 	public void PublishRoomsInfo() {
 
@@ -189,7 +187,7 @@ public class MqttHelper implements MqttCallback {
 						sms.setMessage(mess);
 						_smsGammuService.sendMessage(sms, true);
 					}
-					
+
 					_lastGotMailMessage = new Date();
 
 				} catch (Exception e) {
@@ -238,16 +236,17 @@ public class MqttHelper implements MqttCallback {
 					long sensorId = Long.parseLong(messageContent[1]);
 					float temp = Float.parseFloat(messageContent[2]);
 					float humidity = Float.parseFloat(messageContent[3]);
-					
+
 					for (Room room : _roomService.GetRooms()) {
-						if (room.getSensor().getIdSendor()==sensorId) {
+						if (room.getSensor().getIdSendor() == sensorId) {
 							room.getSensor().setReceivedValue(temp, humidity);
-							_logger.info("Received WiFi sensor info => id: " + sensorId+ ", temp: "+temp+", hum: "+humidity);
+							// _logger.info("Received WiFi sensor info => id: "
+							// + sensorId+ ", temp: "+temp+", hum: "+humidity);
 							break;
 						}
-					}					
+					}
 				} catch (Exception e) {
-					_logger.error("Could not process message : "+message, e);
+					_logger.error("Could not process message : " + message, e);
 				}
 				break;
 

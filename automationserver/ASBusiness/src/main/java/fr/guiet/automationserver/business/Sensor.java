@@ -4,7 +4,6 @@ import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
 
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Date;
 import fr.guiet.automationserver.dto.*;
 
@@ -15,9 +14,9 @@ public class Sensor implements IXBeeListener {
 	private long _idSensor;
 	private String _name;
 	private XBeeAddress64 _sensorAddress;
-	private Timer _timer = null;
-	private static XBeeService _XBeeInstance = null;
-	private static Object _lockObj = new Object();
+	//private Timer _timer = null;
+	//private static XBeeService _XBeeInstance = null;
+	//private static Object _lockObj = new Object();
 	private Date _lastInfoReceived = null; // Date de derniere reception d'une
 											// info du capteur
 	private float _actualTemp;
@@ -51,7 +50,7 @@ public class Sensor implements IXBeeListener {
 		return _actualHumidity;
 	}
 
-	private static XBeeService XBeeInstance() {
+	/*private static XBeeService XBeeInstance() {
 		synchronized (_lockObj) {
 			if (_XBeeInstance == null) {
 				_XBeeInstance = new XBeeService();
@@ -59,7 +58,7 @@ public class Sensor implements IXBeeListener {
 		}
 
 		return _XBeeInstance;
-	}
+	}*/
 
 	// TODO : Timeout must be handled by sensor itself (via timer, not by
 	// method)
@@ -187,19 +186,19 @@ public class Sensor implements IXBeeListener {
 
 	public void StopService() {
 
-		if (_timer != null)
-			_timer.cancel();
+		/*if (_timer != null)
+			_timer.cancel();*/
 
-		if (!XBeeInstance().isStopped()) {
+		/*if (!XBeeInstance().isStopped()) {
 			XBeeInstance().StopService();
-		}
+		}*/
 
 		_logger.info("Arrêt du capteur de la pièce : " + _room.getName());
 
 	}
 
 	// Creation de la tache de recuperation des infos des capteurs
-	private void CreateGetSensorInfoTask() {
+	/*private void CreateGetSensorInfoTask() {
 
 		TimerTask getSensorInfoTask = new TimerTask() {
 			@Override
@@ -211,14 +210,14 @@ public class Sensor implements IXBeeListener {
 		_timer = new Timer(true);
 		// Toutes les minutes on enregistre une trame
 		_timer.schedule(getSensorInfoTask, 5000, 30000);
-	}
+	}*/
 
 	// Envoi d'un message pour recuperer les infos du capteur
-	private void GetSensorInfo() {
+	/*private void GetSensorInfo() {
 
 		// XBeeService xbee = new XBeeService(_sensorAddress);
 		XBeeInstance().SendAsynchronousMessage(_sensorAddress, "GETSENSORINFO");
-	}
+	}*/
 
 	private Sensor(SensorDto dto, Room room, SMSGammuService gammuService) {
 
@@ -244,8 +243,8 @@ public class Sensor implements IXBeeListener {
 
 			_sensorAddress = new XBeeAddress64(i1, i2, i3, i4, i5, i6, i7, i8);
 
-			CreateGetSensorInfoTask();
-			XBeeInstance().addXBeeListener(this);
+			//CreateGetSensorInfoTask();
+			//XBeeInstance().addXBeeListener(this);
 		}
 	}
 

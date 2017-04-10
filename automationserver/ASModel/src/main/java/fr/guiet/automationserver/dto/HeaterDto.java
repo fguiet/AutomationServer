@@ -9,10 +9,10 @@ package fr.guiet.automationserver.dto;
  */
 public class HeaterDto {
 
+	//TODO : refactor dto (suppress direct property access)
 	public long heaterId;
 	public int currentConsumption;
 	public int phase;
 	public int raspberryPin;
 	public String name;
-	//TODO : refactor dto (suppress direct property access)
 }

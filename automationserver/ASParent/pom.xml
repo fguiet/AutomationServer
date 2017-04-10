@@ -25,7 +25,7 @@
 		<maven-assembly.version>3.0.0</maven-assembly.version>
 		<maven-clean.version>3.0.0</maven-clean.version>
 		<log4j.version>1.2.8</log4j.version>
-		<xbee-api.version>0.9</xbee-api.version>
+		<!-- <xbee-api.version>0.9</xbee-api.version> -->
 		<RXTXComm.version>1.0</RXTXComm.version>
 		<pi4j-core.version>1.0</pi4j-core.version>
 		<influxdb-java.version>2.5</influxdb-java.version>
