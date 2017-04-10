@@ -27,6 +27,10 @@ public class Room {
 		return _heaterList;
 	}
 
+	public String lastInfoReceivedFromSensor() {
+		return _sensor.lastInfoReceived();
+	}
+	
 	public Sensor getSensor() {
 		return _sensor;
 	}

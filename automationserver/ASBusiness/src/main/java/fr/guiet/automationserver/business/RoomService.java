@@ -160,6 +160,15 @@ public class RoomService implements Runnable {
 		}
 	}
 
+	public String LastInfoReceived(long roomId) {
+		Room r = GetRoomById(roomId);
+		if (r != null) {
+			return r.lastInfoReceivedFromSensor();
+		} else {
+			return "NA";
+		}
+	}
+	
 	// Retourne la t° programmée
 	public Float GetTempProg(long roomId) {
 		Room r = GetRoomById(roomId);

@@ -3,6 +3,8 @@ package fr.guiet.automationserver.business;
 //import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import fr.guiet.automationserver.dto.*;
 
@@ -38,6 +40,18 @@ public class Sensor {
 
 	public float getActualTemp() {
 		return _actualTemp;
+	}
+	
+	public String lastInfoReceived() {
+		
+		if (_lastInfoReceived != null) {
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy à HH:mm:ss");
+			return df.format(_lastInfoReceived);
+		}
+		else {
+			return "NA";
+		}
+		
 	}
 
 	public void setReceivedValue(float actualTemp, float actualHumidity) {

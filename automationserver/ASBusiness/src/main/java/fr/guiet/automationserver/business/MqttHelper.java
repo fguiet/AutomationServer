@@ -300,6 +300,9 @@ public class MqttHelper implements MqttCallback {
 			sensorKO = "SENSOROK";
 		}
 
+		//Last info received from sensor
+		String lastInfoReceveid = _roomService.LastInfoReceived(roomId);
+		
 		String papp = "NA";
 		String hchc = "NA";
 		String hchp = "NA";
@@ -316,7 +319,7 @@ public class MqttHelper implements MqttCallback {
 
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
 				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";"
-				+ awayModeStatus;
+				+ awayModeStatus + ";" + lastInfoReceveid;
 		return message;
 	}
 
