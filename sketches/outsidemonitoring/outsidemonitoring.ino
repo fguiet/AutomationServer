@@ -3,9 +3,11 @@
  * 
  * F. Guiet 
  * Creation           : 20170225
- * Last modification  : 20170225 
+ * Last modification  : 20170410 
  * 
- * Version            : 1.0
+ * Version            : 1.1
+ * History            : 1.0 - First version
+ *                      1.1 - Add deep sleep mode (so that temp sensor is not altered by ESP8266 self warm
  */
 
 #include <DallasTemperature.h>
@@ -34,6 +36,10 @@ const int sdaPin = D5;
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
 
+#define MQTT_CLIENT_ID "GarageSensor"
+#define MAX_RETRY 50
+long sleepInMinute = 1;
+
 long previousMillis = 0;   
 long interval = 60000; //One minute
 char message_buff[100];
@@ -60,12 +66,17 @@ void setup() {
   
   if (!bmp.begin()) {
     Serial.println("BMP180 / BMP085 introuvable ! Verifier le branchement ");    
-    makeLedBlink(5,200);         
+    makeLedBlink(5,200);  
+    goDeepSleep();       
   }
 
   client.setServer(mqtt_server, 1883); 
   
   delay(200);  
+
+  connectToWifi();
+  
+  Serial.println("ready!");
 }
 
 void makeLedBlink(int blinkTimes, int millisecond) {
@@ -78,47 +89,37 @@ void makeLedBlink(int blinkTimes, int millisecond) {
   } 
 }
 
-void connectToWifi() {
-
-  WiFi.forceSleepWake();
-  WiFi.mode(WIFI_STA);
-  
-  int retry = 0;
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED && retry < 100) {
-    retry++;
-    delay(500);
-    Serial.print(".");
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {  
-     Serial.println("");
-     Serial.println("WiFi connected");  
-     // Print the IP address
-     Serial.println(WiFi.localIP());     
-  } else {
-    Serial.println("WiFi connection failed...");  
-    makeLedBlink(5, 200);    
-  }  
-}
-
 void loop() {  
 
-  unsigned long currentMillis = millis();
+ // unsigned long currentMillis = millis();
   
-  if(currentMillis - previousMillis > interval) {
+  //if(currentMillis - previousMillis > interval) {
 
-    connectToWifi();
+   // connectToWifi();
 
     // put your main code here, to run repeatedly:
+    //if (!client.connected()) {
+    //  reconnect();     
+   // }
+
+    if (WiFi.status() != WL_CONNECTED) {
+      if (!connectToWifi())
+        goDeepSleep();
+    }  
+
     if (!client.connected()) {
-      reconnect();     
+      if (!reconnect()) {
+        goDeepSleep();
+      }
     }
 
     //Handle MQTT connection
     client.loop();
 
-    previousMillis = currentMillis;
+    delay(500);
+    yield();
+
+    //previousMillis = currentMillis;
 
     Serial.print("Temperature garage = ");
     float temp = bmp.readTemperature();
@@ -145,29 +146,90 @@ void loop() {
     client.publish(mqtt_topic,message_buff);       
     makeLedBlink(2,100);
 
-    WiFi.disconnect();
-  }
+    delay(500);
+    yield();
+  
+    //Deep sleep...ZZzzzZZzzz
+    goDeepSleep();
 }
 
-void reconnect() {
+void disconnectMqtt() {
+  Serial.println("Disconnecting from mqtt...");
+  client.disconnect();
+}
+
+void disconnectWifi() {
+  Serial.println("Disconnecting from wifi...");
+  WiFi.disconnect();
+}
+
+boolean reconnect() {
 
   int retry = 0;
   // Loop until we're reconnected
-  while (!client.connected() && retry < 10) {
+  while (!client.connected() && retry < MAX_RETRY) {
     Serial.print("Attempting MQTT connection...");
     
-    if (client.connect("Wemos_OutsideNotifier")) {
+    if (client.connect(MQTT_CLIENT_ID)) {
       Serial.println("connected to MQTT Broker...");
     } else {
       retry++;
       // Wait 5 seconds before retrying
-      delay(500);      
+      delay(500);
+      yield();
     }
   }
 
-  if (retry >= 10) {
+  if (retry >= MAX_RETRY) {
     Serial.println("MQTT connection failed...");  
-    makeLedBlink(5, 200);    
+    return false;
+    //goDeepSleep();
   }
+
+  return true;
+}
+
+boolean connectToWifi() {
+
+  WiFi.forceSleepWake();
+  WiFi.mode(WIFI_STA);
+  
+  int retry = 0;
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
+    retry++;
+    delay(500);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {  
+     Serial.println("");
+     Serial.println("WiFi connected");  
+     // Print the IP address
+     Serial.println(WiFi.localIP());
+     return true;
+  } else {
+    Serial.println("WiFi connection failed...");   
+    return false;
+  }  
+}
+
+void goDeepSleep() {
+  //Disconnect properly
+
+  if (client.connected()) {
+    disconnectMqtt();  
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    disconnectWifi();  
+  }
+  
+  delay(500);
+  yield();
+
+  Serial.println("Entering deep sleep mode...good dreams fellows...ZzzzzZzzZZZZzzz");
+  ESP.deepSleep(sleepInMinute * 60 * 1000000);
+  yield();
 }
 

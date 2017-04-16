@@ -54,7 +54,7 @@ void setup() {
 
   connectToWifi();
   
-  Serial.printf("ready!");
+  Serial.println("ready!");
 
 }
 

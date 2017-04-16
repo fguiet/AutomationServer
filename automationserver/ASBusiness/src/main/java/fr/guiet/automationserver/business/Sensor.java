@@ -54,9 +54,13 @@ public class Sensor {
 		
 	}
 
-	public void setReceivedValue(float actualTemp, float actualHumidity) {
-		_actualHumidity = actualHumidity;
+	public void setReceivedValue(float actualTemp, float actualHumidity, float sensorCorrection) {
+		_actualHumidity = actualHumidity;		
 		_actualTemp = actualTemp;
+		
+		//DHT22 is inside a box and temp reading is incorrect (warn from ESP8266)
+		_actualTemp = _actualTemp - sensorCorrection;
+				
 		_lastInfoReceived = new Date();
 	}
 
