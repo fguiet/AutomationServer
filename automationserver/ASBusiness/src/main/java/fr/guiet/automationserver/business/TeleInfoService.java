@@ -57,7 +57,7 @@ public class TeleInfoService implements Runnable {
 	private float _hpCost = 0;
 	private float _hcCost = 0;
 	private float _aboCost = 0;
-	private String _nextBillDate;
+	private Date _lastBillDate;
 	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
@@ -79,8 +79,16 @@ public class TeleInfoService implements Runnable {
 
 			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
 			
-			_nextBillDate = prop.getProperty("nextbill.date");			
-			
+			String lastBillDate = prop.getProperty("lastbill.date");		
+	        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");        
+	        try {
+	        	_lastBillDate = formatter.parse(lastBillDate);
+			} catch (ParseException e) {
+				Calendar cal = Calendar.getInstance(); 
+				_lastBillDate = cal.getTime();
+				_logger.warn("Bad lastbill.date defined in config file !, set to actual date by default", e);
+			}
+								
 			try {
 				String hpCost = prop.getProperty("hp.cost");
 				if (hpCost != null)
@@ -426,37 +434,25 @@ public class TeleInfoService implements Runnable {
 		}
 	}
 	
-	public float ComputeNextElectricityBill() {
-		
-		LocalDate startDate = LocalDate.now(); //LocalDate.parse(dateString);
-        LocalDate endDate = LocalDate.parse(_nextBillDate);
-		Long range = ChronoUnit.DAYS.between(startDate, endDate);
-        
-		Date nextBillDate;
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");        
-        try {
-			nextBillDate = formatter.parse(_nextBillDate);
-		} catch (ParseException e) {
-			Calendar cal = Calendar.getInstance(); 
-			nextBillDate = cal.getTime();
-			_logger.warn("Bad nextbill.date defined in config file !, set to actual date by default", e);
-		}
-        
-        return ComputeElectricityBill(nextBillDate,  range.intValue());
-        
+	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException
+	{
+	    return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
 	}
 	
 	//TODO : Faire une mise en cache (raffraichissement toutes les heures...)	
-	private float ComputeElectricityBill(Date nextBillDate, int days) {
+	public float ComputeElectricityBill() {
 		
 		DbManager dbManager = new DbManager();
-
-		Calendar cal = Calendar.getInstance(); 
-		cal.setTime(nextBillDate);
-		cal.add(Calendar.DATE, -days);
-		java.util.Date dt = cal.getTime();
 		
-		HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(dt);
+		Date currentDate = new Date();
+		int days = 0;
+		try {
+			days = betweenDates(_lastBillDate, currentDate).intValue();
+		} catch (IOException e) {
+			_logger.error("Erreur lors du calcul du nombre de jours entre deux dates",e);
+		}
+		
+		HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(_lastBillDate);
 		
 		Integer hcConso = map.get("hcConsuption");
 		Integer hpConso = map.get("hpConsuption");
