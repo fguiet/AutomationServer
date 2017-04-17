@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="automationInfoAppender" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="/tmp/InfoAutomationServer.log" />
+                <param name ="MaxFileSize" value="10MB"></param>
+                <param name ="MaxBackupIndex" value="10"></param>
+        <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
+                </layout>
+        <filter class="org.apache.log4j.varia.LevelMatchFilter">
+            <param name="LevelToMatch" value="INFO" />
+            <param name="AcceptOnMatch" value="true" />
+        </filter>
+        <filter class="org.apache.log4j.varia.DenyAllFilter" />
+    </appender>
+
+        <appender name="automationErrorAppender" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="/tmp/ErrorAutomationServer.log" />
+                <param name ="MaxFileSize" value="10MB"></param>
+                <param name ="MaxBackupIndex" value="10"></param>
+        <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
+                </layout>
+        <filter class="org.apache.log4j.varia.LevelMatchFilter">
+            <param name="LevelToMatch" value="ERROR" />
+            <param name="AcceptOnMatch" value="true" />
+        </filter>
+        <filter class="org.apache.log4j.varia.DenyAllFilter" />
+    </appender>
+
+        <appender name="automationWarnAppender" class="org.apache.log4j.RollingFileAppender">
+                <param name ="MaxFileSize" value="10MB"></param>
+                <param name ="MaxBackupIndex" value="10"></param>
+        <param name="File" value="/tmp/WarnAutomationServer.log" />
+        <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
+                </layout>
+        <filter class="org.apache.log4j.varia.LevelMatchFilter">
+            <param name="LevelToMatch" value="WARN" />
+            <param name="AcceptOnMatch" value="true" />
+        </filter>
+        <filter class="org.apache.log4j.varia.DenyAllFilter" />
+    </appender>
+
+        <!--<appender name="thingSpeakAppender" class="org.apache.log4j.FileAppender">
+        <param name="File" value="/home/fred/AutomationServer/log/ThingSpeak.log" />
+        <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
+                </layout>
+    </appender>-->
+
+        <appender name="debugAppender" class="org.apache.log4j.RollingFileAppender">
+                <param name ="MaxFileSize" value="10MB"></param>
+                <param name ="MaxBackupIndex" value="10"></param>
+        <param name="File" value="/tmp/debug.log" />
+        <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
+                </layout>
+    </appender>
+
+        <logger name="com.rapplogic.xbee">
+                <level value="OFF" />
+        </logger>
+
+        <!--<logger name="com.angryelectron.thingspeak">
+                <level value="DEBUG" />
+                <appender-ref ref="thingSpeakAppender" />
+        </logger>-->
+
+    <root>
+         <level value="DEBUG" />
+                 <!--<appender-ref ref="debugAppender" />-->
+         <appender-ref ref="automationInfoAppender" />
+         <appender-ref ref="automationWarnAppender" />
+                 <appender-ref ref="automationErrorAppender" />
+                <!-- <appender-ref ref="thingSpeakAppender" />-->
+
+    </root>
+</log4j:configuration>

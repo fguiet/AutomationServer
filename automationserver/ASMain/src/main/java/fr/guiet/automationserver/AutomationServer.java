@@ -99,7 +99,7 @@ public class AutomationServer implements Daemon {
 						//AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
 							//	_teleInfoService);
 						//ast.start();
-						_mqttHelper.PublishRoomsInfo();
+						_mqttHelper.PublishInfoToMqttBroker();
 						
 						//Publication des données toutes les 10s
 						Thread.sleep(10000);

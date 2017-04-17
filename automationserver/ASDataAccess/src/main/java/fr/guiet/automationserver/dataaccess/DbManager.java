@@ -10,9 +10,15 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.Calendar;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.sql.ResultSet;
 import org.apache.log4j.Logger;
@@ -666,6 +672,67 @@ public class DbManager {
 
 		return ts;
 
+	}
+	
+	private static Date convertDate(Date dateFrom, String fromTimeZone, String toTimeZone) throws ParseException {
+        String pattern = "yyyy/MM/dd HH:mm:ss";
+        SimpleDateFormat sdfFrom = new SimpleDateFormat (pattern);
+        sdfFrom.setTimeZone(TimeZone.getTimeZone(fromTimeZone));
+
+        SimpleDateFormat sdfTo = new SimpleDateFormat (pattern);
+        sdfTo.setTimeZone(TimeZone.getTimeZone(toTimeZone));
+
+        Date dateTo = sdfFrom.parse(sdfTo.format(dateFrom));
+        
+        return dateTo;
+    }
+	
+	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate) {
+		
+		HashMap<String, Integer> results = new HashMap<>();
+		
+		try {
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			//Convert Date in UTC
+			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");
+			
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String dfd = df.format(convertDate(fromDate1, "Europe/Paris","UTC"));
+			
+			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"'";
+			Query query = new Query(sql, "automation");
+			QueryResult queryResult =_influxDB.query(query);
+			
+			List<QueryResult.Result> result = queryResult.getResults(); 
+			
+			//_logger.info("QueryResult : "+result.get(0).getSeries().get(0).getValues());
+						
+			String min_hchp = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
+			String min_hchc = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
+			String max_hchp = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
+			String max_hchc = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
+			
+			min_hchp = min_hchp.substring(0,5);
+			min_hchc = min_hchc.substring(0,5);
+			max_hchp = max_hchp.substring(0,5);
+			max_hchc = max_hchc.substring(0,5);
+			
+			
+			results.put("hpConsuption", Integer.parseInt(max_hchp)-Integer.parseInt(min_hchp));
+			results.put("hcConsuption", Integer.parseInt(max_hchc)-Integer.parseInt(min_hchc));
+			
+			
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
+		}		
+		
+		return results;
 	}
 
 	/***

@@ -9,17 +9,19 @@ public class TeleinfoServiceTests {
 		SMSGammuService gammuService = new SMSGammuService();
 		
 		TeleInfoService teleInfoService = new TeleInfoService(gammuService);
-		Thread teleInfoServiceThread = new Thread(teleInfoService);
-		teleInfoServiceThread.start();
+		//Thread teleInfoServiceThread = new Thread(teleInfoService);
+		//teleInfoServiceThread.start();
 		
 		//Test d'une minute
 		
-		try {
+		/*try {
 			Thread.sleep(60000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
+		
+		System.out.println(teleInfoService.ComputeElectricityBill(60));
 		
 	}
 }

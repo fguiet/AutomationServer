@@ -31,6 +31,7 @@ public class MqttHelper implements MqttCallback {
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private float _sensorCorrection = 0;
+	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
 
@@ -107,7 +108,7 @@ public class MqttHelper implements MqttCallback {
 	 * Publishes message to Mqtt broker
 	 * 
 	 */
-	public void PublishRoomsInfo() {
+	public void PublishInfoToMqttBroker() {
 
 		try {
 			MqttMessage mqttMessage = new MqttMessage();
@@ -118,6 +119,12 @@ public class MqttHelper implements MqttCallback {
 				_client.publish(room.getMqttTopic(), mqttMessage);
 				// Thread.sleep(1000);
 			}
+			
+			String message = FormatHomeInfoMessage();
+			mqttMessage.setPayload(message.getBytes("UTF8"));
+			_client.publish(HOME_INFO_MQTT_TOPIC, mqttMessage);
+			
+			
 		} catch (MqttException me) {
 			_logger.error("Error sending sensor value to mqtt broker", me);
 
@@ -157,6 +164,15 @@ public class MqttHelper implements MqttCallback {
 			String action = messageContent[0];
 
 			switch (action) {
+			case "SETNEWSERIE":
+				String serie = messageContent[1];				
+				String mess1 = "Hey! you got a new serie to watch : " +serie;				
+				SMSDto sms1 = new SMSDto();
+				sms1.setMessage(mess1);
+				_smsGammuService.sendMessage(sms1, true);
+				
+				
+				break;
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
 
@@ -272,6 +288,28 @@ public class MqttHelper implements MqttCallback {
 		}
 	}
 
+	private String FormatHomeInfoMessage() {
+		
+		String papp = "NA";
+		String hchc = "NA";
+		String hchp = "NA";
+
+		// TODO : Creer un message mqtt /guiet/home/info
+		if (_teleInfoService.GetLastTrame() != null) {
+			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
+			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
+			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);	
+		}
+
+		String electricityBill = Float.toString(_teleInfoService.ComputeElectricityBill(60));
+		
+		String awayModeStatus = _roomService.GetAwayModeStatus();	
+		
+		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + electricityBill;
+		
+		return message;
+	}
+	
 	private String FormatRoomInfoMessage(long roomId) {
 
 		String actualTemp = "NA";
@@ -315,23 +353,15 @@ public class MqttHelper implements MqttCallback {
 		// Last info received from sensor
 		String lastInfoReceveid = _roomService.LastInfoReceived(roomId);
 
-		String papp = "NA";
-		String hchc = "NA";
-		String hchp = "NA";
+		
 
-		// TODO : Creer un message mqtt /guiet/home/info
-		if (_teleInfoService.GetLastTrame() != null) {
-			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
-			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
-			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);
-		}
-
-		// TODO : Creer un message mqtt /guiet/home/info
-		String awayModeStatus = _roomService.GetAwayModeStatus();
-
-		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
+		/*String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
 				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";"
-				+ awayModeStatus + ";" + lastInfoReceveid;
+				+ awayModeStatus + ";" + lastInfoReceveid;*/
+		
+		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
+		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastInfoReceveid;
+		
 		return message;
 	}
 

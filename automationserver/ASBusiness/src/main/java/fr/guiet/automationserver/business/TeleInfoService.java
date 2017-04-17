@@ -15,13 +15,16 @@ import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-
+import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -49,8 +52,10 @@ public class TeleInfoService implements Runnable {
 	private Timer _timer = null;
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
-	
-	
+	private float _hpCost = 0;
+	private float _hcCost = 0;
+	private float _aboCost = 0;
+		
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
@@ -70,6 +75,39 @@ public class TeleInfoService implements Runnable {
 			prop.load(is);
 
 			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
+			
+			try {
+				String hpCost = prop.getProperty("hp.cost");
+				if (hpCost != null)
+					_hpCost = Float.parseFloat(hpCost);
+				else
+					_hpCost = Float.parseFloat("0");
+			} catch (NumberFormatException nfe) {
+				_hpCost = Float.parseFloat("0");
+				_logger.warn("Bad hp.cost defined in config file !, set to 0 by default", nfe);
+			}
+			
+			try {
+				String aboCost = prop.getProperty("abo.cost");
+				if (aboCost != null)
+					_aboCost = Float.parseFloat(aboCost);
+				else
+					_aboCost = Float.parseFloat("0");
+			} catch (NumberFormatException nfe) {
+				_aboCost = Float.parseFloat("0");
+				_logger.warn("Bad abo.cost defined in config file !, set to 0 by default", nfe);
+			}
+			
+			try {
+				String hcCost = prop.getProperty("hc.cost");
+				if (hcCost != null)
+					_hcCost = Float.parseFloat(hcCost);
+				else
+					_hcCost = Float.parseFloat("0");
+			} catch (NumberFormatException nfe) {
+				_hcCost = Float.parseFloat("0");
+				_logger.warn("Bad hc.cost defined in config file !, set to 0 by default", nfe);
+			}
 
 		} catch (FileNotFoundException e) {
 			_logger.error(
@@ -370,7 +408,7 @@ public class TeleInfoService implements Runnable {
 				//_logger.info("remove listener");
 				serial.removeListener(_sdl);
 				//try {
-					if (serial.isOpen()) {
+					if (serial.isOpen()) {	
 						//_logger.info("fermeture port serie");
 						serial.close();
 					}
@@ -381,6 +419,54 @@ public class TeleInfoService implements Runnable {
 			
 			serial =null;
 		}
+	}
+	
+	//TODO : Faire une mise en cache (raffraichissement toutes les heures...)	
+	public float ComputeElectricityBill(int days) {
+		
+		DbManager dbManager = new DbManager();
+
+		Calendar cal = Calendar.getInstance(); 
+		cal.add(Calendar.DATE, -days);
+		java.util.Date dt = cal.getTime();
+		
+		HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(dt);
+		
+		Integer hcConso = map.get("hcConsuption");
+		Integer hpConso = map.get("hpConsuption");
+				
+		/*hcConso = 2252;
+		hpConso = 2515;
+		_hcCost = (float) 0.056;
+		_hpCost = (float) 0.075;
+		_aboCost = (float) 13.64;				
+		System.out.println(hcConso+hpConso);*/
+		
+		//Montant HT
+		float hcConsoHT = hcConso * _hcCost;
+		float hpConsoHT = hpConso * _hpCost;
+		
+		//MontantTCC
+		float hcConsoTTC = (float) (hcConsoHT * 1.2);
+		float hpConsoTTC = (float) (hpConsoHT * 1.2);
+		
+		//Abo elec 13,64/mois, env 30jours
+		float aboCostHT = (_aboCost * days) / 30;
+		float aboCostTTC = (float) (aboCostHT * 1.055);
+		
+		//CTA 
+		float ctaHT = (float) ((3.015 * days) / 30);
+		float ctaTTC = (float) (ctaHT * 1.055);
+		
+		//CSPE
+		float cspeHT = (float) ((hpConso + hcConso) * 0.0225);
+		float cspeTTC = (float) (cspeHT * 1.2);
+		
+		float tcfeHT = (float) (0.0095625 * (hpConso + hcConso));
+		float tcfeTTC = (float) (tcfeHT * 1.2);
+		
+		return hcConsoTTC + hpConsoTTC + aboCostTTC + ctaTTC + cspeTTC + tcfeTTC;
+				
 	}
 
 	// Méthode de conversion
