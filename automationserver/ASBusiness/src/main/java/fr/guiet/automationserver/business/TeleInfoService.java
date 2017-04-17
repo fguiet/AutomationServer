@@ -15,14 +15,16 @@ import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
@@ -55,7 +57,8 @@ public class TeleInfoService implements Runnable {
 	private float _hpCost = 0;
 	private float _hcCost = 0;
 	private float _aboCost = 0;
-		
+	private String _nextBillDate;
+	
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
@@ -75,6 +78,8 @@ public class TeleInfoService implements Runnable {
 			prop.load(is);
 
 			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
+			
+			_nextBillDate = prop.getProperty("nextbill.date");			
 			
 			try {
 				String hpCost = prop.getProperty("hp.cost");
@@ -421,12 +426,33 @@ public class TeleInfoService implements Runnable {
 		}
 	}
 	
+	public float ComputeNextElectricityBill() {
+		
+		LocalDate startDate = LocalDate.now(); //LocalDate.parse(dateString);
+        LocalDate endDate = LocalDate.parse(_nextBillDate);
+		Long range = ChronoUnit.DAYS.between(startDate, endDate);
+        
+		Date nextBillDate;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");        
+        try {
+			nextBillDate = formatter.parse(_nextBillDate);
+		} catch (ParseException e) {
+			Calendar cal = Calendar.getInstance(); 
+			nextBillDate = cal.getTime();
+			_logger.warn("Bad nextbill.date defined in config file !, set to actual date by default", e);
+		}
+        
+        return ComputeElectricityBill(nextBillDate,  range.intValue());
+        
+	}
+	
 	//TODO : Faire une mise en cache (raffraichissement toutes les heures...)	
-	public float ComputeElectricityBill(int days) {
+	private float ComputeElectricityBill(Date nextBillDate, int days) {
 		
 		DbManager dbManager = new DbManager();
 
 		Calendar cal = Calendar.getInstance(); 
+		cal.setTime(nextBillDate);
 		cal.add(Calendar.DATE, -days);
 		java.util.Date dt = cal.getTime();
 		
@@ -459,6 +485,7 @@ public class TeleInfoService implements Runnable {
 		float ctaTTC = (float) (ctaHT * 1.055);
 		
 		//CSPE
+		//TODO : a mettre dans le fichier de conf.
 		float cspeHT = (float) ((hpConso + hcConso) * 0.0225);
 		float cspeTTC = (float) (cspeHT * 1.2);
 		
