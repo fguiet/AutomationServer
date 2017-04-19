@@ -108,7 +108,7 @@ public class SMSGammuService {
 		try {
 			de.execute(cmdLine, drh);
 		} catch (IOException e) {
-			_logger.error("Error while sending SMS",e);
+			_logger.error("Error while sending SMS",e);			
 		}
 		
 	}
@@ -132,7 +132,12 @@ public class SMSGammuService {
 	    public void onProcessFailed(final ExecuteException e) {
 	        super.onProcessFailed(e);
 	        
-	        _logger.error(String.format("Error occured while sending SMS ! Recipient : %s; Message : %s", _sms.getRecipient(), _sms.getMessage()),e);
+	        String mess = String.format("Error occured while sending SMS ! Recipient : %s; Message : %s", _sms.getRecipient(), _sms.getMessage());
+	        _logger.error(mess,e);
+	        
+	        //Send mail then!!
+	        MailService mailService = new MailService();
+			mailService.SendMailSSL("AutomationServer - Error sending SMS", mess);
 	    }
 	}
 	

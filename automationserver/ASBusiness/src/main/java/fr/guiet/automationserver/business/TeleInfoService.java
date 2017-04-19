@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +40,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	//private SerialDataEventListener _sdl = null;
+	// private SerialDataEventListener _sdl = null;
 	private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
@@ -57,8 +56,11 @@ public class TeleInfoService implements Runnable {
 	private float _hpCost = 0;
 	private float _hcCost = 0;
 	private float _aboCost = 0;
+	private float _ctaCost = 0;
+	private float _cspeCost = 0;
+	private float _tcfeCost = 0;
 	private Date _lastBillDate;
-	
+
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
@@ -78,45 +80,78 @@ public class TeleInfoService implements Runnable {
 			prop.load(is);
 
 			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
-			
-			String lastBillDate = prop.getProperty("lastbill.date");		
-	        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");        
-	        try {
-	        	_lastBillDate = formatter.parse(lastBillDate);
+
+			String lastBillDate = prop.getProperty("lastbill.date");
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				_lastBillDate = formatter.parse(lastBillDate);
 			} catch (ParseException e) {
-				Calendar cal = Calendar.getInstance(); 
+				Calendar cal = Calendar.getInstance();
 				_lastBillDate = cal.getTime();
 				_logger.warn("Bad lastbill.date defined in config file !, set to actual date by default", e);
 			}
-								
+
 			try {
 				String hpCost = prop.getProperty("hp.cost");
 				if (hpCost != null)
 					_hpCost = Float.parseFloat(hpCost);
 				else
-					_hpCost = Float.parseFloat("0");
+					_logger.warn("Bad hp.cost not defined in config file !, set to 0 by default");
 			} catch (NumberFormatException nfe) {
 				_hpCost = Float.parseFloat("0");
 				_logger.warn("Bad hp.cost defined in config file !, set to 0 by default", nfe);
 			}
-			
+
 			try {
 				String aboCost = prop.getProperty("abo.cost");
 				if (aboCost != null)
 					_aboCost = Float.parseFloat(aboCost);
 				else
-					_aboCost = Float.parseFloat("0");
+					_logger.warn("Bad abo.cost not defined in config file !, set to 0 by default");
 			} catch (NumberFormatException nfe) {
 				_aboCost = Float.parseFloat("0");
 				_logger.warn("Bad abo.cost defined in config file !, set to 0 by default", nfe);
 			}
 			
 			try {
+				String ctaCost = prop.getProperty("cta.cost");
+				if (ctaCost != null)
+					_ctaCost = Float.parseFloat(ctaCost);
+				else
+					_logger.warn("Bad cta.cost not defined in config file !, set to 0 by default");
+			} catch (NumberFormatException nfe) {
+				_ctaCost = Float.parseFloat("0");
+				_logger.warn("Bad cta.cost defined in config file !, set to 0 by default", nfe);
+			}
+			
+			try {
+				String cspeCost = prop.getProperty("cspe.cost");
+				if (cspeCost != null)
+					_cspeCost = Float.parseFloat(cspeCost);
+				else
+					_logger.warn("Bad cspe.cost not defined in config file !, set to 0 by default");
+			} catch (NumberFormatException nfe) {
+				_cspeCost = Float.parseFloat("0");
+				_logger.warn("Bad cspe.cost defined in config file !, set to 0 by default", nfe);
+			}
+			
+			try {
+				String tcfeCost = prop.getProperty("cspe.cost");
+				if (tcfeCost != null)
+					_tcfeCost = Float.parseFloat(tcfeCost);
+				else
+					_logger.warn("Bad tcfe.cost not defined in config file !, set to 0 by default");
+			} catch (NumberFormatException nfe) {
+				_tcfeCost = Float.parseFloat("0");
+				_logger.warn("Bad tcfe.cost defined in config file !, set to 0 by default", nfe);
+			}
+
+			try {
 				String hcCost = prop.getProperty("hc.cost");
 				if (hcCost != null)
 					_hcCost = Float.parseFloat(hcCost);
 				else
-					_hcCost = Float.parseFloat("0");
+					_logger.warn("Bad hc.cost not defined in config file !, set to 0 by default");
 			} catch (NumberFormatException nfe) {
 				_hcCost = Float.parseFloat("0");
 				_logger.warn("Bad hc.cost defined in config file !, set to 0 by default", nfe);
@@ -135,7 +170,7 @@ public class TeleInfoService implements Runnable {
 		// TODO : using String.format C# similar way to log pieces of
 		// information
 		_logger.info("Using serial device : " + _defaultDevice);
-		
+
 		CreateSerialListener();
 
 		// Création de la tâche de sauvegarde en bdd
@@ -145,14 +180,14 @@ public class TeleInfoService implements Runnable {
 
 			try {
 
-				//if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
-				/*if (_startStopCounter > 0) {
-					NotifyCollectInfoStop();					
-					_logger.info("ok teleinfoservice stoppé!! (start_stop_counter :)" + _startStopCounter);
-					Thread.sleep(2000);
-					continue;
-				}*/
-							
+				// if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
+				/*
+				 * if (_startStopCounter > 0) { NotifyCollectInfoStop();
+				 * _logger.
+				 * info("ok teleinfoservice stoppé!! (start_stop_counter :)" +
+				 * _startStopCounter); Thread.sleep(2000); continue; }
+				 */
+
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
 				// _logger.error("Test TeleInfoService...");
@@ -166,8 +201,8 @@ public class TeleInfoService implements Runnable {
 						_lastTeleInfoTrameReceived = teleInfoTrame;
 					}
 				}
-				
-				//Necessary otherwire, serial reader stop
+
+				// Necessary otherwire, serial reader stop
 				Thread.sleep(2000);
 
 			} catch (Exception e) {
@@ -228,7 +263,6 @@ public class TeleInfoService implements Runnable {
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		
 		_dbManager.SaveTeleInfoTrame(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
 
@@ -241,7 +275,7 @@ public class TeleInfoService implements Runnable {
 	// Creation du listener sur le port serie
 	private void CreateSerialListener() {
 
-		//_sdl = new SerialDataEventListener() {
+		// _sdl = new SerialDataEventListener() {
 		_sdl = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
@@ -250,12 +284,12 @@ public class TeleInfoService implements Runnable {
 					return;
 
 				String dataSZ = "";
-				//try {
-					//dataSZ = event.getAsciiString();
-					dataSZ = event.getData();
-				//} catch (IOException e) {
-				//	_logger.error("Unable de read serial port", e);
-				//}
+				// try {
+				// dataSZ = event.getAsciiString();
+				dataSZ = event.getData();
+				// } catch (IOException e) {
+				// _logger.error("Unable de read serial port", e);
+				// }
 
 				char[] data = dataSZ.toCharArray();
 
@@ -263,7 +297,7 @@ public class TeleInfoService implements Runnable {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					//_logger.warn("carac recu: "+(int)receivedChar);
+					// _logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
 					// String decoded = String.valueOf(receivedChar);
@@ -320,7 +354,7 @@ public class TeleInfoService implements Runnable {
 			}
 		};
 
-		//return sdl;
+		// return sdl;
 	}
 
 	private String GetTeleInfoTrame() throws InterruptedException, IOException {
@@ -330,27 +364,27 @@ public class TeleInfoService implements Runnable {
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
 		Serial serial = null;
-		//SerialDataEventListener sdl = null;
+		// SerialDataEventListener sdl = null;
 
 		try {
-			
+
 			serial = SerialFactory.createInstance();
 
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
 			// serial.open(_defaultDevice, _defaultBaud);
-			//SerialConfig config = new SerialConfig();
-			//config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
-				//	.stopBits(StopBits._1).flowControl(FlowControl.NONE);
+			// SerialConfig config = new SerialConfig();
+			// config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
+			// .stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-			//sdl = CreateSerialListener();
+			// sdl = CreateSerialListener();
 			serial.addListener(_sdl);
 
-			//serial.open(config);
+			// serial.open(config);
 			serial.open(_defaultDevice, 1200);
-			//serial.setBufferingDataReceived(false);
-			
-			//serial.discardAll();
+			// serial.setBufferingDataReceived(false);
+
+			// serial.discardAll();
 
 			// TODO : traduire tous les messages en anglais
 			// serial.close();
@@ -376,7 +410,7 @@ public class TeleInfoService implements Runnable {
 					// la première fois??
 					if (diffMinutes >= 1) {
 						_logger.warn(
-								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");						
+								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
 
 						SMSDto sms = new SMSDto();
 						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");
@@ -388,15 +422,16 @@ public class TeleInfoService implements Runnable {
 						return null;
 					}
 				} catch (InterruptedException ie) {
-					_logger.error("TeleInfoService : Interrupted Exception",ie);
+					_logger.error("TeleInfoService : Interrupted Exception", ie);
 					throw ie;
 				}
 			}
 
-			/*if (_startStopCounter > 0) {
-				_logger.info("Receive stop collecting teleinfotrame event!");
-				return null;
-			}*/
+			/*
+			 * if (_startStopCounter > 0) {
+			 * _logger.info("Receive stop collecting teleinfotrame event!");
+			 * return null; }
+			 */
 
 			// serial.removeListener(_sdl);
 
@@ -415,81 +450,98 @@ public class TeleInfoService implements Runnable {
 			_logger.error("Exception dans GetTeleInfoTrame : ", e);
 			return null;
 		} finally {
-			//_logger.info("shut down serial factory");
-			//SerialFactory.shutdown();
+			// _logger.info("shut down serial factory");
+			// SerialFactory.shutdown();
 			if (serial != null) {
-				//_logger.info("remove listener");
+				// _logger.info("remove listener");
 				serial.removeListener(_sdl);
-				//try {
-					if (serial.isOpen()) {	
-						//_logger.info("fermeture port serie");
-						serial.close();
-					}
-				//} catch (IOException ioe) {
-					//_logger.error("Impossible de fermer le port serie", ioe);
-				//}
+				// try {
+				if (serial.isOpen()) {
+					// _logger.info("fermeture port serie");
+					serial.close();
+				}
+				// } catch (IOException ioe) {
+				// _logger.error("Impossible de fermer le port serie", ioe);
+				// }
 			}
-			
-			serial =null;
+
+			serial = null;
 		}
 	}
-	
-	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException
-	{
-	    return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
+
+	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException {
+		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
 	}
-	
-	//TODO : Faire une mise en cache (raffraichissement toutes les heures...)	
+
+	// TODO : Faire une mise en cache (raffraichissement toutes les heures...)
 	public float ComputeElectricityBill() {
-		
-		DbManager dbManager = new DbManager();
-		
-		Date currentDate = new Date();
-		int days = 0;
+
+		float hcConsoTTC = 0;
+		float hpConsoTTC = 0;
+		float aboCostTTC = 0;
+		float ctaTTC = 0;
+		float cspeTTC = 0;
+		float tcfeTTC = 0;
+
 		try {
-			days = betweenDates(_lastBillDate, currentDate).intValue();
-		} catch (IOException e) {
-			_logger.error("Erreur lors du calcul du nombre de jours entre deux dates",e);
+			DbManager dbManager = new DbManager();
+
+			Date currentDate = new Date();
+			int days = 0;
+			try {
+				days = betweenDates(_lastBillDate, currentDate).intValue();
+			} catch (IOException e) {
+				_logger.error("Erreur lors du calcul du nombre de jours entre deux dates", e);
+			}
+
+			HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(_lastBillDate);
+
+			Integer hcConso = map.get("hcConsuption");
+			Integer hpConso = map.get("hpConsuption");
+
+			/*
+			 * hcConso = 2252; hpConso = 2515; _hcCost = (float) 0.056; _hpCost
+			 * = (float) 0.075; _aboCost = (float) 13.64;
+			 * System.out.println(hcConso+hpConso);
+			 */
+
+			// Montant HT
+			float hcConsoHT = hcConso * _hcCost;
+			float hpConsoHT = hpConso * _hpCost;
+
+			// MontantTCC
+			hcConsoTTC = (float) (hcConsoHT * 1.2);
+			hpConsoTTC = (float) (hpConsoHT * 1.2);
+
+			// Abo elec 13,64/mois, env 30jours
+			float aboCostHT = (_aboCost * days) / 30;
+			aboCostTTC = (float) (aboCostHT * 1.055);
+
+			// CTA
+			float ctaHT = (float) ((_ctaCost * days) / 30);
+			ctaTTC = (float) (ctaHT * 1.055);
+
+			// CSPE
+			// TODO : a mettre dans le fichier de conf.
+			float cspeHT = (float) ((hpConso + hcConso) * _cspeCost);
+			cspeTTC = (float) (cspeHT * 1.2);
+
+			float tcfeHT = (float) (_tcfeCost * (hpConso + hcConso));
+			tcfeTTC = (float) (tcfeHT * 1.2);
+
+		} catch (Exception e) {
+
+			hcConsoTTC = 0;
+			hpConsoTTC = 0;
+			aboCostTTC = 0;
+			ctaTTC = 0;
+			cspeTTC = 0;
+			tcfeTTC = 0;
+
+			_logger.error("Error occured when computing next electricity bill", e);
 		}
-		
-		HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(_lastBillDate);
-		
-		Integer hcConso = map.get("hcConsuption");
-		Integer hpConso = map.get("hpConsuption");
-				
-		/*hcConso = 2252;
-		hpConso = 2515;
-		_hcCost = (float) 0.056;
-		_hpCost = (float) 0.075;
-		_aboCost = (float) 13.64;				
-		System.out.println(hcConso+hpConso);*/
-		
-		//Montant HT
-		float hcConsoHT = hcConso * _hcCost;
-		float hpConsoHT = hpConso * _hpCost;
-		
-		//MontantTCC
-		float hcConsoTTC = (float) (hcConsoHT * 1.2);
-		float hpConsoTTC = (float) (hpConsoHT * 1.2);
-		
-		//Abo elec 13,64/mois, env 30jours
-		float aboCostHT = (_aboCost * days) / 30;
-		float aboCostTTC = (float) (aboCostHT * 1.055);
-		
-		//CTA 
-		float ctaHT = (float) ((3.015 * days) / 30);
-		float ctaTTC = (float) (ctaHT * 1.055);
-		
-		//CSPE
-		//TODO : a mettre dans le fichier de conf.
-		float cspeHT = (float) ((hpConso + hcConso) * 0.0225);
-		float cspeTTC = (float) (cspeHT * 1.2);
-		
-		float tcfeHT = (float) (0.0095625 * (hpConso + hcConso));
-		float tcfeTTC = (float) (tcfeHT * 1.2);
-		
+ 
 		return hcConsoTTC + hpConsoTTC + aboCostTTC + ctaTTC + cspeTTC + tcfeTTC;
-				
 	}
 
 	// Méthode de conversion

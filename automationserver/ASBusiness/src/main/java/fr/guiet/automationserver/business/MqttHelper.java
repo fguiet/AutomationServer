@@ -131,9 +131,14 @@ public class MqttHelper implements MqttCallback {
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Error occured in mqtt helper, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
+			
 		} catch (UnsupportedEncodingException e) {
 			_logger.error("Error when encoding message in UTF8", e);
+		} catch (Exception e) {
+			
+			_logger.error("Error occured when publishing info to mqtt broker", e);
 		}
+		
 	}
 
 	@Override

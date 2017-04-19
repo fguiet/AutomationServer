@@ -21,7 +21,7 @@ public class TeleinfoServiceTests {
 			e.printStackTrace();
 		}*/
 		
-		System.out.println(teleInfoService.ComputeNextElectricityBill());
+		System.out.println(teleInfoService.ComputeElectricityBill());
 		
 	}
 }
