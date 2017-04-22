@@ -15,14 +15,16 @@ DESCRIPTION
   
     - PostgreSQL 9.4
     - Java 1.8
-    - Arduino
+    - Wemos ESP8266 Wifi module
+    - Arduino (not anymore, replaced by Wemos ESP8266)
     - DHT22 Sensor
-    - XBee
+    - XBee (not anymore, but it used to)
     - Raspberry Pi 3
     - Grafana
     - OpenHab 2
-    - InfluxDB
-    - Mqtt
+    - InfluxDB 1.2.x
+    - Mqtt (mosquitto)
+    - Gammu
     - Handmade electonic stuffs (to collect data from my electric provider, to control my heaters)
   
 FEATURES
@@ -33,7 +35,7 @@ FEATURES
   - All pieces of information collected are saved in a PostgreSQL and InfluxDB database 
   - Automatic SMS notifications
   - Monitor real-time house electric consumption
-  - Automatic start of my water boiler when electric cost is less expensive (mostly during the night)
+  - Automatic start of my water boiler when electric cost is less expensive (mostly during night)
   - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboard
   - All data are published to a Mqtt broker via various topics, so various client subscriber software can access data in real-time
 
