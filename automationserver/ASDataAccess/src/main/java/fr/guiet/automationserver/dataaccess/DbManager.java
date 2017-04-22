@@ -702,7 +702,7 @@ public class DbManager {
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String dfd = df.format(convertDate(fromDate1, "Europe/Paris","UTC"));
 			
-			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"'";
+			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"' and time <= '"+dfd+"' + 2m";
 			Query query = new Query(sql, "automation");
 			QueryResult queryResult =_influxDB.query(query);
 			

@@ -3,9 +3,9 @@
  * 
  * F. Guiet 
  * Creation           : 20170218
- * Last modification  : 20170218 
+ * Last modification  : 20170422
  * 
- * Version            : 1.0
+ * Version            : 1.1
  */
 
 #include <DHT.h>
@@ -19,6 +19,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 #define RELAY_PIN 3
 
+int humidityMax = 80;
 long previousMillis = 0;   
 long interval = 60000; //One minute
 char message_buff[100];
@@ -43,25 +44,32 @@ IPAddress server(192, 168, 1, 25);
 EthernetClient ethClient;
 PubSubClient client(ethClient);
 
-void reconnect() {
+#define MQTT_CLIENT_ID "BasementSensor"
+#define MAX_RETRY 50
+#define MQTT_TOPIC "/guiet/cave/temphumi"
+
+boolean reconnect() {
+
+  int retry = 0;
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!client.connected() && retry < MAX_RETRY) {
     Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect("arduinoClient")) {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      //client.publish("/guiet/cave/temphumi","hello world");
-      // ... and resubscribe
-      //client.subscribe("inTopic");
+    
+    if (client.connect(MQTT_CLIENT_ID)) {
+      Serial.println("connected to MQTT Broker...");
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      retry++;
       // Wait 5 seconds before retrying
-      delay(5000);
+      delay(500);
+      yield();
     }
   }
+
+  if (retry >= MAX_RETRY) {
+    Serial.println("MQTT connection failed...");  
+    return false;
+  }
+
 }
 
 void setup()
@@ -83,23 +91,27 @@ void setup()
 
 void loop()
 { 
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
+ 
   unsigned long currentMillis = millis();
   
-  if(currentMillis - previousMillis > interval) {
+  if(currentMillis - previousMillis > interval) {     
 
      previousMillis = currentMillis;
+
+     if (!client.connected()) {
+       if (!reconnect()) {
+        return;
+       }
+     }
+     
+     client.loop();
      
      float h = dht.readHumidity();
      float t = dht.readTemperature();
 
      if (isnan(t) || isnan(h)) {
         Serial.println("Failed to read from DHT");
-        fanManagement(h);        
+        //fanManagement(h);        
      }
      else {
         Serial.println("Temp : "+String(t,2));
@@ -109,22 +121,22 @@ void loop()
         
         String mess = "SETCAVEINFO;"+String(t,2)+";"+String(h,2)+";"+fanStatus;
         mess.toCharArray(message_buff, mess.length()+1);
-        client.publish("/guiet/cave/temphumi",message_buff);
+        client.publish(MQTT_TOPIC,message_buff);
      }  
+
+     client.disconnect();
   }
 }
 
 String fanManagement(float humidity) {
-  if (isnan(humidity)) {
-    digitalWrite(RELAY_PIN, LOW);
-    return "OFF";
-  }
-
-  if (humidity > 80) {
+  
+  if (humidity > humidityMax) {
+    humidityMax=80;
     digitalWrite(RELAY_PIN, HIGH);
     return "ON";
   }
   else {
+    humidityMax=82;
     digitalWrite(RELAY_PIN, LOW);
     return "OFF";
   }

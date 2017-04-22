@@ -32,6 +32,11 @@ public class MqttHelper implements MqttCallback {
 	private Date _lastGotMailMessage = null;
 	private float _sensorCorrection = 0;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
+	private Date _lastBasementMessage = new Date();
+	
+	public Date GetLastBasementMessage() {
+		return _lastBasementMessage;
+	}
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
 
@@ -241,11 +246,14 @@ public class MqttHelper implements MqttCallback {
 
 			case "SETCAVEINFO":
 				try {
+					
 					float temp = Float.parseFloat(messageContent[1]);
 					float humi = Float.parseFloat(messageContent[2]);
 					String extractorState = messageContent[3];
 
 					_dbManager.SaveCaveInfoToInfluxDb(temp, humi, extractorState);
+					
+					_lastBasementMessage = new Date();
 
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from basement", e);

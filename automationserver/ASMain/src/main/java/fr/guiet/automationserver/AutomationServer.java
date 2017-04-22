@@ -3,6 +3,8 @@ package fr.guiet.automationserver;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
+
+import java.util.Date;
 import java.util.Locale;
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.*;
@@ -29,6 +31,9 @@ public class AutomationServer implements Daemon {
 	private Thread _waterHeaterServiceThread = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttHelper _mqttHelper = null;
+	private boolean _alertSent5 = false; // Réinitialisation
+	private boolean _alertSent10 = false; // Réinitialisation
+	private boolean _alertSentMore = false; // Réinitialisation
 
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);
@@ -101,6 +106,9 @@ public class AutomationServer implements Daemon {
 						//ast.start();
 						_mqttHelper.PublishInfoToMqttBroker();
 						
+						//Check whether sensors are still alive....
+						CheckMessagesReception();
+						
 						//Publication des données toutes les 10s
 						Thread.sleep(10000);
 
@@ -120,6 +128,69 @@ public class AutomationServer implements Daemon {
 				}
 			}
 		};
+	}
+	
+	private void CheckMessagesReception() {
+		
+		String name="basement";
+		
+		long diffMinutes = 0;
+		if (_mqttHelper.GetLastBasementMessage() != null) {
+			Date currentDate = new Date();
+			long diff = currentDate.getTime() - _mqttHelper.GetLastBasementMessage().getTime();
+			diffMinutes = diff / (60 * 1000);
+		}
+		
+		if (diffMinutes > 5 && diffMinutes < 10) {
+
+			if (!_alertSent5) {
+
+				SMSDto sms = new SMSDto();
+				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)", name);
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSent5 = true;
+			}
+
+			return;
+		}
+
+		if (diffMinutes >= 10 && diffMinutes < 20) {
+
+			if (!_alertSent10) {
+
+				SMSDto sms = new SMSDto();
+				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)", name);
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSent10 = true;
+			}
+
+			return;
+		}
+
+		if (diffMinutes >= 20) {
+
+			if (!_alertSentMore) {
+
+				SMSDto sms = new SMSDto();
+				String message = String.format(
+						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something", name);
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSentMore = true;
+			}
+
+			return;
+		}
+
+		_alertSent5 = false; // Réinitialisation
+		_alertSent10 = false; // Réinitialisation
+		_alertSentMore = false; // Réinitialisation
+		
 	}
 
 	// Méthode start de jsvc (Classe Deamon)
