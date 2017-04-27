@@ -31,7 +31,7 @@ FEATURES
 
   - Monitor, room by room, temperature and humidity of the house
   - Temperatures level in each room automatically monitored through a week personal defined schedule
-  - Custom responsive and interactive web-based dashboard (aggregate all monitored data, temperature can be changed room by room, etc). Will be replace by OpenHab 2 very soon
+  - OpenHab 2 User Interface (linked mainly with Mqtt)
   - All pieces of information collected are saved in a PostgreSQL and InfluxDB database 
   - Automatic SMS notifications
   - Monitor real-time house electric consumption
