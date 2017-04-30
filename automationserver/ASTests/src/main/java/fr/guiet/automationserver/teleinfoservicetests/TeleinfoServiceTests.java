@@ -9,8 +9,8 @@ public class TeleinfoServiceTests {
 		SMSGammuService gammuService = new SMSGammuService();
 		
 		TeleInfoService teleInfoService = new TeleInfoService(gammuService);
-		//Thread teleInfoServiceThread = new Thread(teleInfoService);
-		//teleInfoServiceThread.start();
+		Thread teleInfoServiceThread = new Thread(teleInfoService);
+		teleInfoServiceThread.start();
 		
 		//Test d'une minute
 		

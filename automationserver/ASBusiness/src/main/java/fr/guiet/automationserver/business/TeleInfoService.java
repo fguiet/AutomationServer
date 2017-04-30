@@ -136,7 +136,7 @@ public class TeleInfoService implements Runnable {
 			}
 			
 			try {
-				String tcfeCost = prop.getProperty("cspe.cost");
+				String tcfeCost = prop.getProperty("tcfe.cost");
 				if (tcfeCost != null)
 					_tcfeCost = Float.parseFloat(tcfeCost);
 				else
@@ -213,6 +213,8 @@ public class TeleInfoService implements Runnable {
 				_smsGammuService.sendMessage(sms, true);
 			}
 		}
+		
+
 	}
 
 	// Création de la tache de sauvegarde en bdd
@@ -486,13 +488,14 @@ public class TeleInfoService implements Runnable {
 		try {
 			DbManager dbManager = new DbManager();
 
-			Date currentDate = new Date();
+			/*Date currentDate = new Date();
 			int days = 0;
 			try {
 				days = betweenDates(_lastBillDate, currentDate).intValue();
 			} catch (IOException e) {
 				_logger.error("Erreur lors du calcul du nombre de jours entre deux dates", e);
-			}
+			}*/
+			
 
 			HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(_lastBillDate);
 
@@ -514,11 +517,11 @@ public class TeleInfoService implements Runnable {
 			hpConsoTTC = (float) (hpConsoHT * 1.2);
 
 			// Abo elec 13,64/mois, env 30jours
-			float aboCostHT = (_aboCost * days) / 30;
+			float aboCostHT = _aboCost * 2;
 			aboCostTTC = (float) (aboCostHT * 1.055);
 
 			// CTA
-			float ctaHT = (float) ((_ctaCost * days) / 30);
+			float ctaHT = _ctaCost * 2;
 			ctaTTC = (float) (ctaHT * 1.055);
 
 			// CSPE

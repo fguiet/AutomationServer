@@ -1,4 +1,4 @@
-/****
+/**** 
  * Mailbox Notifier
  * 
  * F. Guiet 
@@ -70,6 +70,7 @@ boolean reconnect() {
     return false;
   }
 
+  return true;
 }
 
 void setup()
@@ -91,7 +92,7 @@ void setup()
 
 void loop()
 { 
- 
+
   unsigned long currentMillis = millis();
   
   if(currentMillis - previousMillis > interval) {     
@@ -124,12 +125,13 @@ void loop()
         client.publish(MQTT_TOPIC,message_buff);
      }  
 
+     delay(1000);
      client.disconnect();
   }
 }
 
 String fanManagement(float humidity) {
-  
+
   if (humidity > humidityMax) {
     humidityMax=80;
     digitalWrite(RELAY_PIN, HIGH);
