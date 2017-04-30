@@ -1,5 +1,10 @@
 package fr.guiet.automationserver.teleinfoservicetests;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import fr.guiet.automationserver.business.DateUtils;
 import fr.guiet.automationserver.business.SMSGammuService;
 import fr.guiet.automationserver.business.TeleInfoService;
 
@@ -21,7 +26,11 @@ public class TeleinfoServiceTests {
 			e.printStackTrace();
 		}*/
 		
-		System.out.println(teleInfoService.ComputeElectricityBill());
+		//Date date = DateUtils.getDateWithoutTime(new Date());
+		Date date = teleInfoService.getLastBillDate();
+		Date dateTo = DateUtils.addDays(date,6);
+		
+		System.out.println(teleInfoService.GetNextElectricityBillCost());
 		
 	}
 }

@@ -314,7 +314,9 @@ public class MqttHelper implements MqttCallback {
 			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);	
 		}
 
-		String electricityBill = Float.toString(_teleInfoService.ComputeElectricityBill());
+		//Date lastBillDate =_teleInfoService.getLastBillDate();
+		//String electricityBill = Float.toString(_teleInfoService.ComputeElectricityBill(lastBillDate, DateUtils.addDays(lastBillDate, 59)));
+		String electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
 		
 		String awayModeStatus = _roomService.GetAwayModeStatus();	
 		

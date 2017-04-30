@@ -45,8 +45,7 @@ public class Sensor {
 	public String lastInfoReceived() {
 		
 		if (_lastInfoReceived != null) {
-			DateFormat df = new SimpleDateFormat("dd/MM/yyyy à HH:mm:ss");
-			return df.format(_lastInfoReceived);
+			return DateUtils.getDateToString(_lastInfoReceived);
 		}
 		else {
 			return "NA";

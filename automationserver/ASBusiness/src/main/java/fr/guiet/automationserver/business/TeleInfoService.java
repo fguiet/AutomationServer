@@ -60,10 +60,15 @@ public class TeleInfoService implements Runnable {
 	private float _cspeCost = 0;
 	private float _tcfeCost = 0;
 	private Date _lastBillDate;
+	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
 
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
+	}
+
+	public Date getLastBillDate() {
+		return _lastBillDate;
 	}
 
 	@Override
@@ -112,7 +117,7 @@ public class TeleInfoService implements Runnable {
 				_aboCost = Float.parseFloat("0");
 				_logger.warn("Bad abo.cost defined in config file !, set to 0 by default", nfe);
 			}
-			
+
 			try {
 				String ctaCost = prop.getProperty("cta.cost");
 				if (ctaCost != null)
@@ -123,7 +128,7 @@ public class TeleInfoService implements Runnable {
 				_ctaCost = Float.parseFloat("0");
 				_logger.warn("Bad cta.cost defined in config file !, set to 0 by default", nfe);
 			}
-			
+
 			try {
 				String cspeCost = prop.getProperty("cspe.cost");
 				if (cspeCost != null)
@@ -134,7 +139,7 @@ public class TeleInfoService implements Runnable {
 				_cspeCost = Float.parseFloat("0");
 				_logger.warn("Bad cspe.cost defined in config file !, set to 0 by default", nfe);
 			}
-			
+
 			try {
 				String tcfeCost = prop.getProperty("tcfe.cost");
 				if (tcfeCost != null)
@@ -175,6 +180,9 @@ public class TeleInfoService implements Runnable {
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
+		
+		// Save electrical yesterday cost consumption
+		CreateSaveElectricityToDBTask();
 
 		while (!_isStopped) {
 
@@ -213,7 +221,44 @@ public class TeleInfoService implements Runnable {
 				_smsGammuService.sendMessage(sms, true);
 			}
 		}
-		
+
+	}
+
+	private static Date getTomorrowMorning1AM() {
+
+		Calendar c1 = Calendar.getInstance();
+		c1.set(Calendar.HOUR, 2);
+		c1.set(Calendar.MINUTE, 0);
+		c1.set(Calendar.SECOND, 0);
+
+		// System.out.println(DateUtils.getDateToString(c1.getTime()));
+
+		return c1.getTime();
+	}
+
+	// Création de la tache de sauvegarde en bdd
+	private void CreateSaveElectricityToDBTask() {
+
+		TimerTask saveElecTask = new TimerTask() {
+			@Override
+			public void run() {
+				Date hier = DateUtils.addDays(new Date(), -1);
+				hier = DateUtils.getDateWithoutTime(hier);
+				Date today = DateUtils.getDateWithoutTime(new Date());
+
+				HashMap<String, Float> info = GetElectricityBillInfo(hier, today);
+
+				// public void SaveElectricityCost(Date date, int hc, int hp,
+				// float costHC, float costHP, float other) {
+				_dbManager.SaveElectricityCost(hier, Math.round(info.get("hc")), Math.round(info.get("hp")),
+						info.get("hc_cost"), info.get("hp_cost"), info.get("other_cost"));
+
+			}
+		};
+
+		Timer timer = new Timer(true);
+		// Toutes les minutes on enregistre une trame
+		timer.schedule(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);
 
 	}
 
@@ -475,8 +520,20 @@ public class TeleInfoService implements Runnable {
 		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
 	}
 
+	public float GetNextElectricityBillCost() {
+
+		HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+
+		float hc_cost = info.get("hc_cost");
+		float hp_cost = info.get("hp_cost");
+		float other_cost = info.get("other_cost");
+
+		return hc_cost + hp_cost + other_cost;
+
+	}
+
 	// TODO : Faire une mise en cache (raffraichissement toutes les heures...)
-	public float ComputeElectricityBill() {
+	public HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
 
 		float hcConsoTTC = 0;
 		float hpConsoTTC = 0;
@@ -485,22 +542,26 @@ public class TeleInfoService implements Runnable {
 		float cspeTTC = 0;
 		float tcfeTTC = 0;
 
+		HashMap<String, Float> returns = new HashMap<String, Float>();
+
 		try {
 			DbManager dbManager = new DbManager();
 
-			/*Date currentDate = new Date();
+			// Date currentDate = new Date();
 			int days = 0;
 			try {
-				days = betweenDates(_lastBillDate, currentDate).intValue();
+				days = betweenDates(fromDate, toDate).intValue();
 			} catch (IOException e) {
 				_logger.error("Erreur lors du calcul du nombre de jours entre deux dates", e);
-			}*/
-			
+			}
 
-			HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(_lastBillDate);
+			HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(fromDate, toDate);
 
 			Integer hcConso = map.get("hcConsuption");
 			Integer hpConso = map.get("hpConsuption");
+
+			returns.put("hc", (float) hcConso);
+			returns.put("hp", (float) hpConso);
 
 			/*
 			 * hcConso = 2252; hpConso = 2515; _hcCost = (float) 0.056; _hpCost
@@ -516,12 +577,15 @@ public class TeleInfoService implements Runnable {
 			hcConsoTTC = (float) (hcConsoHT * 1.2);
 			hpConsoTTC = (float) (hpConsoHT * 1.2);
 
+			returns.put("hc_cost", (float) hcConsoTTC);
+			returns.put("hp_cost", (float) hpConsoTTC);
+
 			// Abo elec 13,64/mois, env 30jours
-			float aboCostHT = _aboCost * 2;
+			float aboCostHT = (_aboCost * days) / 30;
 			aboCostTTC = (float) (aboCostHT * 1.055);
 
 			// CTA
-			float ctaHT = _ctaCost * 2;
+			float ctaHT = (_ctaCost * days) / 30;
 			ctaTTC = (float) (ctaHT * 1.055);
 
 			// CSPE
@@ -531,6 +595,8 @@ public class TeleInfoService implements Runnable {
 
 			float tcfeHT = (float) (_tcfeCost * (hpConso + hcConso));
 			tcfeTTC = (float) (tcfeHT * 1.2);
+
+			returns.put("other_cost", aboCostTTC + ctaTTC + cspeTTC + tcfeTTC);
 
 		} catch (Exception e) {
 
@@ -543,8 +609,8 @@ public class TeleInfoService implements Runnable {
 
 			_logger.error("Error occured when computing next electricity bill", e);
 		}
- 
-		return hcConsoTTC + hpConsoTTC + aboCostTTC + ctaTTC + cspeTTC + tcfeTTC;
+
+		return returns;
 	}
 
 	// Méthode de conversion

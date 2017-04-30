@@ -102,6 +102,48 @@ public class DbManager {
 		}
 	}
 	
+	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
+		
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+			
+			long ms = date.getTime();
+
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy à HH:mm:ss");
+			String ds = df.format(date);
+			
+			_logger.info("Saving electricity cost, day " + ds);
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("electricity").time(ms, TimeUnit.MILLISECONDS)
+					.addField("hc", hc)
+					.addField("hp", hp)
+					.addField("cost_hc", costHC)
+					.addField("cost_hp", costHP)
+					.addField("cost_other", other)
+					.build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+	}
+	
 	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
 		try {
 			if (!_influxdbEnable.equals("true"))
@@ -686,7 +728,7 @@ public class DbManager {
         return dateTo;
     }
 	
-	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate) {
+	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) {
 		
 		HashMap<String, Integer> results = new HashMap<>();
 		
@@ -698,11 +740,13 @@ public class DbManager {
 
 			//Convert Date in UTC
 			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");
+			Date toDate1 = convertDate(toDate, "Europe/Paris", "UTC");
 			
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String dfd = df.format(convertDate(fromDate1, "Europe/Paris","UTC"));
+			String td = df.format(convertDate(toDate1, "Europe/Paris","UTC"));
 			
-			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"' and time <= '"+dfd+"' + 59d";
+			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"' and time < '"+td+"'";
 			Query query = new Query(sql, "automation");
 			QueryResult queryResult =_influxDB.query(query);
 			

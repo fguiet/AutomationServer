@@ -14,7 +14,7 @@ public class InfluxdbTests {
 		cal.add(Calendar.MONTH, -2);
 		java.util.Date dt = cal.getTime();
 		
-		dbManager.GetElectriciyConsumption(dt);
+		//dbManager.GetElectriciyConsumption(dt);
 		
 
 	}
