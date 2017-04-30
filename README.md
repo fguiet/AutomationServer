@@ -17,8 +17,8 @@ DESCRIPTION
     - Java 1.8
     - Wemos ESP8266 Wifi module
     - Arduino (not anymore, replaced by Wemos ESP8266)
-    - DHT22 Sensor
-    - XBee (not anymore, but it used to)
+    - DHT22 Sensor (temperature and humidity)
+    - XBee (not anymore but it used to, replaced by Wemos WiFi module)
     - Raspberry Pi 3
     - Grafana
     - OpenHab 2
@@ -30,8 +30,12 @@ DESCRIPTION
 FEATURES
 
   - Monitor, room by room, temperature and humidity of the house
+  - Outside temperature and humidity
+  - New TV series downloaded SMS notification (via Sickrage and Sabnzbd)
+  - Mail notification (SMS is sent when the postman is opening my mailbox)
+  - Basement humidity monitoring (automatic ventilation regarding defined humidity range)
   - Temperatures level in each room automatically monitored through a week personal defined schedule
-  - Custom responsive and interactive web-based dashboard (aggregate all monitored data, temperature can be changed room by room, etc). Will be replace by OpenHab 2 very soon
+  - OpenHab 2 User Interface (linked mainly with Mqtt)
   - All pieces of information collected are saved in a PostgreSQL and InfluxDB database 
   - Automatic SMS notifications
   - Monitor real-time house electric consumption
