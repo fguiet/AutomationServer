@@ -33,6 +33,7 @@ public class MqttHelper implements MqttCallback {
 	private float _sensorCorrection = 0;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
 	private Date _lastBasementMessage = new Date();
+	private Date _lastComputeBillCost = null;
 	
 	public Date GetLastBasementMessage() {
 		return _lastBasementMessage;
@@ -306,6 +307,8 @@ public class MqttHelper implements MqttCallback {
 		String papp = "NA";
 		String hchc = "NA";
 		String hchp = "NA";
+		String electricityBill = "NA";
+		long diffMinutes = 0;
 
 		// TODO : Creer un message mqtt /guiet/home/info
 		if (_teleInfoService.GetLastTrame() != null) {
@@ -313,10 +316,22 @@ public class MqttHelper implements MqttCallback {
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
 			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);	
 		}
-
-		//Date lastBillDate =_teleInfoService.getLastBillDate();
-		//String electricityBill = Float.toString(_teleInfoService.ComputeElectricityBill(lastBillDate, DateUtils.addDays(lastBillDate, 59)));
-		String electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
+		
+		if (_lastComputeBillCost != null) { 		
+			Date currentDate = new Date();
+			long diff = currentDate.getTime() - _lastComputeBillCost.getTime();
+			diffMinutes = diff / (60 * 1000);
+		}
+		else {
+			diffMinutes = 61;
+		}
+		
+		//Compute Bill Cost every one hour
+		if (diffMinutes >= 60) {			
+			electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
+			_lastComputeBillCost = new Date();
+			
+		}	
 		
 		String awayModeStatus = _roomService.GetAwayModeStatus();	
 		

@@ -527,6 +527,8 @@ public class TeleInfoService implements Runnable {
 
 	public float GetNextElectricityBillCost() {
 
+		_logger.info("Computing next electricity bill cost");
+		
 		HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
 
 		float hc_cost = info.get("hc_cost");

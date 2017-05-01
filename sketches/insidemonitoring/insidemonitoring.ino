@@ -21,19 +21,25 @@ DHT dht(DHTPIN, DHTTYPE);
 //#define MQTT_CLIENT_ID "NoheSensor"
 //#define MQTT_CLIENT_ID "SalonSensor"
 #define MQTT_CLIENT_ID "BureauSensor"
+IPAddress ip_wemos(192,  168,   1,   35); //bureau
 
 //Mqtt settings
+
 #define MQTT_SERVER "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
 #define MQTT_TOPIC "/guiet/inside/sensor"
 
-const int SLEEP_TIME_SECONDS = 30;
+const int SLEEP_TIME_SECONDS = 60;
 #define MAX_RETRY 50
 
 // WiFi settings
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
+
+IPAddress gateway_ip ( 192,  168,   1,   1);
+IPAddress subnet_mask(255, 255, 255,   0);
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -42,10 +48,14 @@ char message_buff[100];
 
 void setup() {
 
-  Serial.begin(115200);
-  
+  Serial.begin(115200); 
+
+  delay(1000);
+
+  Serial.println("Initializing DHT...");
   dht.begin();
-  
+
+  Serial.println("Initializing MQTT...");
   client.setServer(MQTT_SERVER, 1883); 
   
   connectToWifi();
@@ -70,7 +80,7 @@ void loop() {
   //Handle MQTT connection
   client.loop();
 
-  delay(2000);
+  delay(1000);
   
   float h = dht.readHumidity();
   float t = dht.readTemperature();
@@ -116,8 +126,13 @@ void goDeepSleep() {
     disconnectWifi();  
   }
 
+  /*rst_info *rsti;
+  rsti = ESP.getResetInfoPtr();
+  Serial.println( String( "ResetInfo.reason = " ) + rsti->reason );*/
+
   Serial.println("Entering deep sleep mode...good dreams fellows...ZzzzzZzzZZZZzzz");
-  ESP.deepSleep(SLEEP_TIME_SECONDS * 1000000, WAKE_RF_DEFAULT);
+  ESP.deepSleep(SLEEP_TIME_SECONDS * 1000000);
+  delay(200); //Recommanded
 }
 
 boolean reconnect() {
@@ -149,6 +164,7 @@ boolean connectToWifi() {
 
   WiFi.forceSleepWake();
   WiFi.mode(WIFI_STA);
+  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   
   int retry = 0;
   WiFi.begin(ssid, password);
@@ -169,3 +185,4 @@ boolean connectToWifi() {
     return false;
   }  
 }
+
