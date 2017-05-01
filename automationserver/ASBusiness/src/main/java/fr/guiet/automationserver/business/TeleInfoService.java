@@ -15,6 +15,7 @@ import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
 import java.io.FileInputStream;
@@ -227,6 +228,8 @@ public class TeleInfoService implements Runnable {
 	private static Date getTomorrowMorning1AM() {
 
 		Calendar c1 = Calendar.getInstance();
+		
+		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);		
 		c1.set(Calendar.HOUR, 2);
 		c1.set(Calendar.MINUTE, 0);
 		c1.set(Calendar.SECOND, 0);
