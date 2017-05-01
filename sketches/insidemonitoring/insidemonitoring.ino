@@ -23,12 +23,12 @@ DHT dht(DHTPIN, DHTTYPE);
 #define MQTT_CLIENT_ID "BureauSensor"
 
 //Mqtt settings
-#define mqtt_server "192.168.1.25"
+#define MQTT_SERVER "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
-#define mqtt_topic "/guiet/inside/sensor"
+#define MQTT_TOPIC "/guiet/inside/sensor"
 
-long sleepInMinute = 1;
+const int SLEEP_TIME_SECONDS = 30;
 #define MAX_RETRY 50
 
 // WiFi settings
@@ -42,16 +42,12 @@ char message_buff[100];
 
 void setup() {
 
-  delay(200);
+  Serial.begin(115200);
   
   dht.begin();
- 
-  Serial.begin(115200);
-
-  client.setServer(mqtt_server, 1883); 
   
-  delay(200);
-
+  client.setServer(MQTT_SERVER, 1883); 
+  
   connectToWifi();
   
   Serial.println("ready!");
@@ -74,8 +70,7 @@ void loop() {
   //Handle MQTT connection
   client.loop();
 
-  delay(500);
-  yield();
+  delay(2000);
   
   float h = dht.readHumidity();
   float t = dht.readTemperature();
@@ -92,13 +87,8 @@ void loop() {
 
     String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2);
     mess.toCharArray(message_buff, mess.length()+1);
-    client.publish(mqtt_topic,message_buff);
+    client.publish(MQTT_TOPIC,message_buff);
   }
-
-  delay(500);
-  yield();
-  
-  //delay(60*1000); //One Minute
 
   //Deep sleep...ZZzzzZZzzz
   goDeepSleep();
@@ -125,13 +115,9 @@ void goDeepSleep() {
   if (WiFi.status() == WL_CONNECTED) {
     disconnectWifi();  
   }
-  
-  delay(500);
-  yield();
 
   Serial.println("Entering deep sleep mode...good dreams fellows...ZzzzzZzzZZZZzzz");
-  ESP.deepSleep(sleepInMinute * 60 * 1000000);
-  yield();
+  ESP.deepSleep(SLEEP_TIME_SECONDS * 1000000, WAKE_RF_DEFAULT);
 }
 
 boolean reconnect() {
@@ -154,7 +140,6 @@ boolean reconnect() {
   if (retry >= MAX_RETRY) {
     Serial.println("MQTT connection failed...");  
     return false;
-    //goDeepSleep();
   }
 
   return true;

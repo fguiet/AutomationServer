@@ -256,9 +256,11 @@ public class TeleInfoService implements Runnable {
 			}
 		};
 
+		_logger.info("Creating database saving electricity cost task, first execution will occur at : " + DateUtils.getDateToString(getTomorrowMorning1AM()));
+		
 		Timer timer = new Timer(true);
 		// Toutes les minutes on enregistre une trame
-		timer.schedule(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);
+		timer.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);		
 
 	}
 
