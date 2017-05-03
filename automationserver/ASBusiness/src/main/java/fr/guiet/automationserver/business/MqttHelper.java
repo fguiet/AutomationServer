@@ -28,6 +28,7 @@ public class MqttHelper implements MqttCallback {
 	private String[] _topics = null;
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
+	private WaterHeater _waterHeaterService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private float _sensorCorrection = 0;
@@ -40,7 +41,7 @@ public class MqttHelper implements MqttCallback {
 		return _lastBasementMessage;
 	}
 
-	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService) {
+	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService, WaterHeater waterHeaterService) {
 
 		InputStream is = null;
 		try {
@@ -70,6 +71,7 @@ public class MqttHelper implements MqttCallback {
 			_smsGammuService = gammuService;
 			_roomService = roomService;
 			_teleInfoService = teleInfoService;
+			_waterHeaterService = waterHeaterService; 
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -190,9 +192,11 @@ public class MqttHelper implements MqttCallback {
 
 				if (awayMode.equals("ON")) {
 					_roomService.SetAwayModeOn();
+					_waterHeaterService.SetAwayModeOn();
 					_logger.info("Setting away mode ON");
 				} else {
 					_roomService.SetAwayModeOff();
+					_waterHeaterService.SetAwayModeOff();
 					_logger.info("Setting away mode OFF");
 				}
 

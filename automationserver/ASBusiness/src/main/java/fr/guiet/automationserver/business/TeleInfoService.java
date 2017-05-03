@@ -52,6 +52,7 @@ public class TeleInfoService implements Runnable {
 	private TeleInfoTrameDto _lastTeleInfoTrameReceived = null;
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
+	private Timer _timer2 = null;
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
 	private float _hpCost = 0;
@@ -261,9 +262,9 @@ public class TeleInfoService implements Runnable {
 
 		_logger.info("Creating database saving electricity cost task, first execution will occur at : " + DateUtils.getDateToString(getTomorrowMorning1AM()));
 		
-		Timer timer = new Timer(true);
+		_timer2 = new Timer(true);
 		// Toutes les minutes on enregistre une trame
-		timer.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);		
+		_timer2.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);		
 
 	}
 
@@ -291,6 +292,10 @@ public class TeleInfoService implements Runnable {
 
 		if (_timer != null)
 			_timer.cancel();
+		
+		if (_timer2 != null) {
+			_timer2.cancel();
+		}
 
 		_logger.info("Stopping TeleInfo service...");
 
@@ -539,8 +544,7 @@ public class TeleInfoService implements Runnable {
 
 	}
 
-	// TODO : Faire une mise en cache (raffraichissement toutes les heures...)
-	public HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
+	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
 
 		float hcConsoTTC = 0;
 		float hpConsoTTC = 0;

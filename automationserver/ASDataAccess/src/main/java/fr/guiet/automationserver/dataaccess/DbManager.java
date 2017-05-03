@@ -102,6 +102,8 @@ public class DbManager {
 		}
 	}
 	
+	
+	
 	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
 		
 		try {
@@ -726,7 +728,7 @@ public class DbManager {
         Date dateTo = sdfFrom.parse(sdfTo.format(dateFrom));
         
         return dateTo;
-    }
+    }	
 	
 	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) {
 		

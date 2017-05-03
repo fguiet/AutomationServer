@@ -22,6 +22,7 @@ public class WaterHeater implements Runnable {
 	// private boolean _waitForOn = false;
 	// private boolean _waitForOff = false;
 	private final String PIN_WATER_HEATER_NAME = "PIN_CHAUFFE_EAU";
+	private boolean _awayModeStatus = false;
 
 	/*
 	 * @Override public void OnCollectInfoStopped() {
@@ -50,6 +51,14 @@ public class WaterHeater implements Runnable {
 		_teleInfoService = teleInfoService;
 		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
+	}
+	
+	public void SetAwayModeOn() {
+		_awayModeStatus = true;
+	}
+
+	public void SetAwayModeOff() {
+		_awayModeStatus = false;
 	}
 
 	/*
@@ -130,8 +139,14 @@ public class WaterHeater implements Runnable {
 	private void CheckAndRestartIfNecessary(int puissanceApparente) {
 
 		// Test deja execute inutile de relancer..
-		if (_isCheckedOk)
+		if (_isCheckedOk || !(DateUtils.getCurrentHour() >= 0 && DateUtils.getCurrentHour() <= 5))
 			return;
+		
+		//Ne faire la vérification le jour car il se peut que le chauffe soit deja chaud et qu'il ne consomme pas de courant
+		//donc c'est normal
+		if (DateUtils.getCurrentHour() >= 7 && DateUtils.getCurrentHour() <= 22) {
+			return;
+		}
 
 		// 1 minute ecoulée depuis le demarrage?
 		// long elapsed = ((System.currentTimeMillis() - _startTime) / 1000);
@@ -162,6 +177,11 @@ public class WaterHeater implements Runnable {
 	 * Turns water heater ON
 	 */
 	private void SetOn() {
+		
+		//Pas de demarrage du boiler si away mode est on
+		if (_awayModeStatus) 
+			return;
+					
 		_isCheckedOk = false;
 
 		String logMessage = "Turning ON water heater";
@@ -171,24 +191,7 @@ public class WaterHeater implements Runnable {
 		// TODO : réecriture les méthodes java sans majuscule au debut
 
 		// TODO : faire une classe métier pour la gestion des PINS
-		// create gpio controller
-		/*
-		 * final GpioController gpio = GpioFactory.getInstance();
-		 * 
-		 * // provision gpio pin #01 as an output pin and turn on final
-		 * GpioPinDigitalOutput pin =
-		 * gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "PIN_CHAUFFE_EAU");
-		 * 
-		 * // set shutdown state for this pin pin.setShutdownOptions(true,
-		 * PinState.LOW);
-		 * 
-		 * // turn on gpio pin #00 pin.high();
-		 * 
-		 * gpio.unprovisionPin(pin); gpio.shutdown();
-		 */
-
-		// _logger.info("Turning ON water heater");
-
+		
 		_startTime = new Date();
 
 		_isOn = true;
@@ -199,8 +202,8 @@ public class WaterHeater implements Runnable {
 	/**
 	 * Turns water heater OFF
 	 */
-	private void SetOff() {
-
+	private void SetOff() {		
+		
 		Date currentDate = new Date();
 
 		long diffMinutes = 0;
@@ -213,7 +216,7 @@ public class WaterHeater implements Runnable {
 		String logMessage = "Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes";
 		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.LOW,
 				PIN_WATER_HEATER_NAME, logMessage);
+		
 		_isOn = false;
-
 	}
 }

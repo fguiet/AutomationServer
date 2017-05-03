@@ -1,3 +1,13 @@
+/**** 
+ * Mailbox Notifier
+ * 
+ * F. Guiet 
+ * Creation           : 20170218
+ * Last modification  : 20170503
+ * 
+ * Version            : 1.1
+ */
+
 #include <DHT.h>
 
 //Light Mqtt library
@@ -21,7 +31,12 @@ DHT dht(DHTPIN, DHTTYPE);
 //#define MQTT_CLIENT_ID "NoheSensor"
 //#define MQTT_CLIENT_ID "SalonSensor"
 #define MQTT_CLIENT_ID "BureauSensor"
+
 IPAddress ip_wemos(192,  168,   1,   35); //bureau
+//IPAddress ip_wemos(192,  168,   1,   36); //Salon
+//IPAddress ip_wemos(192,  168,   1,   37); //Manon
+//IPAddress ip_wemos(192,  168,   1,   38); //Parents
+//IPAddress ip_wemos(192,  168,   1,   39); //Nohe
 
 //Mqtt settings
 
@@ -40,7 +55,6 @@ const char* password = "frederic";
 IPAddress gateway_ip ( 192,  168,   1,   1);
 IPAddress subnet_mask(255, 255, 255,   0);
 
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -53,6 +67,7 @@ void setup() {
   delay(1000);
 
   Serial.println("Initializing DHT...");
+
   dht.begin();
 
   Serial.println("Initializing MQTT...");
@@ -68,27 +83,36 @@ void loop() {
 
   if (WiFi.status() != WL_CONNECTED) {
     if (!connectToWifi())
-      goDeepSleep();
+      goDeepSleep();      
+      return;
   }  
 
   if (!client.connected()) {
     if (!reconnect()) {
-      goDeepSleep();
+      goDeepSleep();      
+      return;
     }
   }
 
   //Handle MQTT connection
   client.loop();
 
-  delay(1000);
+  //delay(1000);
   
   float h = dht.readHumidity();
   float t = dht.readTemperature();
 
+  //https://gist.github.com/tzapu/e6e70b4c094be618b714050a252309a3
+  //Read twice to get accurate result!!
+  delay(2100);
+
+  h = dht.readHumidity();
+  t = dht.readTemperature();
+
   if (isnan(t) || isnan(h)) 
   {
     Serial.println("Failed to read from DHT");        
-    goDeepSleep();
+    //goDeepSleep();
   }
   else {
 
@@ -102,7 +126,7 @@ void loop() {
 
   //Deep sleep...ZZzzzZZzzz
   goDeepSleep();
-  
+
 }
 
 void disconnectMqtt() {
@@ -148,7 +172,8 @@ boolean reconnect() {
       retry++;
       // Wait 5 seconds before retrying
       delay(500);
-      yield();
+      Serial.print(".");
+      //yield();
     }
   }
 

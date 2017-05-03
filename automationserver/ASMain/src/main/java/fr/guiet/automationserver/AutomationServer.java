@@ -90,7 +90,7 @@ public class AutomationServer implements Daemon {
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();
