@@ -340,6 +340,7 @@ public class RoomService implements Runnable {
 		// Wait a little before starting in order to receive first electrical
 		// information frame
 		// and temp from all sensors
+		_logger.info("Waiting to launch main roomservice loop...");
 		while (!_isStopped) {
 			// && _teleInfoService.GetLastTrame() == null) {
 
@@ -347,9 +348,10 @@ public class RoomService implements Runnable {
 			long diff = currentDate.getTime() - startDate.getTime();
 			long diffMinutes = diff / (60 * 1000);
 
-			if (diffMinutes >= 1.5)
+			if (diffMinutes >= 1.5) {
+				_logger.info("Launching roomservice main loop...");
 				break;
-
+			}
 		}
 
 		while (!_isStopped) {

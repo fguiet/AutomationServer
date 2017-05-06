@@ -101,15 +101,18 @@ public class AutomationServer implements Daemon {
 
 					// Wait a little before starting...
 					//Sometimes while rebooting database connection are not ready and may cause some errorsq
+					
+					_logger.info("Waiting to launch main automation server loop...");
 					while (!_isStopped) {						
 
 						Date currentDate = new Date();
 						long diff = currentDate.getTime() - startDate.getTime();
 						long diffMinutes = diff / (60 * 1000);
 
-						if (diffMinutes >= 1)
+						if (diffMinutes >= 1) {
+							_logger.info("Launching main automation server loop...");
 							break;
-
+						}
 					}
 					
 					while (!_isStopped) {

@@ -1,8 +1,10 @@
 package fr.guiet.automationserver.business;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -20,6 +22,10 @@ public class DateUtils {
 		return df.format(date);
 	}
 
+	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException {
+		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
+	}
+	
 	public static Date parseDate(String date) {
 		try {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(date);

@@ -530,9 +530,7 @@ public class TeleInfoService implements Runnable {
 		}
 	}
 
-	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException {
-		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
-	}
+	
 
 	public float GetNextElectricityBillCost() {
 
@@ -575,7 +573,7 @@ public class TeleInfoService implements Runnable {
 			// Date currentDate = new Date();
 			int days = 0;
 			try {
-				days = betweenDates(fromDate, toDate).intValue();
+				days = DateUtils.betweenDates(fromDate, toDate).intValue();
 			} catch (IOException e) {
 				_logger.error("Erreur lors du calcul du nombre de jours entre deux dates", e);
 			}
