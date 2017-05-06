@@ -182,7 +182,7 @@ public class TeleInfoService implements Runnable {
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
-		
+
 		// Save electrical yesterday cost consumption
 		CreateSaveElectricityToDBTask();
 
@@ -229,13 +229,11 @@ public class TeleInfoService implements Runnable {
 	private static Date getTomorrowMorning1AM() {
 
 		Calendar c1 = Calendar.getInstance();
-		
-		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);		
-		c1.set(Calendar.HOUR, 2);
-		c1.set(Calendar.MINUTE, 0);
-		c1.set(Calendar.SECOND, 0);
 
-		// System.out.println(DateUtils.getDateToString(c1.getTime()));
+		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);
+		c1.set(Calendar.HOUR_OF_DAY, 2);
+		c1.set(Calendar.MINUTE, 0);
+		c1.set(Calendar.SECOND, 0);		
 
 		return c1.getTime();
 	}
@@ -246,25 +244,31 @@ public class TeleInfoService implements Runnable {
 		TimerTask saveElecTask = new TimerTask() {
 			@Override
 			public void run() {
+
 				Date hier = DateUtils.addDays(new Date(), -1);
 				hier = DateUtils.getDateWithoutTime(hier);
+				// hier is today-1 at 00:00
+
 				Date today = DateUtils.getDateWithoutTime(new Date());
 
-				HashMap<String, Float> info = GetElectricityBillInfo(hier, today);
+				try {
+					HashMap<String, Float> info = GetElectricityBillInfo(hier, today);
 
-				// public void SaveElectricityCost(Date date, int hc, int hp,
-				// float costHC, float costHP, float other) {
-				_dbManager.SaveElectricityCost(hier, Math.round(info.get("hc")), Math.round(info.get("hp")),
-						info.get("hc_cost"), info.get("hp_cost"), info.get("other_cost"));
+					_dbManager.SaveElectricityCost(hier, Math.round(info.get("hc")), Math.round(info.get("hp")),
+							info.get("hc_cost"), info.get("hp_cost"), info.get("other_cost"));
+				} catch (Exception e) {
+					_logger.error("Could not save electricty cost for day : " + DateUtils.getDateToString(hier), e);
+				}
 
 			}
 		};
 
-		_logger.info("Creating database saving electricity cost task, first execution will occur at : " + DateUtils.getDateToString(getTomorrowMorning1AM()));
-		
+		_logger.info("Creating database saving electricity cost task, first execution will occur at : "
+				+ DateUtils.getDateToString(getTomorrowMorning1AM()));
+
 		_timer2 = new Timer(true);
 		// Toutes les minutes on enregistre une trame
-		_timer2.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);		
+		_timer2.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);
 
 	}
 
@@ -292,7 +296,7 @@ public class TeleInfoService implements Runnable {
 
 		if (_timer != null)
 			_timer.cancel();
-		
+
 		if (_timer2 != null) {
 			_timer2.cancel();
 		}
@@ -532,19 +536,29 @@ public class TeleInfoService implements Runnable {
 
 	public float GetNextElectricityBillCost() {
 
-		_logger.info("Computing next electricity bill cost");
-		
-		HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+		float hc_cost = 0;
+		float hp_cost = 0;
+		float other_cost = 0;
 
-		float hc_cost = info.get("hc_cost");
-		float hp_cost = info.get("hp_cost");
-		float other_cost = info.get("other_cost");
+		_logger.info("Computing next electricity bill cost");
+
+		try {
+			HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+
+			hc_cost = info.get("hc_cost");
+			hp_cost = info.get("hp_cost");
+			other_cost = info.get("other_cost");
+		} catch (Exception e) {
+			_logger.error(
+					"Error occured while getting electricity bill info...cannot compute next electricity bill cost, returning 0 euros",
+					e);
+		}
 
 		return hc_cost + hp_cost + other_cost;
 
 	}
 
-	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
+	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) throws Exception {
 
 		float hcConsoTTC = 0;
 		float hpConsoTTC = 0;
@@ -556,7 +570,7 @@ public class TeleInfoService implements Runnable {
 		HashMap<String, Float> returns = new HashMap<String, Float>();
 
 		try {
-			DbManager dbManager = new DbManager();
+			// DbManager dbManager = new DbManager();
 
 			// Date currentDate = new Date();
 			int days = 0;
@@ -566,7 +580,7 @@ public class TeleInfoService implements Runnable {
 				_logger.error("Erreur lors du calcul du nombre de jours entre deux dates", e);
 			}
 
-			HashMap<String, Integer> map = dbManager.GetElectriciyConsumption(fromDate, toDate);
+			HashMap<String, Integer> map = _dbManager.GetElectriciyConsumption(fromDate, toDate);
 
 			Integer hcConso = map.get("hcConsuption");
 			Integer hpConso = map.get("hpConsuption");
@@ -611,14 +625,9 @@ public class TeleInfoService implements Runnable {
 
 		} catch (Exception e) {
 
-			hcConsoTTC = 0;
-			hpConsoTTC = 0;
-			aboCostTTC = 0;
-			ctaTTC = 0;
-			cspeTTC = 0;
-			tcfeTTC = 0;
-
 			_logger.error("Error occured when computing next electricity bill", e);
+
+			throw e;
 		}
 
 		return returns;

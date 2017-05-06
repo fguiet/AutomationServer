@@ -112,10 +112,10 @@ public class DbManager {
 			
 			long ms = date.getTime();
 
-			DateFormat df = new SimpleDateFormat("dd/MM/yyyy à HH:mm:ss");
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 			String ds = df.format(date);
 			
-			_logger.info("Saving electricity cost, day " + ds);
+			_logger.info("Saving electricity cost for day : " + ds);
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
@@ -461,7 +461,7 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -474,6 +474,7 @@ public class DbManager {
 			dto.sensorId = rs.getLong("id_sensor");
 			dto.sensorAddress = rs.getString("sensor_address");
 			dto.name = rs.getString("name");
+			dto.tempshift = rs.getFloat("tempshift");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
@@ -730,11 +731,12 @@ public class DbManager {
         return dateTo;
     }	
 	
-	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) {
+	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) throws Exception {
 		
-		HashMap<String, Integer> results = new HashMap<>();
+		HashMap<String, Integer> results = null;
 		
 		try {
+			results = new HashMap<>();
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
@@ -775,8 +777,10 @@ public class DbManager {
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
-		}		
-		
+			
+			throw e;
+		}	
+				
 		return results;
 	}
 

@@ -35,6 +35,7 @@ public class RoomService implements Runnable {
 	private Float _hysteresis = null;
 	private Float _awayTemp = null;
 	private boolean _awayModeStatus = false;
+	private boolean _verboseLogEnable = false;
 
 	// Constructeur
 	/**
@@ -62,6 +63,12 @@ public class RoomService implements Runnable {
 			} catch (NumberFormatException nfe) {
 				_hysteresis = Float.parseFloat("0");
 				_logger.warn("Bad hysteresis defined in config file !, set to 0 by default", nfe);
+			}
+
+			String verboseLogEnable = prop.getProperty("log.verbose");
+			if (verboseLogEnable != null) {
+				if (verboseLogEnable.equals("1"))
+					_verboseLogEnable = true;
 			}
 
 			try {
@@ -168,7 +175,7 @@ public class RoomService implements Runnable {
 			return "NA";
 		}
 	}
-	
+
 	// Retourne la t° programmée
 	public Float GetTempProg(long roomId) {
 		Room r = GetRoomById(roomId);
@@ -329,15 +336,18 @@ public class RoomService implements Runnable {
 		}
 
 		Date startDate = new Date();
-		// Wait for first electrical information to arrive (timeout 1 minute) in
-		// order to avoid error message during startup
-		while (!_isStopped && _teleInfoService.GetLastTrame() == null) {
+
+		// Wait a little before starting in order to receive first electrical
+		// information frame
+		// and temp from all sensors
+		while (!_isStopped) {
+			// && _teleInfoService.GetLastTrame() == null) {
 
 			Date currentDate = new Date();
 			long diff = currentDate.getTime() - startDate.getTime();
 			long diffMinutes = diff / (60 * 1000);
 
-			if (diffMinutes >= 1)
+			if (diffMinutes >= 1.5)
 				break;
 
 		}
@@ -445,9 +455,10 @@ public class RoomService implements Runnable {
 			if (roomActualTemp != null)
 				actualTemp = "" + roomActualTemp;
 
-			_logger.info("***LOG : Radiateur  " + h.getName() + " de la pièce " + h.getRoom().getName() + ", Etat : "
-					+ h.getEtatLabel() + ", T° prog :" + tempProg + ", T° piece : " + actualTemp + ", T° desire : "
-					+ calcProg);
+			if (_verboseLogEnable)
+				_logger.info("***LOG : Radiateur  " + h.getName() + " de la pièce " + h.getRoom().getName() + ", Etat : "
+						+ h.getEtatLabel() + ", T° prog :" + tempProg + ", T° piece : " + actualTemp + ", T° desire : "
+						+ calcProg);
 
 			// On arrive pas a obtenir la temperature courante de la piece donc
 			// on eteint le radiateur
@@ -499,8 +510,6 @@ public class RoomService implements Runnable {
 				}
 			}
 
-			// Si radiateur allume on etient (on positionne un delta d'inertie
-			// de chaleur de 0.2 degre)
 			if (h.isOn() && roomActualTemp >= roomWantedTemp + _hysteresis) {
 				h.SetOff();
 				_logger.info("EXTINCTION Radiateur " + h.getName() + ", Temp. de la pièce : " + roomActualTemp
@@ -508,9 +517,7 @@ public class RoomService implements Runnable {
 				_logger.info("*** Intensite phase : " + phase + " après extinction du radiateur : "
 						+ (intensitePhase - h.getCurrentConsumption()));
 			}
-		}
-
-		// _logger.info("je sors");
+		}	
 	}
 
 	private void LoadRoomList() {

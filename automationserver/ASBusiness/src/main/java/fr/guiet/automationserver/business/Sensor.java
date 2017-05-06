@@ -14,11 +14,8 @@ public class Sensor {
 	private static Logger _logger = Logger.getLogger(Sensor.class);
 
 	private long _idSensor;
+	private float _tempshift; //Correct sensor value (maybe incorrect due to different room factor (place, not well calibrated, etc)
 	private String _name;
-	//private XBeeAddress64 _sensorAddress;
-	//private Timer _timer = null;
-	//private static XBeeService _XBeeInstance = null;
-	//private static Object _lockObj = new Object();
 	private Date _lastInfoReceived = null; // Date de derniere reception d'une
 											// info du capteur
 	private float _actualTemp;
@@ -28,15 +25,7 @@ public class Sensor {
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
 	private boolean _alertSentMore = false;
-	// private MqttHelper _mqttHelper = null;
-	// private int _sendAlertInMinute = 5; //envoie d'une alerte au bout de 5
-	// minutes par defaut
 
-	/*
-	 * public Sensor(SMSGammuService smsGammuService) {
-	 * 
-	 * _smsGammuService = smsGammuService; _mqttHelper = new MqttHelper(); }
-	 */
 
 	public float getActualTemp() {
 		return _actualTemp;
@@ -53,12 +42,12 @@ public class Sensor {
 		
 	}
 
-	public void setReceivedValue(float actualTemp, float actualHumidity, float sensorCorrection) {
+	public void setReceivedValue(float actualTemp, float actualHumidity) {
 		_actualHumidity = actualHumidity;		
 		_actualTemp = actualTemp;
 		
 		//DHT22 is inside a box and temp reading is incorrect (warn from ESP8266)
-		_actualTemp = _actualTemp - sensorCorrection;
+		_actualTemp = _actualTemp + _tempshift;
 				
 		_lastInfoReceived = new Date();
 	}
@@ -242,6 +231,7 @@ public class Sensor {
 		_room = room;
 		_name = dto.name;
 		_smsGammuService = gammuService;
+		_tempshift = dto.tempshift;
 		// _mqttHelper = new MqttHelper(gammuService);
 
 		//TODO : soon each sensor will wifi sensor no more xbee
