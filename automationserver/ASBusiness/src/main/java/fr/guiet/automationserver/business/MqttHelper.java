@@ -31,7 +31,6 @@ public class MqttHelper implements MqttCallback {
 	private WaterHeater _waterHeaterService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
-	private float _sensorCorrection = 0;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
 	private Date _lastBasementMessage = new Date();
 	private Date _lastComputeBillCost = null;
@@ -56,17 +55,6 @@ public class MqttHelper implements MqttCallback {
 			String port = prop.getProperty("mqtt.port");
 			_uri = String.format(_uri, host, port);
 			_topics = prop.getProperty("mqtt.topics").split(";");
-
-			try {
-				String sensorCorrection = prop.getProperty("sensor.correction");
-				if (sensorCorrection != null)
-					_sensorCorrection = Float.parseFloat(sensorCorrection);
-				else
-					_sensorCorrection = Float.parseFloat("0");
-			} catch (NumberFormatException nfe) {
-				_sensorCorrection = Float.parseFloat("0");
-				_logger.warn("Bad sensor temp. correction defined in config file !, set to 0 by default", nfe);
-			}
 
 			_smsGammuService = gammuService;
 			_roomService = roomService;
@@ -286,7 +274,7 @@ public class MqttHelper implements MqttCallback {
 
 					for (Room room : _roomService.GetRooms()) {
 						if (room.getSensor().getIdSendor() == sensorId) {
-							room.getSensor().setReceivedValue(temp, humidity, _sensorCorrection);
+							room.getSensor().setReceivedValue(temp, humidity);
 							// _logger.info("Received WiFi sensor info => id: "
 							// + sensorId+ ", temp: "+temp+", hum: "+humidity);
 							break;
