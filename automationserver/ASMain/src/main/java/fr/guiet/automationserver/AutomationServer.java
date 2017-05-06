@@ -97,13 +97,24 @@ public class AutomationServer implements Daemon {
 					sms.setMessage("Automation server has started...");
 					_smsGammuService.sendMessage(sms, true);
 					
+					Date startDate = new Date();
+
+					// Wait a little before starting...
+					//Sometimes while rebooting database connection are not ready and may cause some errorsq
+					while (!_isStopped) {						
+
+						Date currentDate = new Date();
+						long diff = currentDate.getTime() - startDate.getTime();
+						long diffMinutes = diff / (60 * 1000);
+
+						if (diffMinutes >= 1)
+							break;
+
+					}
+					
 					while (!_isStopped) {
 
-						//Socket connection = socket.accept();
-
-						//AutomationServerThread ast = new AutomationServerThread(connection, _roomService,
-							//	_teleInfoService);
-						//ast.start();
+						
 						_mqttHelper.PublishInfoToMqttBroker();
 						
 						//Check whether sensors are still alive....
@@ -114,12 +125,7 @@ public class AutomationServer implements Daemon {
 
 					}
 
-					/*try {
-						socket.close();
-					} catch (IOException e) {
-						_logger.error("Error occured when closing message management queue socket...", e);
-						socket = null;
-					}*/
+					
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
 
