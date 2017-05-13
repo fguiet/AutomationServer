@@ -43,8 +43,9 @@ FEATURES
   - Automatic SMS notifications
   - Monitor real-time house electric consumption
   - Automatic start of my water boiler when electric cost is less expensive (mostly during night)
-  - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboard
+  - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboards
   - All data are published to a Mqtt broker via various topics, so various client subscriber software can access data in real-time
+  - Automatic computing of next electricity bill
 
 INSTALLATION
 
