@@ -15,6 +15,7 @@
 		<module>../ASBusiness</module>
 		<module>../ASMain</module>
 		<module>../ASTests</module>
+		<module>../ASWebApp</module>
 	</modules>
 
 	<properties>
@@ -33,6 +34,7 @@
 		<commons-daemon.version>1.0.15</commons-daemon.version>
 		<mqttv3.version>1.1.0</mqttv3.version>
 		<mail.version>1.5.6</mail.version>
+		<json.version> 20160810</json.version>
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
 		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
 		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>

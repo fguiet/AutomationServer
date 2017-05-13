@@ -1,0 +1,274 @@
+
+/* 
+
+DayPilot Calendar Theme 
+http://themes.daypilot.org/calendar/theme/yjo2yd
+
+Theme Designer Version: 2015.12.01.0938
+
+*/
+
+.calendar_default_2014_main 
+{
+	border: 1px solid #aaaaaa;
+}
+
+.calendar_default_2014_main, .calendar_default_2014_main td 
+{
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+
+.calendar_default_2014_event { 
+	color: #666666;
+	
+}
+
+.calendar_default_2014_event_inner { 
+	position: absolute;
+	overflow: hidden;
+	
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	
+	margin: 0px;
+
+	background-color: #ffffff;
+	
+	background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#fafafa));  
+	background: -webkit-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -moz-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -ms-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -o-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: linear-gradient(top, #ffffff 0%, #fafafa);
+	filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr="#ffffff", endColorStr="#fafafa");
+	
+	
+	
+	padding: 2px;
+	
+	
+	padding-left: 6px;
+	
+	
+	border: 1px solid #cccccc;
+	
+	
+	
+	
+	
+}
+
+.calendar_default_2014_alldayevent { 
+	
+}
+
+.calendar_default_2014_alldayevent_inner { 
+	position: absolute;
+	overflow: hidden;
+	
+	left: 1px;
+	right: 0px;
+	top: 1px;
+	bottom: 0px;
+	
+	margin: 0px;
+
+	color: #666666;
+	background-color: #ffffff;
+	
+	background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#fafafa));  
+	background: -webkit-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -moz-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -ms-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: -o-linear-gradient(top, #ffffff 0%, #fafafa);
+	background: linear-gradient(top, #ffffff 0%, #fafafa);
+	filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr="#ffffff", endColorStr="#fafafa");
+	
+	
+	
+	padding: 2px;
+	
+	
+	border: 1px solid #cccccc;
+	
+	text-align: left;
+	
+	
+	
+}
+
+.calendar_default_2014_alldayheader_inner
+{
+	text-align: center; 
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #aaaaaa;
+	border-bottom: 1px solid  #aaaaaa;
+
+	color: #666666;
+	background: #eeeeee;
+	
+
+}
+
+.calendar_default_2014_colheader_inner
+{
+	text-align: center; 
+	padding: 2px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #aaaaaa;
+	border-bottom: 1px solid #aaaaaa;
+	
+	color: #666666;
+	background: #eeeeee;
+	
+}
+
+.calendar_default_2014_rowheader_inner
+{
+	font-size: 16pt;
+	
+	text-align: right; 
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #aaaaaa;
+	border-bottom: 1px solid  #aaaaaa;
+	
+	color: #666666;
+	background: #eeeeee;
+	
+}
+
+.calendar_default_2014_rowheader_minutes 
+{
+	font-size:10px; 
+	vertical-align: super; 
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.calendar_default_2014_corner_inner
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #aaaaaa;
+	border-bottom: 1px solid  #aaaaaa;
+
+	color: #666666;
+	background: #eeeeee;
+	
+}
+
+.calendar_default_2014_cornerright_inner
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #aaaaaa;
+	border-bottom: 1px solid  #aaaaaa;
+
+	color: #666666;
+	background: #eeeeee;
+	
+
+}
+
+.calendar_default_2014_rowheader_inner {
+	padding: 2px;
+}
+
+.calendar_default_2014_cell_inner
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	border-right: 1px solid #eeeeee;
+	border-bottom: 1px solid #eeeeee;
+	background: #f9f9f9;
+}
+
+.calendar_default_2014_cell_business .calendar_default_2014_cell_inner {
+	background: #ffffff;
+}
+
+.calendar_default_2014_message 
+{
+	padding: 10px;
+	opacity: 0.9;
+	filter: alpha(opacity=90);
+	
+	color: #ffffff;
+	background: #ffa216;
+	
+}
+
+.calendar_default_2014_shadow_inner 
+{
+	background-color: #666666;
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+	height: 100%;
+	
+}
+
+
+.calendar_default_2014_event_bar
+{
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	width: 4px;
+	background-color: #9dc8e8;
+}
+
+.calendar_default_2014_event_bar_inner  
+{
+	position: absolute;
+	width: 4px;
+	background-color: #1066a8;
+}
+
+
+
+.calendar_default_2014_event_delete {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjExR/NCNwAAAI5JREFUKFNtkLERgCAMRbmzdK8s4gAUlhYOYEHJEJYOYOEwDmGBPxC4kOPfvePy84MGR0RJ2N1A8H3N6DATwSQ57m2ql8NBG+AEM7D+UW+wjdfUPgerYNgB5gOLRHqhcasg84C2QxPMtrUhSqQIhg7ypy9VM2EUZPI/4rQ7rGxqo9sadTegw+UdjeDLAKUfhbaQUVPIfJYAAAAASUVORK5CYII=) center center no-repeat; 
+	opacity: 0.6; 
+	-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)'; 
+	cursor: pointer;
+}
+
+.calendar_default_2014_event_delete:hover {
+	opacity: 1;
+	-ms-filter: none;
+}
+
+.calendar_default_2014_scroll_up {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAB3RJTUUH2wESDiYcrhwCiQAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAARnQU1BAACxjwv8YQUAAACcSURBVHjaY2AgF9wWsTW6yGMlhi7OhC7AyMDQzMnBXIpFHAFuCtuaMTP+P8nA8P/b1x//FfW/HHuF1UQmxv+NUP1c3OxMVVhNvCVi683E8H8LXOY/w9+fTH81tF8fv4NiIpBRj+YoZtZ/LDUoJmKYhsVUpv0MDiyMDP96sIYV0FS2/8z9ICaLlOhvS4b/jC//MzC8xBG0vJeF7GQBlK0xdiUzCtsAAAAASUVORK5CYII=);
+}
+
+.calendar_default_2014_scroll_down {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiMAAC4jAXilP3YAAACqSURBVChTY7wpam3L9J+xmQEP+PGPKZZxP4MDi4zI78uMDIwa2NT+Z2DYovrmiC+TI8OBP/8ZmEqwGvif4e8vxr+FIDkmEKH25vBWBgbG0+iK/zEwLtF+ffwOXCGI8Y+BoRFFIdC030x/WmBiYBNhpgLdswNJ8RSYaSgmgk39z1gPUfj/29ef/9rwhQTDHRHbrbdEbLvRFcGthkkAra/9/uMvhkK8piNLAgCRpTnNn4AEmAAAAABJRU5ErkJggg==);
+}
+
+.calendar_default_2014_now { background-color: red; }
+.calendar_default_2014_now:before { content: ''; top: -5px; border-width: 5px; border-color: transparent transparent transparent red; border-style: solid; width: 0px; height:0px; position: absolute; -moz-transform: scale(.9999); }

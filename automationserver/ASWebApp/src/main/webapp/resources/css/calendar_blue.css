@@ -1,0 +1,222 @@
+﻿/* calendar white */
+
+.calendar_blue_wrap_inner 
+{
+	padding: 10px;
+	border-radius: 10px;
+	
+	background: #77c2fc;
+	background: -moz-linear-gradient(
+		top,
+		#77c2fc 0%,
+		#0e86c7);
+	background: -webkit-gradient(
+		linear, left top, left bottom, 
+		from(#77c2fc),
+		to(#0e86c7));
+	/*filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr="#77c2fc", endColorStr="#0e86c7");*/
+}
+
+.calendar_blue_main  
+{
+	/*border: 1px solid #77c2fc;*/
+}
+
+.calendar_blue_colheader
+{
+}
+
+.calendar_blue_rowheader_inner, 
+.calendar_blue_cornerright_inner,
+.calendar_blue_corner_inner,
+.calendar_blue_colheader_inner,
+.calendar_blue_alldayheader_inner 
+{
+	color: #045776;
+	background: #fff;
+}
+
+.calendar_blue_cornerright_inner,
+.calendar_blue_rowheader_inner,
+.calendar_blue_corner_inner,
+.calendar_blue_colheader_inner,
+.calendar_blue_alldayheader_inner 
+{
+	border-right: 1px solid #77c2fc;
+	border-bottom: 1px solid #77c2fc;
+
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+}
+
+.calendar_blue_cornerright_inner 
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+}
+
+.calendar_blue_rowheader_inner 
+{
+	font-size: 16pt;
+	text-align: right; 
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	
+}
+
+.calendar_blue_corner_inner 
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+}
+
+.calendar_blue_rowheader_minutes 
+{
+	font-size:10px; 
+	vertical-align: super; 
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.calendar_blue_colheader_inner 
+{
+	text-align: center; 
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+}
+
+.calendar_blue_cell_inner
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+	background: #ffffff;
+}
+
+.calendar_blue_alldayheader_inner 
+{
+	text-align: center; 
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+}
+
+.calendar_blue_message
+{
+	opacity: 0.9;
+	filter: alpha(opacity=90);
+
+	padding: 10px; 
+	color: #fff;
+	background: #045776;
+	border-radius: 10px;
+	display: inline-block;
+	margin-left: 5px;
+	margin-top: 5px;
+
+}
+
+.calendar_blue_alldayevent_inner,
+.calendar_blue_event_inner  
+{
+	color: #ffffff;
+	background: #09b2ef;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	border: 1px solid #079beb;
+	-moz-box-shadow:
+		0px 0px 5px rgba(000,000,000,0.5),
+		inset 0px 1px 0px rgba(072,211,246,1);
+	-webkit-box-shadow:
+		0px 0px 5px rgba(000,000,000,0.5),
+		inset 0px 1px 0px rgba(072,211,246,1);
+	box-shadow:
+		0px 0px 5px rgba(000,000,000,0.5),
+		inset 0px 1px 0px rgba(072,211,246,1);
+	text-shadow:
+		0px -1px 0px rgba(007,155,235,1),
+		0px 0px 0px rgba(000,000,000,0);
+		
+}
+
+.calendar_blue_alldayevent_inner  
+{
+	position: absolute;
+	top: 2px;
+	bottom: 2px;
+	left: 2px;
+	right: 1px;
+	padding: 3px;
+	margin-right: 1px;
+
+	font-size: 12px;
+}
+
+
+.calendar_blue_event_inner  
+{
+	position: absolute;
+	overflow: hidden;
+	top: 0px;
+	bottom: 2px;
+	left: 2px;
+	right: 0px;
+	
+	padding: 4px;
+	
+	font-size: 12px;
+}
+
+.calendar_blue_shadow_inner 
+{
+	background-color: #666666;
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+	height: 100%;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.calendar_blue_event_delete {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjExR/NCNwAAAI5JREFUKFNtkLERgCAMRbmzdK8s4gAUlhYOYEHJEJYOYOEwDmGBPxC4kOPfvePy84MGR0RJ2N1A8H3N6DATwSQ57m2ql8NBG+AEM7D+UW+wjdfUPgerYNgB5gOLRHqhcasg84C2QxPMtrUhSqQIhg7ypy9VM2EUZPI/4rQ7rGxqo9sadTegw+UdjeDLAKUfhbaQUVPIfJYAAAAASUVORK5CYII=) center center no-repeat;
+    opacity: 0.6;
+    -ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)';
+    cursor: pointer;
+}
+
+.calendar_blue_event_delete:hover {
+    opacity: 1;
+    -ms-filter: none;
+}
+
+.calendar_blue_scroll_up {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAB3RJTUUH2wESDiYcrhwCiQAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAARnQU1BAACxjwv8YQUAAACcSURBVHjaY2AgF9wWsTW6yGMlhi7OhC7AyMDQzMnBXIpFHAFuCtuaMTP+P8nA8P/b1x//FfW/HHuF1UQmxv+NUP1c3OxMVVhNvCVi683E8H8LXOY/w9+fTH81tF8fv4NiIpBRj+YoZtZ/LDUoJmKYhsVUpv0MDiyMDP96sIYV0FS2/8z9ICaLlOhvS4b/jC//MzC8xBG0vJeF7GQBlK0xdiUzCtsAAAAASUVORK5CYII=);
+}
+
+.calendar_blue_scroll_down {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiMAAC4jAXilP3YAAACqSURBVChTY7wpam3L9J+xmQEP+PGPKZZxP4MDi4zI78uMDIwa2NT+Z2DYovrmiC+TI8OBP/8ZmEqwGvif4e8vxr+FIDkmEKH25vBWBgbG0+iK/zEwLtF+ffwOXCGI8Y+BoRFFIdC030x/WmBiYBNhpgLdswNJ8RSYaSgmgk39z1gPUfj/29ef/9rwhQTDHRHbrbdEbLvRFcGthkkAra/9/uMvhkK8piNLAgCRpTnNn4AEmAAAAABJRU5ErkJggg==);
+}
+
+.calendar_blue_now { background-color: red; }
+.calendar_blue_now:before { content: ''; top: -5px; border-width: 5px; border-color: transparent transparent transparent red; border-style: solid; width: 0px; height:0px; position: absolute; -moz-transform: scale(.9999); }

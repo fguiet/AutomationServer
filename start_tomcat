@@ -1,0 +1,9 @@
+#! /bin/sh
+
+export CATALINA_HOME=/home/guiet/applications/tomcat9
+export JAVA_HOME=/home/guiet/applications/java/jdk1.8.0_121
+export JRE_HOME=/home/guiet/applications/java/jdk1.8.0_121/jre
+export CATALINA_OPTS="$CATALINA_OPTS -Dautomationserver.config.path=/home/guiet/projets/AutomationServer/automationserver/ASMain/src/main/resources/automationserver.properties -Dlog4j.configuration=file:/home/guiet/applications/tomcat9/conf/log4j.xml"
+$CATALINA_HOME/bin/startup.sh
+
+

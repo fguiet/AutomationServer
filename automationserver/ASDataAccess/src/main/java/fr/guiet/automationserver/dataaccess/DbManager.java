@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import org.apache.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
+
 import java.util.concurrent.TimeUnit;
 
 import fr.guiet.automationserver.dto.*;
@@ -101,20 +102,18 @@ public class DbManager {
 					e);
 		}
 	}
-	
-	
-	
+
 	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-			
+
 			long ms = date.getTime();
 
 			DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 			String ds = df.format(date);
-			
+
 			_logger.info("Saving electricity cost for day : " + ds);
 
 			// _logger.info("InfluxDB connecting..");
@@ -125,13 +124,9 @@ public class DbManager {
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement("electricity").time(ms, TimeUnit.MILLISECONDS)
-					.addField("hc", hc)
-					.addField("hp", hp)
-					.addField("cost_hc", costHC)
-					.addField("cost_hp", costHP)
-					.addField("cost_other", other)
-					.build();
+			Point point1 = Point.measurement("electricity").time(ms, TimeUnit.MILLISECONDS).addField("hc", hc)
+					.addField("hp", hp).addField("cost_hc", costHC).addField("cost_hp", costHP)
+					.addField("cost_other", other).build();
 
 			batchPoints.point(point1);
 
@@ -145,7 +140,7 @@ public class DbManager {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
 	}
-	
+
 	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
 		try {
 			if (!_influxdbEnable.equals("true"))
@@ -162,11 +157,8 @@ public class DbManager {
 					.build();
 
 			Point point1 = Point.measurement("outside").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("outside_temp", outsideTemp)
-					.addField("garage_temp", garageTemp)
-					.addField("pressure", pressure)
-					.addField("altitude", altitude)
-					.build();
+					.addField("outside_temp", outsideTemp).addField("garage_temp", garageTemp)
+					.addField("pressure", pressure).addField("altitude", altitude).build();
 
 			batchPoints.point(point1);
 
@@ -179,7 +171,7 @@ public class DbManager {
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
-		
+
 	}
 
 	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
@@ -661,8 +653,9 @@ public class DbManager {
 
 			if (dayOfWeek == dow) {
 
-				query = "select temp, hour_begin, hour_end, day_of_week " + "from automation.temp_schedule "
-						+ "where id_room=? and day_of_week=date_part('dow',now())+1 " + "and "
+				query = "select id_temp_schedule, id_room, temp, hour_begin, hour_end, day_of_week "
+						+ "from automation.temp_schedule " + "where id_room=? and day_of_week=date_part('dow',now())+1 "
+						+ "and "
 						+ "(temp!=(select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "and "
 						+ "(day_of_week=(select day_of_week from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
@@ -676,8 +669,8 @@ public class DbManager {
 				pst.setLong(3, roomId);
 				pst.setLong(4, roomId);
 			} else {
-				query = "select temp, hour_begin, hour_end, day_of_week " + "from automation.temp_schedule "
-						+ "where id_room=? and day_of_week=? " + "and "
+				query = "select id_temp_schedule, id_room, temp, hour_begin, hour_end, day_of_week "
+						+ "from automation.temp_schedule " + "where id_room=? and day_of_week=? " + "and "
 						+ "(temp!=(select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end)) "
 						+ "order by hour_begin asc " + "limit 1 ";
 
@@ -691,8 +684,9 @@ public class DbManager {
 			while (rs.next()) {
 				Timestamp hourBegin = rs.getTimestamp("hour_begin");
 				Timestamp hourEnd = rs.getTimestamp("hour_end");
-				ts = new TempScheduleDto(new Date(hourBegin.getTime()), new Date(hourEnd.getTime()),
-						rs.getFloat("temp"), rs.getInt("day_of_week"));
+				ts = new TempScheduleDto(rs.getLong("id_temp_schedule"), rs.getInt("id_room"),
+						new Date(hourBegin.getTime()), new Date(hourEnd.getTime()), rs.getFloat("temp"),
+						rs.getInt("day_of_week"));
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getNextDefaultTempByRoom)", e);
@@ -717,24 +711,24 @@ public class DbManager {
 		return ts;
 
 	}
-	
+
 	private static Date convertDate(Date dateFrom, String fromTimeZone, String toTimeZone) throws ParseException {
-        String pattern = "yyyy/MM/dd HH:mm:ss";
-        SimpleDateFormat sdfFrom = new SimpleDateFormat (pattern);
-        sdfFrom.setTimeZone(TimeZone.getTimeZone(fromTimeZone));
+		String pattern = "yyyy/MM/dd HH:mm:ss";
+		SimpleDateFormat sdfFrom = new SimpleDateFormat(pattern);
+		sdfFrom.setTimeZone(TimeZone.getTimeZone(fromTimeZone));
 
-        SimpleDateFormat sdfTo = new SimpleDateFormat (pattern);
-        sdfTo.setTimeZone(TimeZone.getTimeZone(toTimeZone));
+		SimpleDateFormat sdfTo = new SimpleDateFormat(pattern);
+		sdfTo.setTimeZone(TimeZone.getTimeZone(toTimeZone));
 
-        Date dateTo = sdfFrom.parse(sdfTo.format(dateFrom));
-        
-        return dateTo;
-    }	
-	
+		Date dateTo = sdfFrom.parse(sdfTo.format(dateFrom));
+
+		return dateTo;
+	}
+
 	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) throws Exception {
-		
+
 		HashMap<String, Integer> results = null;
-		
+
 		try {
 			results = new HashMap<>();
 
@@ -742,45 +736,49 @@ public class DbManager {
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
-			//Convert Date in UTC
+			// Convert Date in UTC
 			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");
 			Date toDate1 = convertDate(toDate, "Europe/Paris", "UTC");
-			
+
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String dfd = df.format(convertDate(fromDate1, "Europe/Paris","UTC"));
-			String td = df.format(convertDate(toDate1, "Europe/Paris","UTC"));
-			
-			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '"+dfd+"' and time < '"+td+"'";
+			String dfd = df.format(convertDate(fromDate1, "Europe/Paris", "UTC"));
+			String td = df.format(convertDate(toDate1, "Europe/Paris", "UTC"));
+
+			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '" + dfd
+					+ "' and time < '" + td + "'";
 			Query query = new Query(sql, "automation");
-			QueryResult queryResult =_influxDB.query(query);
-			
-			List<QueryResult.Result> result = queryResult.getResults(); 
-			
-			//_logger.info("QueryResult : "+result.get(0).getSeries().get(0).getValues());
-						
-			String min_hchp = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
-			String min_hchc = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
-			String max_hchp = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
-			String max_hchc = Long.toString(Double.valueOf((double)result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
-			
-			min_hchp = min_hchp.substring(0,5);
-			min_hchc = min_hchc.substring(0,5);
-			max_hchp = max_hchp.substring(0,5);
-			max_hchc = max_hchc.substring(0,5);
-			
-			
-			results.put("hpConsuption", Integer.parseInt(max_hchp)-Integer.parseInt(min_hchp));
-			results.put("hcConsuption", Integer.parseInt(max_hchc)-Integer.parseInt(min_hchc));
-			
-			
+			QueryResult queryResult = _influxDB.query(query);
+
+			List<QueryResult.Result> result = queryResult.getResults();
+
+			// _logger.info("QueryResult :
+			// "+result.get(0).getSeries().get(0).getValues());
+
+			String min_hchp = Long.toString(
+					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
+			String min_hchc = Long.toString(
+					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
+			String max_hchp = Long.toString(
+					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
+			String max_hchc = Long.toString(
+					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
+
+			min_hchp = min_hchp.substring(0, 5);
+			min_hchc = min_hchc.substring(0, 5);
+			max_hchp = max_hchp.substring(0, 5);
+			max_hchc = max_hchc.substring(0, 5);
+
+			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
+			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
+
 			_influxDB.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
-			
+
 			throw e;
-		}	
-				
+		}
+
 		return results;
 	}
 
@@ -849,4 +847,260 @@ public class DbManager {
 			}
 		}
 	}
+
+	/*
+	 * Returns temperature schedule for all room
+	 */
+	public List<TempScheduleDto> getTempSchedule() {
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		ArrayList<TempScheduleDto> dtoList = new ArrayList<TempScheduleDto>();
+
+		try {
+
+			if (!_postgresqlEnable.equals("true")) {
+				return dtoList;
+			}
+
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+
+			// String query = "select json_agg(f.*) " + "from " + "(select
+			// id_room::text as resource, id_temp_schedule as id, temp::text as
+			// text, " + "(select case "
+			String query = "select id_room, id_temp_schedule as id, temp, " + "(select case "
+					+ "	    when day_of_week=2 then "
+					+ "		to_char(date_trunc('week', current_date),'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS') "
+					+ "	    when day_of_week=3 then "
+					+ "		to_char(date_trunc('week', current_date)  + interval '1' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "	when day_of_week=4 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '2' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "		when day_of_week=5 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '3' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "		when day_of_week=6 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '4' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "		when day_of_week=7 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '5' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "	when day_of_week=1 then"
+					+ "		to_char(date_trunc('week', current_date) + interval '6' day,'YYYY-MM-DD') || ' ' || to_char(hour_begin,'HH24:MI:SS')"
+					+ "	end) as start," + "(select case " + "	    when day_of_week=2 then"
+					+ "		to_char(date_trunc('week', current_date),'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "	    when day_of_week=3 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '1' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "	when day_of_week=4 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '2' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "		when day_of_week=5 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '3' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "		when day_of_week=6 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '4' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "		when day_of_week=7 then"
+					+ "		to_char(date_trunc('week', current_date)  + interval '5' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "	when day_of_week=1 then"
+					+ "		to_char(date_trunc('week', current_date) + interval '6' day,'YYYY-MM-DD') || ' ' || to_char(hour_end,'HH24:MI:SS')"
+					+ "	end) as end, day_of_week as dayofweek " + "from automation.temp_schedule";
+			// + "from automation.temp_schedule where id_room=?) as f";
+
+			pst = connection.prepareStatement(query);
+			// pst.setLong(1, roomId);
+
+			rs = pst.executeQuery();
+
+			while (rs.next()) {
+				TempScheduleDto dto = new TempScheduleDto();
+
+				dto.setRoomId(rs.getInt("id_room"));
+				dto.setId(rs.getLong("id"));
+				Timestamp hourBegin = rs.getTimestamp("start");
+				Timestamp hourEnd = rs.getTimestamp("end");
+				dto.setHourBegin(new Date(hourBegin.getTime()));
+				dto.setHourEnd(new Date(hourEnd.getTime()));
+				dto.setTemp(rs.getFloat("temp"));
+				dto.setDayOfWeek(rs.getInt("dayofweek"));
+
+				dtoList.add(dto);
+			}
+
+		} catch (SQLException e) {
+			_logger.error("Erreur lors de la lecture en base de donnees (getHeaterScheduleForRoom)", e);
+		} finally {
+
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+				if (rs != null) {
+					rs.close();
+				}
+				if (connection != null) {
+					connection.close();
+				}
+
+			} catch (SQLException ex) {
+				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
+			}
+		}
+
+		return dtoList;
+
+	}
+
+	public void deleteTempScheduleById(int id) {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+
+			if (!_postgresqlEnable.equals("true"))
+				return;
+
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+
+			String stm = "DELETE FROM automation.temp_schedule where id_temp_schedule=?";
+
+			pst = connection.prepareStatement(stm);
+			pst.setInt(1, id);
+
+			pst.executeUpdate();
+
+		} catch (SQLException e) {
+			_logger.error("Erreur lors de la suppression en base de donnees (deleteTempScheduleById)", e);
+		} finally {
+
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+
+				if (connection != null) {
+					connection.close();
+				}
+
+			} catch (SQLException ex) {
+				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
+			}
+		}
+
+	}
+
+	public TempScheduleDto createTempScheduleById(TempScheduleDto dto) {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		
+		try {
+
+			if (!_postgresqlEnable.equals("true"))
+				return null;
+
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+
+			String stm = "INSERT INTO automation.temp_schedule(temp,id_room,day_of_week,hour_begin,hour_end) values (?,?,?,?,?)";
+
+			pst = connection.prepareStatement(stm);
+			pst.setFloat(1, dto.getDefaultTempNeeded());
+			pst.setInt(2, dto.getRoomId());
+			pst.setInt(3, dto.getDayOfWeek());
+
+			Date fromDate1 = convertDate(dto.getHourBegin(), "Europe/Paris", "UTC");
+			Date toDate1 = convertDate(dto.getHourEnd(), "Europe/Paris", "UTC");
+			toDate1.setSeconds(toDate1.getSeconds() - 1);
+
+			// Timestamp timestamp = new Timestamp(
+			Timestamp hourBegin = new Timestamp(fromDate1.getTime());
+			Timestamp hourEnd = new Timestamp(toDate1.getTime());
+
+			pst.setTimestamp(4, hourBegin);
+			pst.setTimestamp(5, hourEnd);
+			// pst.setLong(6, dto.getId());
+
+			pst.executeUpdate();
+			pst.close();
+			
+			stm = "SELECT MAX(id_temp_schedule) as id from automation.temp_schedule";
+			pst = connection.prepareStatement(stm);
+			rs = pst.executeQuery();
+
+			rs.next();
+			
+			dto.setId(rs.getInt("id"));
+			
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de la suppression en base de donnees (createTempScheduleById)", e);
+		} finally {
+
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+				
+				if (rs!=null) {
+					rs.close();
+				}
+
+				if (connection != null) {
+					connection.close();
+				}
+
+			} catch (SQLException ex) {
+				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
+			}
+		}
+		
+		return dto;
+	}
+
+	public void updateTempScheduleById(TempScheduleDto dto) {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+
+			if (!_postgresqlEnable.equals("true"))
+				return;
+
+			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+
+			String stm = "UPDATE automation.temp_schedule set temp=?, id_room=?, day_of_week=?, hour_begin=?, hour_end=? where id_temp_schedule=?";
+
+			pst = connection.prepareStatement(stm);
+			pst.setFloat(1, dto.getDefaultTempNeeded());
+			pst.setInt(2, dto.getRoomId());
+			pst.setInt(3, dto.getDayOfWeek());
+
+			Date fromDate1 = convertDate(dto.getHourBegin(), "Europe/Paris", "UTC");
+			Date toDate1 = convertDate(dto.getHourEnd(), "Europe/Paris", "UTC");
+			toDate1.setSeconds(toDate1.getSeconds() - 1);
+
+			// Timestamp timestamp = new Timestamp(
+			Timestamp hourBegin = new Timestamp(fromDate1.getTime());
+			Timestamp hourEnd = new Timestamp(toDate1.getTime());
+
+			pst.setTimestamp(4, hourBegin);
+			pst.setTimestamp(5, hourEnd);
+			pst.setLong(6, dto.getId());
+
+			pst.executeUpdate();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de la suppression en base de donnees (updateTempScheduleById)", e);
+		} finally {
+
+			try {
+				if (pst != null) {
+					pst.close();
+				}
+
+				if (connection != null) {
+					connection.close();
+				}
+
+			} catch (SQLException ex) {
+				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
+			}
+		}
+
+	}
+
 }

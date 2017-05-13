@@ -3,8 +3,6 @@ package fr.guiet.automationserver.business;
 //import com.rapplogic.xbee.api.XBeeAddress64;
 import org.apache.log4j.Logger;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import fr.guiet.automationserver.dto.*;
 

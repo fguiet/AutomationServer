@@ -1,0 +1,299 @@
+.scheduler_8_main,
+.scheduler_8_rowheader,
+.scheduler_8_timeheadercol,
+.scheduler_8_timeheadergroup
+{
+    font-family: Segoe UI Light,Segoe UI,Arial,Helvetica,Verdana,Sans Serif;
+}
+
+.scheduler_8_main 
+{
+    border: 1px solid #999;
+    background: #ffffff;
+}
+
+.scheduler_8_event {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.scheduler_8_event_inner  
+{
+    position:absolute;
+    left:0px;
+    right: 1px;
+    top: 0px;
+    bottom: 1px;
+    padding: 4px;
+
+    background: #09b2ef;
+    border: 1px solid #079beb;
+}
+
+.scheduler_8_event_inner
+{
+    -ms-transition: background-color .3s linear;
+    -moz-transition: background-color .3s linear;
+    -webkit-transition: background-color .3s linear;
+    transition: background-color .3s linear;	
+}
+
+.scheduler_8_event:hover .scheduler_8_event_inner 
+{
+    background: #079beb;
+}
+
+.scheduler_8_event .scheduler_8_action:hover
+{
+    opacity: 1;
+    filter: none;
+}
+
+.scheduler_8_timeheader 
+{
+    cursor: default;
+    color: #666;
+}
+
+.scheduler_8_message
+{
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+    padding: 10px; 
+    color: #fff;
+    background: #045776;
+}
+
+.scheduler_8_timeheadergroup,
+.scheduler_8_timeheadercol,
+.scheduler_8_rowheader,
+.scheduler_8_corner
+{
+    color: #ffffff;
+    background: #646464;
+
+    -ms-transition: background-color .3s linear;
+    -moz-transition: background-color .3s linear;
+    -webkit-transition: background-color .3s linear;
+    transition: background-color .3s linear;	
+}
+
+.scheduler_8_rowheader_inner {
+    padding: 2px;
+}
+
+.scheduler_8_timeheadergroup:hover,
+.scheduler_8_timeheadercol:hover,
+.scheduler_8_rowheader:hover,
+.scheduler_8_corner:hover
+{
+    background: #464646;
+}
+
+.scheduler_8_timeheadergroup,
+.scheduler_8_timeheadercol {
+    text-align: center;
+}
+
+.scheduler_8_timeheadergroup_inner
+{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 3px;
+}
+
+.scheduler_8_timeheadercol_inner
+{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    border-right: 1px solid #ddd;
+
+    padding: 3px;
+}
+
+.scheduler_8_cellcolumn 
+{
+    background: #fff;
+}
+
+.scheduler_8_tree_image_no_children {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAIAAABv85FHAAAAKXRFWHRDcmVhdGlvbiBUaW1lAHDhIDMwIEkgMjAwOSAwODo0NjozMSArMDEwMClDkt4AAAAHdElNRQfZAR4HLzEyzsCJAAAACXBIWXMAAA7CAAAOwgEVKEqAAAAABGdBTUEAALGPC/xhBQAAADBJREFUeNpjrK6s5uTl/P75OybJ0NLW8h8bAIozgeSxAaA4E1A7VjmgOL31MeLxHwCeXUT0WkFMKAAAAABJRU5ErkJggg==);
+}
+.scheduler_8_tree_image_expand {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAIAAABv85FHAAAAKXRFWHRDcmVhdGlvbiBUaW1lAHDhIDMwIEkgMjAwOSAwODo0NjozMSArMDEwMClDkt4AAAAHdElNRQfZAR4HLyUoFBT0AAAACXBIWXMAAA7CAAAOwgEVKEqAAAAABGdBTUEAALGPC/xhBQAAAFJJREFUeNpjrK6s5uTl/P75OybJ0NLW8h8bAIozgeRhgJGREc4GijMBtTNgA0BxFog+uA4IA2gmUJwFog/IgUhAGBB9KPYhA3T74Jog+hjx+A8A1KRQ+AN5vcwAAAAASUVORK5CYII=);
+}
+.scheduler_8_tree_image_collapse {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAIAAABv85FHAAAAKXRFWHRDcmVhdGlvbiBUaW1lAHDhIDMwIEkgMjAwOSAwODo0NjozMSArMDEwMClDkt4AAAAHdElNRQfZAR4HLxB+p9DXAAAACXBIWXMAAA7CAAAOwgEVKEqAAAAABGdBTUEAALGPC/xhBQAAAENJREFUeNpjrK6s5uTl/P75OybJ0NLW8h8bAIozgeSxAaA4E1A7VjmgOAtEHyMjI7IE0EygOAtEH5CDqY9c+xjx+A8ANndK9WaZlP4AAAAASUVORK5CYII=);    
+}
+
+.scheduler_8_divider,
+.scheduler_8_splitter
+{
+    background-color: #ccc;
+}
+
+.scheduler_8_divider_horizontal
+{
+    background-color: #ccc;
+}
+
+.scheduler_8_matrix_vertical_line 
+{
+    background-color: #eee;
+}
+
+.scheduler_8_matrix_horizontal_line 
+{
+    background-color: #eee;
+}
+
+.scheduler_8_resourcedivider 
+{
+    background-color: #ccc;
+}
+
+.scheduler_8_shadow_inner 
+{
+    background-color: #666666;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+    height: 100%;
+}
+
+.scheduler_8_cellparent {
+    background-color: #f8f8f8;
+}
+
+.scheduler_8_columnheader {
+}
+
+.scheduler_8_columnheader_inner {
+}
+
+.scheduler_8_columnheader_cell {
+    
+}
+
+.scheduler_8_columnheader_splitter {
+    background-color: #ffffff;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+.scheduler_8_columnheader_cell_inner {
+    padding: 2px;   
+}
+
+.scheduler_8_timeheader_float_inner {
+    padding: 3px;
+}
+
+.scheduler_8_event_float_inner {
+    padding: 5px 4px 4px 8px;
+}
+
+.scheduler_8_event_float_inner:after {
+    content:"";
+    border-color: transparent #fff transparent transparent;
+    border-style:solid;
+    border-width:5px;
+    width:0;
+    height:0;
+    position:absolute;
+    top:8px;
+    left:-4px;
+}
+
+.scheduler_8_event_move_left {
+    box-sizing: border-box;
+    padding: 2px;
+    border: 1px solid #ccc;
+    background: #fff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#eeeeee));
+    background: -webkit-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -moz-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -ms-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -o-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: linear-gradient(top, #ffffff 0%, #eeeeee);
+    filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr="#ffffff", endColorStr="#eeeeee");
+}
+
+.scheduler_8_event_move_right {
+    box-sizing: border-box;
+    padding: 2px;
+    border: 1px solid #ccc;
+    background: #fff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#eeeeee));
+    background: -webkit-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -moz-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -ms-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: -o-linear-gradient(top, #ffffff 0%, #eeeeee);
+    background: linear-gradient(top, #ffffff 0%, #eeeeee);
+    filter: progid:DXImageTransform.Microsoft.Gradient(startColorStr="#ffffff", endColorStr="#eeeeee");
+}
+
+.scheduler_8_event_delete {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjExR/NCNwAAAI5JREFUKFNtkLERgCAMRbmzdK8s4gAUlhYOYEHJEJYOYOEwDmGBPxC4kOPfvePy84MGR0RJ2N1A8H3N6DATwSQ57m2ql8NBG+AEM7D+UW+wjdfUPgerYNgB5gOLRHqhcasg84C2QxPMtrUhSqQIhg7ypy9VM2EUZPI/4rQ7rGxqo9sadTegw+UdjeDLAKUfhbaQUVPIfJYAAAAASUVORK5CYII=) center center no-repeat;
+    opacity: 0.6;
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)';
+    cursor: pointer;
+}
+
+.scheduler_8_event_delete:hover {
+    opacity: 1;
+    -ms-filter: none;
+}
+
+.scheduler_8_rowmove_handle { background-repeat: no-repeat; background-position: center center; background-color: #ccc; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAKCAYAAACT+/8OAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjExR/NCNwAAAClJREFUGFdj+P//P4O9vX2Bg4NDP4gNFgBytgPxebgAMsYuQGMz/jMAAFsTZDPYJlDHAAAAAElFTkSuQmCC); cursor: move; }
+.scheduler_8_rowmove_source { background-color: black; opacity: 0.2; }
+.scheduler_8_rowmove_position_before, .scheduler_8_rowmove_position_after { background-color: #999; height: 2px; }
+.scheduler_8_rowmove_position_child { margin-left: 10px; background-color: #999; height: 2px; }
+.scheduler_8_rowmove_position_child:before { content: '+'; color: #999; position: absolute; top: -8px; left: -10px; }
+.scheduler_8_rowmove_position_forbidden { background-color: red; height: 2px; margin-left: 10px; }
+.scheduler_8_rowmove_position_forbidden:before { content: 'x'; color: red; position: absolute; top: -8px; left: -10px; }
+
+.scheduler_8_link_horizontal { border-bottom-style: solid; border-bottom-color: red }
+.scheduler_8_link_vertical { border-right-style: solid; border-right-color: red }
+.scheduler_8_link_arrow_right:before { content: ''; border-width: 6px; border-color: transparent transparent transparent red; border-style: solid; width: 0px; height:0px; position: absolute; }
+.scheduler_8_link_arrow_left:before { content: ''; border-width: 6px; border-color: transparent red transparent transparent; border-style: solid; width: 0px; height:0px; position: absolute; }
+.scheduler_8_link_arrow_down:before { content: ''; border-width: 6px; border-color: red transparent transparent transparent; border-style: solid; width: 0px; height:0px; position: absolute; }
+
+.scheduler_8_shadow_overlap .scheduler_8_shadow_inner { background-color: red; }
+.scheduler_8_overlay { background-color: gray; opacity: 0.5; filter: alpha(opacity=50); }
+
+.scheduler_8_event_group { box-sizing: border-box; font-size:12px; color:#666; padding:2px 2px 2px 2px; overflow:hidden; border:1px solid #ccc; background-color: #fff; }
+
+.scheduler_8_header_icon {
+    box-sizing: border-box;
+    border: 1px solid #999;
+    color: #ffffff;
+    background: #646464;
+    -ms-transition: background-color .3s linear;
+    -moz-transition: background-color .3s linear;
+    -webkit-transition: background-color .3s linear;
+    transition: background-color .3s linear;
+}
+.scheduler_8_header_icon:hover { background-color: #464646; }
+.scheduler_8_header_icon_hide:before { content: '\00AB'; }
+.scheduler_8_header_icon_show:before { content: '\00BB'; }
+
+.scheduler_8_rowheader.scheduler_8_rowheader_selected { background-color: #aaa;background-image: -webkit-gradient(linear, 0 100%, 100% 0,color-stop(.25, rgba(255, 255, 255, .2)), color-stop(.25, transparent),	color-stop(.5, transparent), color-stop(.5, rgba(255, 255, 255, .2)), color-stop(.75, rgba(255, 255, 255, .2)), color-stop(.75, transparent), to(transparent));background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent);background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent);background-image: -ms-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent);background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent);background-image: linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent);-webkit-background-size: 20px 20px;-moz-background-size: 20px 20px;background-size: 20px 20px; }
+
+.scheduler_8_row_new .scheduler_8_rowheader_inner { cursor: text; background-position: 0px 5px; background-repeat: no-repeat; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABUSURBVChTY0ACslAaK2CC0iCQDMSlECYmQFYIAl1AjFUxukIQwKoYm0IQwFCMSyEIaEJpMMClcD4Qp0CYEIBNIUzRPzAPCtAVYlWEDgyAGIdTGBgAbqEJYyjqa3oAAAAASUVORK5CYII=); }
+.scheduler_8_row_new .scheduler_8_rowheader_inner:hover { background: white; }
+.scheduler_8_rowheader textarea { padding: 3px; }
+.scheduler_8_rowheader_scroll { cursor: default; }
+
+.scheduler_8_shadow_forbidden .scheduler_8_shadow_inner { background-color: red; }
+
+.scheduler_8_event_moving_source { opacity: 0.5; filter: alpha(opacity=50); }
+
+.scheduler_8_linkpoint { background-color: white; border: 1px solid gray; border-radius: 5px; }
+.scheduler_8_linkpoint.scheduler_8_linkpoint_hover { background-color: black; }
