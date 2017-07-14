@@ -31,7 +31,7 @@ public class GpioHelper {
 
 			gpio.unprovisionPin(pin);
 
-			gpio.shutdown();
+			//gpio.shutdown();
 
 			if (logMessage != null) {
 				_logger.info(logMessage);

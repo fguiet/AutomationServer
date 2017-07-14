@@ -332,6 +332,15 @@ public class TeleInfoService implements Runnable {
 		// }
 	}
 
+	private String convert(byte[] data) {
+	    StringBuilder sb = new StringBuilder(data.length);
+	    for (int i = 0; i < data.length; ++ i) {
+        	//if (data[i] < 0) throw new IllegalArgumentException();
+	        sb.append((char) data[i]);
+	    }
+	    return sb.toString();
+	}
+
 	// Creation du listener sur le port serie
 	private void CreateSerialListener() {
 
@@ -345,7 +354,7 @@ public class TeleInfoService implements Runnable {
 
 				String dataSZ = "";
 				 try {
-				dataSZ = event.getAsciiString();
+					dataSZ = convert(event.getBytes());
 				//event.
 				//dataSZ = event.getData();
 				 } catch (IOException e) {
@@ -358,7 +367,7 @@ public class TeleInfoService implements Runnable {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					// _logger.warn("carac recu: "+(int)receivedChar);
+					//_logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
 					// String decoded = String.valueOf(receivedChar);
