@@ -4,12 +4,18 @@ import org.apache.log4j.Logger;
 
 //import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
+import com.pi4j.io.serial.StopBits;
+import com.pi4j.io.serial.Baud;
+import com.pi4j.io.serial.DataBits;
+import com.pi4j.io.serial.FlowControl;
+import com.pi4j.io.serial.Parity;
 //import com.pi4j.io.serial.StopBits;
 //import com.pi4j.io.serial.Baud;
 //import com.pi4j.io.serial.DataBits;
 //import com.pi4j.io.serial.FlowControl;
 //import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
+import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialDataEventListener;
 //import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
@@ -40,7 +46,7 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	private SerialDataEventListener _sdl = null;
+	//private SerialDataEventListener _sdl = null;
 	//private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
@@ -177,7 +183,7 @@ public class TeleInfoService implements Runnable {
 		// information
 		_logger.info("Using serial device : " + _defaultDevice);
 
-		CreateSerialListener();
+		//CreateSerialListener();
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
@@ -342,9 +348,10 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Creation du listener sur le port serie
-	private void CreateSerialListener() {
+	private SerialDataEventListener CreateSerialListener() {
 
-		 _sdl = new SerialDataEventListener() {
+		return new SerialDataEventListener() {
+		 //_sdl = new SerialDataEventListener() {
 		//_sdl = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
@@ -434,7 +441,7 @@ public class TeleInfoService implements Runnable {
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
 		Serial serial = null;
-		// SerialDataEventListener sdl = null;
+		SerialDataEventListener sdl = null;
 
 		try {
 
@@ -443,15 +450,15 @@ public class TeleInfoService implements Runnable {
 			// open the default serial port provided on the GPIO header at 1200
 			// bauds
 			// serial.open(_defaultDevice, _defaultBaud);
-			// SerialConfig config = new SerialConfig();
-			// config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
-			// .stopBits(StopBits._1).flowControl(FlowControl.NONE);
+			SerialConfig config = new SerialConfig();
+			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
+			.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-			// sdl = CreateSerialListener();
-			serial.addListener(_sdl);
+			sdl = CreateSerialListener();
+			serial.addListener(sdl);
 
-			// serial.open(config);
-			serial.open(_defaultDevice, 1200);
+			 serial.open(config);
+			//serial.open(_defaultDevice, 1200);
 			// serial.setBufferingDataReceived(false);
 
 			// serial.discardAll();
@@ -524,7 +531,8 @@ public class TeleInfoService implements Runnable {
 			// SerialFactory.shutdown();
 			if (serial != null) {
 				// _logger.info("remove listener");
-				serial.removeListener(_sdl);
+				serial.discardAll();
+				serial.removeListener(sdl);
 				// try {
 				if (serial.isOpen()) {
 					// _logger.info("fermeture port serie");
