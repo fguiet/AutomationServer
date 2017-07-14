@@ -3,9 +3,12 @@
  * 
  * F. Guiet 
  * Creation           : 20170218
- * Last modification  : 20170503
+ * Last modification  : 20170515
  * 
- * Version            : 1.1
+ * Version            : 1.2
+ * 
+ * History            : 1.2 - Change wifi gateway address
+ * 
  */
 
 #include <DHT.h>
@@ -52,7 +55,7 @@ const int SLEEP_TIME_SECONDS = 60;
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
 
-IPAddress gateway_ip ( 192,  168,   1,   1);
+IPAddress gateway_ip ( 192,  168,   1,   254);
 IPAddress subnet_mask(255, 255, 255,   0);
 
 WiFiClient espClient;

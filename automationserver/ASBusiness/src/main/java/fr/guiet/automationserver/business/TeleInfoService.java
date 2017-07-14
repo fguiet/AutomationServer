@@ -10,8 +10,8 @@ import com.pi4j.io.serial.SerialFactory;
 //import com.pi4j.io.serial.FlowControl;
 //import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
-//import com.pi4j.io.serial.SerialDataEventListener;
-import com.pi4j.io.serial.SerialDataListener;
+import com.pi4j.io.serial.SerialDataEventListener;
+//import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 
 import java.util.Date;
@@ -40,8 +40,8 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	// private SerialDataEventListener _sdl = null;
-	private SerialDataListener _sdl = null;
+	private SerialDataEventListener _sdl = null;
+	//private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -335,8 +335,8 @@ public class TeleInfoService implements Runnable {
 	// Creation du listener sur le port serie
 	private void CreateSerialListener() {
 
-		// _sdl = new SerialDataEventListener() {
-		_sdl = new SerialDataListener() {
+		 _sdl = new SerialDataEventListener() {
+		//_sdl = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
@@ -344,12 +344,13 @@ public class TeleInfoService implements Runnable {
 					return;
 
 				String dataSZ = "";
-				// try {
-				// dataSZ = event.getAsciiString();
-				dataSZ = event.getData();
-				// } catch (IOException e) {
-				// _logger.error("Unable de read serial port", e);
-				// }
+				 try {
+				dataSZ = event.getAsciiString();
+				//event.
+				//dataSZ = event.getData();
+				 } catch (IOException e) {
+				 _logger.error("Unable de read serial port", e);
+				}
 
 				char[] data = dataSZ.toCharArray();
 
