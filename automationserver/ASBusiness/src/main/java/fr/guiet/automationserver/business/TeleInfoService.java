@@ -68,6 +68,7 @@ public class TeleInfoService implements Runnable {
 	private float _tcfeCost = 0;
 	private Date _lastBillDate;
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
+	private Serial _serial = null;
 
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
@@ -76,6 +77,32 @@ public class TeleInfoService implements Runnable {
 
 	public Date getLastBillDate() {
 		return _lastBillDate;
+	}
+	
+	private void CreateSerialInstance() {
+		
+		SerialDataEventListener sdl = null;
+		_serial = SerialFactory.createInstance();
+
+		// open the default serial port provided on the GPIO header at 1200
+		// bauds
+		// serial.open(_defaultDevice, _defaultBaud);
+		SerialConfig config = new SerialConfig();
+		config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
+		.stopBits(StopBits._1).flowControl(FlowControl.NONE);
+
+		sdl = CreateSerialListener();
+		_serial.addListener(sdl);
+
+		try {
+			_serial.open(config);
+		} catch (IOException e) {
+			_logger.error("Impossible d'ouvrir le port série");
+		}
+		//serial.open(_defaultDevice, 1200);
+		_serial.setBufferingDataReceived(false);
+
+		// serial.discardAll();
 	}
 
 	@Override
@@ -183,6 +210,10 @@ public class TeleInfoService implements Runnable {
 		// information
 		_logger.info("Using serial device : " + _defaultDevice);
 
+		
+		CreateSerialInstance();
+		
+		
 		//CreateSerialListener();
 
 		// Création de la tâche de sauvegarde en bdd
@@ -190,7 +221,8 @@ public class TeleInfoService implements Runnable {
 
 		// Save electrical yesterday cost consumption
 		CreateSaveElectricityToDBTask();
-
+		
+		
 		while (!_isStopped) {
 
 			try {
@@ -305,6 +337,17 @@ public class TeleInfoService implements Runnable {
 		if (_timer2 != null) {
 			_timer2.cancel();
 		}
+		
+		try {
+			if (_serial.isOpen()) {
+			 _logger.info("Fermeture port serie");
+	 		 _serial.close();
+			}
+		} catch (IOException ioe) {
+		 _logger.error("Impossible de fermer le port serie", ioe);
+		}
+		
+		SerialFactory.shutdown();
 
 		_logger.info("Stopping TeleInfo service...");
 
@@ -440,28 +483,12 @@ public class TeleInfoService implements Runnable {
 		_endTrameDetected = false;
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
-		Serial serial = null;
-		SerialDataEventListener sdl = null;
+		//Serial serial = null;
+		//SerialDataEventListener sdl = null;
 
 		try {
 
-			serial = SerialFactory.createInstance();
-
-			// open the default serial port provided on the GPIO header at 1200
-			// bauds
-			// serial.open(_defaultDevice, _defaultBaud);
-			SerialConfig config = new SerialConfig();
-			config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
-			.stopBits(StopBits._1).flowControl(FlowControl.NONE);
-
-			sdl = CreateSerialListener();
-			serial.addListener(sdl);
-
-			 serial.open(config);
-			//serial.open(_defaultDevice, 1200);
-			// serial.setBufferingDataReceived(false);
-
-			// serial.discardAll();
+		
 
 			// TODO : traduire tous les messages en anglais
 			// serial.close();
@@ -500,7 +527,7 @@ public class TeleInfoService implements Runnable {
 					}
 				} catch (InterruptedException ie) {
 					_logger.error("TeleInfoService : Interrupted Exception", ie);
-					throw ie;
+					//throw ie;
 				}
 			}
 
@@ -526,26 +553,28 @@ public class TeleInfoService implements Runnable {
 		catch (Exception e) {
 			_logger.error("Exception dans GetTeleInfoTrame : ", e);
 			return null;
-		} finally {
+		} 
+		//finally {
 			// _logger.info("shut down serial factory");
 			// SerialFactory.shutdown();
-			if (serial != null) {
+			//if (serial != null) {
 				// _logger.info("remove listener");
-				serial.discardAll();
-				serial.removeListener(sdl);
+				//serial.discardAll();
+				//serial.removeListener(sdl);
 				// try {
-				if (serial.isOpen()) {
+				//if (serial.isOpen()) {
 					// _logger.info("fermeture port serie");
-					serial.close();
-				}
+			//		serial.close();
+			//	}
 				// } catch (IOException ioe) {
 				// _logger.error("Impossible de fermer le port serie", ioe);
 				// }
-			}
+			//}
 
-			serial = null;
-			sdl = null;
-		}
+			//serial = null;
+			//sdl = null;
+			//SerialFactory.shutdown();
+		//}
 	}
 
 	
