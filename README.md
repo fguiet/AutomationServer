@@ -15,6 +15,9 @@ DESCRIPTION
   
     - PostgreSQL 9.4
     - Java 1.8
+    - Oracle Jersey Restful framework
+    - Ajax Daypilot Scheduling (great scheduling framework)
+    - Tomcat 9
     - Wemos ESP8266 Wifi module
     - Arduino (not anymore, replaced by Wemos ESP8266)
     - DHT22 Sensor (temperature and humidity)
@@ -40,8 +43,9 @@ FEATURES
   - Automatic SMS notifications
   - Monitor real-time house electric consumption
   - Automatic start of my water boiler when electric cost is less expensive (mostly during night)
-  - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboard
+  - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboards
   - All data are published to a Mqtt broker via various topics, so various client subscriber software can access data in real-time
+  - Automatic computing of next electricity bill
 
 INSTALLATION
 
