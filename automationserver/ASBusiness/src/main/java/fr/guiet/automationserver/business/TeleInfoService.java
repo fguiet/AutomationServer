@@ -522,6 +522,8 @@ public class TeleInfoService implements Runnable {
 
 						// Reinitialisation de la denrière trame reçue!
 						_lastTeleInfoTrameReceived = null;
+						
+						CreateSerialInstance();
 
 						return null;
 					}
