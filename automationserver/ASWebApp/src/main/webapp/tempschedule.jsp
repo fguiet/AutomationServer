@@ -49,6 +49,8 @@
 
 	<script type="text/javascript">
 	
+	    
+	
 		function convertDayOfWeek(dayOfWeek) {
 			
 			var result;
@@ -83,6 +85,7 @@
 		$(document).ready(
 				function() {
 
+					var baseUrl = "http://192.168.1.25:8510/automationserver-webapp";
 					var dp = new DayPilot.Scheduler("dp");
 					dp.startDate = DayPilot.Date.today().firstDayOfWeek()
 							.addDays(1);
@@ -122,7 +125,7 @@
 				             type: "POST",
 				             dataType:"json",
 				             contentType: "application/json; charset=utf-8",
-				             url: "http://localhost:8080/automationserver-webapp/rest/schedule/create",
+				             url: baseUrl + "/rest/schedule/create",
 				             data: JSON.stringify(ev),
 				             success: function(data) {
 				            	 var e = new DayPilot.Event({
@@ -159,7 +162,7 @@
 				             type: "PUT",
 				             dataType:"json",
 				             contentType: "application/json; charset=utf-8",
-				             url: "http://localhost:8080/automationserver-webapp/rest/schedule/update",
+				             url: baseUrl + "/rest/schedule/update",
 				             data: JSON.stringify(ev)
 				             
 				         });
@@ -197,7 +200,7 @@
 									             type: "PUT",
 									             dataType:"json",
 									             contentType: "application/json; charset=utf-8",
-									             url: "http://localhost:8080/automationserver-webapp/rest/schedule/update",
+									             url: baseUrl + "/rest/schedule/update",
 									             data: JSON.stringify(ev)
 									             
 									         });
@@ -217,7 +220,7 @@
 										$.ajax({ 
 								             type: "DELETE",
 								             datatype: "json",
-								             url: "http://localhost:8080/automationserver-webapp/rest/schedule/delete/" + this.source.value(),								             
+								             url: baseUrl + "/rest/schedule/delete/" + this.source.value(),								             
 								         });
 										
 										dp.events.remove(this.source);
@@ -250,7 +253,7 @@
 						args.e.moveVDisabled = true;
 					};
 
-					dp.events.load("http://localhost:8080/automationserver-webapp/rest/schedule");
+					dp.events.load(baseUrl + "/rest/schedule");
 				});
 	</script>
 </header>
