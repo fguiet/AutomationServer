@@ -33,29 +33,33 @@ public class MqttService {
 				String temp = messageContent[2];
 				String roomId = "";
 				
-				switch(roomName) {
-				case "BUREAU":
+				if (roomName.contains("BUREAU")) {								
 					roomId="1";
-					break;
-				case "SALON":
-					roomId="2";
-					break;
-				case "NOE":
-					roomId="3";
-					break;
-				case "MANON":
-					roomId="4";
-					break;
-				case "PARENT":
-					roomId="5";
-					break;
 				}
 				
+				if (roomName.contains("SALON")) {
+					roomId="2";
+				}
 				
-			    String message = action + ";" + roomId + ";" + temp;
+				if (roomName.contains("NOE")) {
+					roomId="3";
+				}
 				
-				MqttClientMgt rtt = new MqttClientMgt();
-				rtt.SendMsg(_topic, message);
+				if (roomName.contains("MANON")) {
+					roomId="4";
+				}
+				
+				if (roomName.contains("PARENT")) {
+					roomId="5";
+				}				
+				
+				if (!roomId.equals("")) {
+				
+					String message = action + ";" + roomId + ";" + temp;
+				
+					MqttClientMgt rtt = new MqttClientMgt();
+					rtt.SendMsg(_topic, message);
+				}
 				break;
 			}
 		}	
