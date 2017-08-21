@@ -30,6 +30,11 @@
 
 		<dependency>
 			<groupId>fr.guiet.automationserver</groupId>
+			<artifactId>automationserver-business</artifactId>
+			<version>${automationserver-business.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.guiet.automationserver</groupId>
 			<artifactId>automationserver-model</artifactId>
 			<version>${automationserver-model.version}</version>
 		</dependency>

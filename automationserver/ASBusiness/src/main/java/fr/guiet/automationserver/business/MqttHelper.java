@@ -38,7 +38,7 @@ public class MqttHelper implements MqttCallback {
 	
 	public Date GetLastBasementMessage() {
 		return _lastBasementMessage;
-	}
+	}	
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService, WaterHeater waterHeaterService) {
 
