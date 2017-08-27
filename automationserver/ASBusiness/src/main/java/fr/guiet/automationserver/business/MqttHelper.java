@@ -171,7 +171,10 @@ public class MqttHelper implements MqttCallback {
 			case "SETALARM":
 				String mode = messageContent[1];
 				if (mode.equals("ON")) {
-					
+					_alarmService.SetOn();
+				}
+				else {
+					_alarmService.SetOff();
 				}
 				break;
 			case "SETNEWSERIE":
