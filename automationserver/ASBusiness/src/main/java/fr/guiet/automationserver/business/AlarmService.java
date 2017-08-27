@@ -20,7 +20,7 @@ public class AlarmService {
 			Thread.sleep(1000);
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.LOW,
-					PIN_ALARM_NAME, logMessage);
+					PIN_ALARM_NAME, null);
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm on", e);
@@ -38,7 +38,7 @@ public class AlarmService {
 			Thread.sleep(1000);
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
-					PIN_ALARM_NAME, logMessage);
+					PIN_ALARM_NAME, null);
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm off", e);
