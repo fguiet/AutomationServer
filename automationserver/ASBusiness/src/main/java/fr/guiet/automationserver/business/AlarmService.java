@@ -11,14 +11,15 @@ public class AlarmService {
 	
 	public void SetOn() {
 	
+		//GPIO_06 (notation Pi4J) = GPIO_25 (notation raspberry) = PIN22 
 		try {
 			String logMessage = "Turning house alarm ON";
-			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.HIGH,
+			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.HIGH,
 					PIN_ALARM_NAME, logMessage);
 			
 			Thread.sleep(1000);
 			
-			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
+			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.LOW,
 					PIN_ALARM_NAME, logMessage);
 		}
 		catch(Exception e) {
@@ -28,14 +29,15 @@ public class AlarmService {
 	
 	public void SetOff() {
 		
+		//GPIO_25 (notation Pi4J) = GPIO_26 (notation raspberry) = PIN37
 		try {
 			String logMessage = "Turning house alarm OFF";
-			GpioHelper.provisionGpioPin(RaspiPin.GPIO_26, fr.guiet.automationserver.business.PinState.HIGH,
+			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.HIGH,
 					PIN_ALARM_NAME, logMessage);
 			
 			Thread.sleep(1000);
 			
-			GpioHelper.provisionGpioPin(RaspiPin.GPIO_26, fr.guiet.automationserver.business.PinState.LOW,
+			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
 					PIN_ALARM_NAME, logMessage);
 		}
 		catch(Exception e) {
