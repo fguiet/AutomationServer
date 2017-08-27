@@ -55,10 +55,12 @@ public class WaterHeater implements Runnable {
 	
 	public void SetAwayModeOn() {
 		_awayModeStatus = true;
+		_logger.info("Setting away mode ON");
 	}
 
 	public void SetAwayModeOff() {
 		_awayModeStatus = false;
+		_logger.info("Setting away mode OFF");
 	}
 
 	/*

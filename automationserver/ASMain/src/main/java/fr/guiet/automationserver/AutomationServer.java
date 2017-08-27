@@ -21,6 +21,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 public class AutomationServer implements Daemon {
 
 	private Thread _mainThread = null; // Thread principal
+	private AlarmService _alarmService = null; //Alarm service
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
 	private RoomService _roomService = null; // service de room service
 	private WaterHeater _waterHeater = null; // service de gestion du
@@ -82,15 +83,18 @@ public class AutomationServer implements Daemon {
 					_roomServiceThread = new Thread(_roomService);
 					_roomServiceThread.start();
 
-					// Starting warter heater
+					// Starting water heater
 					_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
 					_waterHeaterServiceThread = new Thread(_waterHeater);
 					_waterHeaterServiceThread.start();
-
+					
+					//Start alarm service
+					_alarmService = new AlarmService();
+					
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();

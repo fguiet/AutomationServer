@@ -29,6 +29,7 @@ public class MqttHelper implements MqttCallback {
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
 	private WaterHeater _waterHeaterService = null;
+	private AlarmService _alarmService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
@@ -40,7 +41,7 @@ public class MqttHelper implements MqttCallback {
 		return _lastBasementMessage;
 	}	
 
-	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService, WaterHeater waterHeaterService) {
+	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService) {
 
 		InputStream is = null;
 		try {
@@ -166,6 +167,12 @@ public class MqttHelper implements MqttCallback {
 			String action = messageContent[0];
 
 			switch (action) {
+			case "SETALARM":
+				String mode = messageContent[1];
+				if (mode.equals("ON")) {
+					
+				}
+				break;
 			case "SETNEWSERIE":
 				String serie = messageContent[1];				
 				String mess1 = "Hey! you got a new serie to watch : " +serie;				
