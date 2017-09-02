@@ -335,33 +335,38 @@ public class RoomService implements Runnable {
 				AddHeater(h);
 		}
 
-		Date startDate = new Date();
+		//Date startDate = new Date();
 
 		// Wait a little before starting in order to receive first electrical
 		// information frame
 		// and temp from all sensors
-		_logger.info("Waiting to launch main roomservice loop...");
-		while (!_isStopped) {
+		//_logger.info("Waiting to launch main roomservice loop...");
+		//while (!_isStopped) {
 			// && _teleInfoService.GetLastTrame() == null) {
 
-			Date currentDate = new Date();
-			long diff = currentDate.getTime() - startDate.getTime();
-			long diffMinutes = diff / (60 * 1000);
+			//Date currentDate = new Date();
+			//long diff = currentDate.getTime() - startDate.getTime();
+			//long diffMinutes = diff / (60 * 1000);
 
-			if (diffMinutes >= 1.5) {
-				_logger.info("Launching roomservice main loop...");
-				break;
-			}
-		}
+			//if (diffMinutes >= 1.5) {
+			//	_logger.info("Launching roomservice main loop...");
+			//	break;
+			//}
+		//}
 
-		while (!_isStopped) {
-
+		while (!_isStopped) {			
+			
 			try {
-				// Gestion du delestage!
-				ManageDelestage();
+				
+				if (_teleInfoService.isOperational()) { 
+									
+					//Gestion du delestage!
+					ManageDelestage();
 
-				// Gestion des radiateurs!
-				ManageHeaters();
+					//Gestion des radiateurs!
+					ManageHeaters();
+					
+				}
 
 				// Toutes les 5 secondes
 				Thread.sleep(5000);

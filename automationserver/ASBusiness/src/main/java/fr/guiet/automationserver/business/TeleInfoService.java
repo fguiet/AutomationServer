@@ -352,6 +352,10 @@ public class TeleInfoService implements Runnable {
 		_timer.schedule(teleInfoTask, 5000, 60000);
 
 	}
+	
+	public boolean isOperational() {
+		return (null != _lastTeleInfoTrameReceived);
+	}
 
 	// Arret du service TeleInfoService
 	public void StopService() {
@@ -445,8 +449,8 @@ public class TeleInfoService implements Runnable {
 					//_logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					String decoded = String.valueOf(receivedChar);
-				   _logger.warn("carac recu: "+decoded);
+					//String decoded = String.valueOf(receivedChar);
+				   //_logger.warn("carac recu: "+decoded);
 					// System.out.println(decoded);
 
 					// Reception indicateur debut trame
