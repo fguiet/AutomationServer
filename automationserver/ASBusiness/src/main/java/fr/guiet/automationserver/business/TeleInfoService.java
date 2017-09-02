@@ -19,7 +19,6 @@ import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialDataEventListener;
 //import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -80,11 +79,23 @@ public class TeleInfoService implements Runnable {
 		return _lastBillDate;
 	}
 	
-	private void CreateSerialInstance() {
+	private void CreateSerialInstance()  {
 		
 		SerialDataEventListener sdl = null;
+		
+		if (_serial != null) {
+			if (_serial.isOpen())
+				try {
+					_logger.info("Fermeture du port série...");
+					_serial.close();
+				} catch (Exception e) {
+					_logger.error("Impossible de fermer correctement le port série...",e);
+				}
+		}
+		
 		_serial = SerialFactory.createInstance();
-
+				
+		
 		// open the default serial port provided on the GPIO header at 1200
 		// bauds
 		// serial.open(_defaultDevice, _defaultBaud);
@@ -93,11 +104,11 @@ public class TeleInfoService implements Runnable {
 		.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
 		try {
+			_serial.setBufferingDataReceived(false);
+			
 			_serial.open(config);
 			_logger.info("Ouverture du port serie effectué avec succès...");
 		
-			_serial.setBufferingDataReceived(false);
-			
 			sdl = CreateSerialListener();
 			_serial.addListener(sdl);
 		} catch (IOException e) {
@@ -434,8 +445,8 @@ public class TeleInfoService implements Runnable {
 					//_logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					//String decoded = String.valueOf(receivedChar);
-				   //_logger.warn("carac recu: "+decoded);
+					String decoded = String.valueOf(receivedChar);
+				   _logger.warn("carac recu: "+decoded);
 					// System.out.println(decoded);
 
 					// Reception indicateur debut trame
@@ -536,7 +547,7 @@ public class TeleInfoService implements Runnable {
 
 						// Reinitialisation de la denrière trame reçue!
 						_lastTeleInfoTrameReceived = null;
-						
+																
 						CreateSerialInstance();
 
 						return null;
