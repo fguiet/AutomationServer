@@ -92,16 +92,19 @@ public class TeleInfoService implements Runnable {
 		config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
 		.stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
-		sdl = CreateSerialListener();
-		_serial.addListener(sdl);
-
 		try {
 			_serial.open(config);
+			_logger.info("Ouverture du port serie effectué avec succès...");
+		
+			_serial.setBufferingDataReceived(false);
+			
+			sdl = CreateSerialListener();
+			_serial.addListener(sdl);
 		} catch (IOException e) {
 			_logger.error("Impossible d'ouvrir le port série");
 		}
 		//serial.open(_defaultDevice, 1200);
-		_serial.setBufferingDataReceived(false);
+		
 
 		// serial.discardAll();
 	}
