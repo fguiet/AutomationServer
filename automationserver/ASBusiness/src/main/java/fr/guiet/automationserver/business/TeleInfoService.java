@@ -67,6 +67,7 @@ public class TeleInfoService implements Runnable {
 	private float _cspeCost = 0;
 	private float _tcfeCost = 0;
 	private Date _lastBillDate;
+	private Date _nextBillDate;
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
 	private Serial _serial = null;
 
@@ -128,6 +129,16 @@ public class TeleInfoService implements Runnable {
 				Calendar cal = Calendar.getInstance();
 				_lastBillDate = cal.getTime();
 				_logger.warn("Bad lastbill.date defined in config file !, set to actual date by default", e);
+			}
+			
+			String nextBillDate = prop.getProperty("nextbill.date");
+			//SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				_nextBillDate = formatter.parse(nextBillDate);
+			} catch (ParseException e) {
+				Calendar cal = Calendar.getInstance();
+				_nextBillDate = cal.getTime();
+				_logger.warn("Bad nextbill.date defined in config file !, set to actual date by default", e);
 			}
 
 			try {
@@ -590,7 +601,8 @@ public class TeleInfoService implements Runnable {
 		_logger.info("Computing next electricity bill cost");
 
 		try {
-			HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+			//HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+			HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, _nextBillDate);
 
 			hc_cost = info.get("hc_cost");
 			hp_cost = info.get("hp_cost");

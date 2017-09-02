@@ -65,7 +65,24 @@ public class AutomationServer implements Daemon {
 			public void run() {
 
 				try {
-					_logger.info("Starting automation server...");
+										
+					Date startDate = new Date();
+
+					// Wait a little before starting...
+					//Sometimes while rebooting database connection are not ready and may cause some errorsq
+					
+					_logger.info("Automation is starting...waiting one minute so Raspberry can initialized itselft smoothly (serial port, system service, etc)");
+					while (!_isStopped) {						
+
+						Date currentDate = new Date();
+						long diff = currentDate.getTime() - startDate.getTime();
+						long diffMinutes = diff / (60 * 1000);
+
+						if (diffMinutes >= 1) {
+							_logger.info("Starting automation server...");
+							break;
+						}
+					}
 
 					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
@@ -101,24 +118,6 @@ public class AutomationServer implements Daemon {
 					sms.setMessage("Automation server has started...");
 					_smsGammuService.sendMessage(sms, true);
 					
-					Date startDate = new Date();
-
-					// Wait a little before starting...
-					//Sometimes while rebooting database connection are not ready and may cause some errorsq
-					
-					_logger.info("Waiting to launch main automation server loop...");
-					while (!_isStopped) {						
-
-						Date currentDate = new Date();
-						long diff = currentDate.getTime() - startDate.getTime();
-						long diffMinutes = diff / (60 * 1000);
-
-						if (diffMinutes >= 1) {
-							_logger.info("Launching main automation server loop...");
-							break;
-						}
-					}
-					
 					while (!_isStopped) {
 
 						
@@ -130,9 +129,7 @@ public class AutomationServer implements Daemon {
 						//Publication des données toutes les 10s
 						Thread.sleep(10000);
 
-					}
-
-					
+					}					
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
 
