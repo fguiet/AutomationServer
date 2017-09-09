@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.restful;
+package fr.guiet.automationserver.api;
  
 import java.util.List;
 
@@ -18,7 +18,7 @@ import fr.guiet.automationserver.dto.TempScheduleDto;
  
  
 @Path("/schedule")
-public class TempScheduleService {
+public class ScheduleAPI {
  
     // URI:
     // /contextPath/servletPath/employees
@@ -60,10 +60,5 @@ public class TempScheduleService {
     	dbManager.updateTempScheduleById(ts);
     	
         return Response.ok().build();
-    }
-    
-    
-    
-    
-    
+    }    
 }

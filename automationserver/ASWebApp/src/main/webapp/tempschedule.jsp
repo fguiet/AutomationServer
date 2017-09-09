@@ -125,7 +125,7 @@
 				             type: "POST",
 				             dataType:"json",
 				             contentType: "application/json; charset=utf-8",
-				             url: baseUrl + "/rest/schedule/create",
+				             url: baseUrl + "/api/schedule/create",
 				             data: JSON.stringify(ev),
 				             success: function(data) {
 				            	 var e = new DayPilot.Event({
@@ -162,7 +162,7 @@
 				             type: "PUT",
 				             dataType:"json",
 				             contentType: "application/json; charset=utf-8",
-				             url: baseUrl + "/rest/schedule/update",
+				             url: baseUrl + "/api/schedule/update",
 				             data: JSON.stringify(ev)
 				             
 				         });
@@ -200,7 +200,7 @@
 									             type: "PUT",
 									             dataType:"json",
 									             contentType: "application/json; charset=utf-8",
-									             url: baseUrl + "/rest/schedule/update",
+									             url: baseUrl + "/api/schedule/update",
 									             data: JSON.stringify(ev)
 									             
 									         });
@@ -220,7 +220,7 @@
 										$.ajax({ 
 								             type: "DELETE",
 								             datatype: "json",
-								             url: baseUrl + "/rest/schedule/delete/" + this.source.value(),								             
+								             url: baseUrl + "/api/schedule/delete/" + this.source.value(),								             
 								         });
 										
 										dp.events.remove(this.source);
@@ -253,7 +253,7 @@
 						args.e.moveVDisabled = true;
 					};
 
-					dp.events.load(baseUrl + "/rest/schedule");
+					dp.events.load(baseUrl + "/api/schedule");
 				});
 	</script>
 </header>
