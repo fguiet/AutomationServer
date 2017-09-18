@@ -87,9 +87,18 @@
 
 					var baseUrl = "http://192.168.1.25:8510/automationserver-webapp";
 					var dp = new DayPilot.Scheduler("dp");
-					dp.startDate = DayPilot.Date.today().firstDayOfWeek()
-							.addDays(1);
-					//new DayPilot.Date("2013-03-25").firstDayOfMonth();
+
+					//Problem when it is sunday (DayPilot say first day of week is current sunday, pg says it is previous monday)
+					//PG start of week = Monday
+                    //DayPilot start of week = Sunday
+                    if (DayPilot.Date.today().getDayOfWeek() == 0) {      
+                            dp.startDate = DayPilot.Date.today().addDays(-6); //Set previous Monday
+                    }
+                    else {
+                            dp.startDate = DayPilot.Date.today().firstDayOfWeek().addDays(1);
+                    }
+                    //alert(dp.startDate);
+					
 					dp.locale = "fr-fr";
 					//dp.weekStarts = 1; //Monday
 					dp.scale = "CellDuration";

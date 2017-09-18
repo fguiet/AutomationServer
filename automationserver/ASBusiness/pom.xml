@@ -87,6 +87,23 @@
 			<artifactId>javax.mail</artifactId>
 			<version>${mail.version}</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/it.sauronsoftware.cron4j/cron4j -->
+		<dependency>
+    		<groupId>it.sauronsoftware.cron4j</groupId>
+    		<artifactId>cron4j</artifactId>
+    		<version>${cron4j.version}</version>
+		</dependency>		
+		<!-- https://mvnrepository.com/artifact/com.luckycatlabs/SunriseSunsetCalculator -->
+		<dependency>
+		    <groupId>com.luckycatlabs</groupId>
+		    <artifactId>SunriseSunsetCalculator</artifactId>
+		    <version>${sunsetrise.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
+		</dependency>	
 	</dependencies>
 
 	<repositories>

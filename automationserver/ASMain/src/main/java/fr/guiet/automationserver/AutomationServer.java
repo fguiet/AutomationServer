@@ -26,10 +26,12 @@ public class AutomationServer implements Daemon {
 	private RoomService _roomService = null; // service de room service
 	private WaterHeater _waterHeater = null; // service de gestion du
 												// chauffe-eau
+	private RollerShutterService _rollerShutterService = null;
 	private boolean _isStopped = false;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
+	private Thread _rollerShutterServiceThread = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttHelper _mqttHelper = null;
 	private boolean _alertSent5 = false; // Réinitialisation
@@ -107,6 +109,11 @@ public class AutomationServer implements Daemon {
 					
 					//Start alarm service
 					_alarmService = new AlarmService();
+					
+					//Start Rollershutter service
+					_rollerShutterService = new RollerShutterService(_smsGammuService);
+					_rollerShutterServiceThread = new Thread(_rollerShutterService);
+					_rollerShutterServiceThread.start();	
 					
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
