@@ -119,11 +119,6 @@ public class RollerShutterService implements Runnable {
 		
 		ComputeSunsetSunrise();
 		
-		// Creates a Scheduler instance.
-		_computeSunSetSunRiseScheduler = new Scheduler();
-		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-		_computeSunSetSunRiseScheduler.setTimeZone(timeZone);
-		
 		//Calendar calendar = new GregorianCalendar();
 		//calendar.setTimeZone(timeZone);
 				
@@ -131,17 +126,27 @@ public class RollerShutterService implements Runnable {
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
 		
+		//Get Europe/Paris TimeZone
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		
+		_logger.info("Starting compute sunrise/sunset scheduler at : 0 5 * * *");
+		// Creates a Scheduler instance.
+		_computeSunSetSunRiseScheduler = new Scheduler();	
+		_computeSunSetSunRiseScheduler.setTimeZone(timeZone);
 		_computeSunSetSunRiseScheduler.schedule("0 5 * * *", new Runnable() {
 		public void run() {
-			_logger.info("Starting compute sunrise/sunset scheduler at : 0 5 * * *");
+			
 			ComputeSunsetSunrise();
 		}
 		});
 		
-		//Schedule that close rollershutter automatically at 7h40 every day of the week 		
+		//Schedule that close rollershutter automatically at 7h40 every day of the week
+		_logger.info("Starting automatic rollershutter closing scheduler at : 40 7 * * 1,2,3,4,5");
+		_weekCloseScheduler = new Scheduler();		
+		_weekCloseScheduler.setTimeZone(timeZone);
 		_weekCloseScheduler.schedule("40 7 * * 1,2,3,4,5", new Runnable() {
 		public void run() {
-			_logger.info("Starting automatic rollershutter closing scheduler at : 40 7 * * 1,2,3,4,5");
+			
 			
 			if (_rsWest.getState() != RollerShutterState.CLOSED) {			
 				if (!_rsWest.Close()) {
@@ -157,10 +162,13 @@ public class RollerShutterService implements Runnable {
 		}
 		});
 		
-		//Schedule that open rollershutter automatically at 6h30 every day of the week 		
+		//Schedule that open rollershutter automatically at 6h30 every day of the week
+		_logger.info("Starting automatic rollershutter opening scheduler at : 30 6 * * 1,2,3,4,5");
+		_weekOpenScheduler = new Scheduler();		
+		_weekOpenScheduler.setTimeZone(timeZone);
 		_weekOpenScheduler.schedule("30 6 * * 1,2,3,4,5", new Runnable() {
 		public void run() {
-			_logger.info("Starting automatic rollershutter opening scheduler at : 30 6 * * 1,2,3,4,5");
+			
 			
 			if (!_awayModeStatus) {
 			
