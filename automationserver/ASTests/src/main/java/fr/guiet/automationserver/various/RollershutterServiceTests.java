@@ -11,8 +11,8 @@ public class RollershutterServiceTests {
 		
 		
 		
-		RollerShutter rs = new RollerShutter("1");
-		rs.getState();
+		//RollerShutter rs = new RollerShutter("1");
+		//rs.getState();
 		//RollerShutterService rss = new RollerShutterService();
 		//Thread rssThread = new Thread(rss);
 		//rssThread.start();
