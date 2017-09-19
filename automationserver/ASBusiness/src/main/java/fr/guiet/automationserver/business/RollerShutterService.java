@@ -357,7 +357,7 @@ public class RollerShutterService implements Runnable {
 		_logger.info("Sunrise : " + _sunrise.getTime());
 		_logger.info("Sunset : " + _sunset.getTime());
 		
-		String cron = _sunset.get(Calendar.HOUR_OF_DAY) + " " + _sunset.get(Calendar.MINUTE) + " * * 1,2,3,4,5"; 
+		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
 		
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 		if (_weeknightCloseSchedulerId == null) {
