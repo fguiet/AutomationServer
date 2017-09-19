@@ -252,6 +252,10 @@ public class RollerShutterService implements Runnable {
 		}		
 	}
 	
+	public String getWestRSState() {
+		return _rsWest.getState().name();
+	}
+	
 	public void CloseAllRollerShutters() {
 		CloseRollerShutters();
 	}
