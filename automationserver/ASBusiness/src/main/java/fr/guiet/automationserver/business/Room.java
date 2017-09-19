@@ -30,7 +30,7 @@ public class Room {
 	public String lastInfoReceivedFromSensor() {
 		return _sensor.lastInfoReceived();
 	}
-	
+
 	public Sensor getSensor() {
 		return _sensor;
 	}
@@ -211,8 +211,7 @@ public class Room {
 			} else {
 				return currentDefaultTemp;
 			}
-		}
-		else 
+		} else
 			return awayModeTemp;
 	}
 

@@ -30,6 +30,7 @@ public class MqttHelper implements MqttCallback {
 	private TeleInfoService _teleInfoService = null;
 	private WaterHeater _waterHeaterService = null;
 	private AlarmService _alarmService = null;
+	private RollerShutterService _rollerShutterService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
@@ -41,7 +42,9 @@ public class MqttHelper implements MqttCallback {
 		return _lastBasementMessage;
 	}	
 
-	public MqttHelper(SMSGammuService gammuService, RoomService roomService, TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService) {
+	public MqttHelper(SMSGammuService gammuService, RoomService roomService, 
+			TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService,
+			RollerShutterService rollerShutterService) {
 
 		InputStream is = null;
 		try {
@@ -62,6 +65,7 @@ public class MqttHelper implements MqttCallback {
 			_teleInfoService = teleInfoService;
 			_waterHeaterService = waterHeaterService;
 			_alarmService = alarmService;
+			_rollerShutterService = rollerShutterService;
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -183,20 +187,29 @@ public class MqttHelper implements MqttCallback {
 				SMSDto sms1 = new SMSDto();
 				sms1.setMessage(mess1);
 				_smsGammuService.sendMessage(sms1, true);
-				
-				
 				break;
+				
+			case "SETROLLERSHUTTERMGT":
+					String automaticManagement = messageContent[1];
+										
+					if (automaticManagement.equals("ON")) {
+						_rollerShutterService.SetAutomaticManagementOn();
+					}
+					else {
+						_rollerShutterService.SetAutomaticManagementOff();
+					}
+				break;
+			
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
 
 				if (awayMode.equals("ON")) {
 					_roomService.SetAwayModeOn();
 					_waterHeaterService.SetAwayModeOn();
-					//_logger.info("Setting away mode ON");
+					_rollerShutterService.SetAutomaticManagementOff();					
 				} else {
 					_roomService.SetAwayModeOff();
-					_waterHeaterService.SetAwayModeOff();
-					//_logger.info("Setting away mode OFF");
+					_waterHeaterService.SetAwayModeOff();					
 				}
 
 				break;
@@ -336,9 +349,10 @@ public class MqttHelper implements MqttCallback {
 			
 		}	
 		
-		String awayModeStatus = _roomService.GetAwayModeStatus();	
+		String awayModeStatus = _roomService.GetAwayModeStatus();
+		String automaticManagementStatus = _rollerShutterService.GetAutomaticManagementStatus();
 		
-		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill;
+		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus;
 		
 		return message;
 	}

@@ -292,3 +292,8 @@ Pour programmer le bouzon (GPIO00 sur ground) puis reset, puis téléversement
 
 https://iothacking.wordpress.com/2016/11/08/mqtt-reed-switch/
 https://github.com/hamityanik/ULP-Weather-Logger
+
+Fail2Ban
+--------
+
+https://www.digitalocean.com/community/tutorials/how-to-protect-an-nginx-server-with-fail2ban-on-ubuntu-14-04

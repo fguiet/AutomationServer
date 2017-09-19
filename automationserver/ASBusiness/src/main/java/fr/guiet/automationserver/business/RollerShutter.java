@@ -19,16 +19,22 @@ public class RollerShutter {
 	private String _stopUrl = null;
 	private String _upUrl = null;
 	private String _downUrl = null;
+	private String _name = null;
 	
-	public RollerShutter(String id, String baseUrl, String apikey) {
+	public RollerShutter(String id, String name, String baseUrl, String apikey) {
 		_id = id;
 		_apikey = apikey;
 		_baseUrl = baseUrl;
+		_name = name;
 		
 		_getStateUrl = _baseUrl + "/api/rollershutter?action=state&apikey=" + _apikey;
 		_stopUrl = _baseUrl + "/api/rollershutter?action=stop&apikey=" + _apikey;
 		_upUrl = _baseUrl + "/api/rollershutter?action=up&apikey=" + _apikey;
 		_downUrl = _baseUrl + "/api/rollershutter?action=down&apikey=" + _apikey;
+	}
+	
+	public String getName() {
+		return _name;
 	}
 
 	public boolean Close() {
@@ -87,6 +93,9 @@ public class RollerShutter {
 		
 	public RollerShutterState getState() {
 		JSONObject jo = sendGetRequest(_getStateUrl);
+		
+		//By default!
+		_state = RollerShutterState.UNREACHABLE;
 		
 		if (jo == null) {
 			_state = RollerShutterState.UNREACHABLE;

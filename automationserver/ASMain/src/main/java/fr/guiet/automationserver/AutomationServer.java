@@ -68,24 +68,29 @@ public class AutomationServer implements Daemon {
 
 				try {
 										
-					Date startDate = new Date();
+					//Date startDate = new Date();
 
 					// Wait a little before starting...
 					//Sometimes while rebooting database connection are not ready and may cause some errorsq
 					
 					_logger.info("Automation is starting...waiting one minute so Raspberry can initialized itselft smoothly (serial port, system service, etc)");
-					while (!_isStopped) {						
+					
+					//Wait one minute
+					Thread.sleep(60000);
+					//while (!_isStopped) {						
 
-						Date currentDate = new Date();
+						/*Date currentDate = new Date();
 						long diff = currentDate.getTime() - startDate.getTime();
 						long diffMinutes = diff / (60 * 1000);
 
 						if (diffMinutes >= 1) {
 							_logger.info("Starting automation server...");
 							break;
-						}
-					}
+						}*/
+					//}
 
+					_logger.info("Starting automation server...");
+					
 					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
 					
@@ -105,20 +110,20 @@ public class AutomationServer implements Daemon {
 					// Starting water heater
 					_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
 					_waterHeaterServiceThread = new Thread(_waterHeater);
-					_waterHeaterServiceThread.start();
-					
-					//Start alarm service
-					_alarmService = new AlarmService();
+					_waterHeaterServiceThread.start();								
 					
 					//Start Rollershutter service
 					_rollerShutterService = new RollerShutterService(_smsGammuService);
 					_rollerShutterServiceThread = new Thread(_rollerShutterService);
-					_rollerShutterServiceThread.start();	
+					_rollerShutterServiceThread.start();
+					
+					//Start alarm service
+					_alarmService = new AlarmService(_rollerShutterService);
 					
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();
@@ -227,6 +232,7 @@ public class AutomationServer implements Daemon {
 			_logger.info("Stopping automation server...");
 			
 			// Stopping all services
+			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
@@ -255,6 +261,7 @@ public class AutomationServer implements Daemon {
 	@Override
 	public void destroy() {
 		_mainThread = null;
+		_rollerShutterService = null;
 		_teleInfoService = null;
 		_roomService = null;
 		_waterHeater = null;

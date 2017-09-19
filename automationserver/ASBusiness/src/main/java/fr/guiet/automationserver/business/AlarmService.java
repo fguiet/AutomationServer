@@ -8,6 +8,11 @@ public class AlarmService {
 	
 	private final String PIN_ALARM_NAME = "PIN_ALARM";
 	private static Logger _logger = Logger.getLogger(AlarmService.class);
+	private RollerShutterService _rollerShutterService = null;
+	
+	public AlarmService (RollerShutterService rollerShutterService) {
+		_rollerShutterService = rollerShutterService;
+	}
 	
 	public void SetOn() {
 	
@@ -21,6 +26,9 @@ public class AlarmService {
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.LOW,
 					PIN_ALARM_NAME, null);
+			
+			//Close all rollers shutters if not allready closed
+			_rollerShutterService.CloseAllRollerShutters();
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm on", e);
