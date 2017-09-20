@@ -51,6 +51,9 @@ public class RollerShutterService implements Runnable {
 	private Scheduler _weeknightCloseScheduler = null;
 	private String _weeknightCloseSchedulerId = null;
 	
+	private Scheduler _weekmorningOpenScheduler = null;
+	private String _weekmorningOpenSchedulerId = null;
+	
 	private String _apikey = null;
 	private String _baseUrlRs1 = null;
 	private String _baseUrlRs2 = null;
@@ -217,11 +220,31 @@ public class RollerShutterService implements Runnable {
 			closedate.set(Calendar.MILLISECOND, 0);
 			
 			//Remove 10 minutes
-			closedate.add(Calendar.MINUTE, -10);
+			closedate.add(Calendar.MINUTE, -5);
 			
+			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 10 minutes). Try openning rollershutters...");
-				OpenRollerShutters();
+				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+closedate.getTime());
+				//OpenRollerShutters();
+				
+				String morningOpenCron = minutes + " " + hours + " * * 1,2,3,4,5";
+				
+				if (_weekmorningOpenSchedulerId == null) {
+					
+					_weekmorningOpenScheduler = new Scheduler();			
+					_weekmorningOpenScheduler.setTimeZone(timeZone);
+					
+					_weekmorningOpenSchedulerId = _weekmorningOpenScheduler.schedule(morningOpenCron, new Runnable() {
+						public void run() {
+							OpenRollerShutters();
+							_weekmorningOpenScheduler.deschedule(_weekmorningOpenSchedulerId);
+						}});					
+				} 
+				else {
+					_weekmorningOpenScheduler.setTimeZone(timeZone);
+					_weekmorningOpenScheduler.reschedule(_weeknightCloseSchedulerId, morningOpenCron);	
+				}
+				
 				return;
 			}
 		}

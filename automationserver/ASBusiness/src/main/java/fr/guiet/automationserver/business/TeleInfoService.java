@@ -123,7 +123,7 @@ public class TeleInfoService implements Runnable {
 	@Override
 	public void run() {
 
-		_logger.info("Démarrage du service TeleInfoService...");
+		_logger.info("Starting TeleInfoService...");
 
 		InputStream is = null;
 		try {

@@ -12,6 +12,8 @@ public class AlarmService {
 	
 	public AlarmService (RollerShutterService rollerShutterService) {
 		_rollerShutterService = rollerShutterService;
+		
+		_logger.info("Starting Alarm service...");
 	}
 	
 	public void SetOn() {
