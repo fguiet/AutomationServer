@@ -44,14 +44,15 @@ public class RollerShutter {
 			return false;
 		}
 		else {
-			String success = jo.getString("success");
+			return jo.getBoolean("success");
+			/*String success = jo.getString("success");
 			
 			if (success=="true") {
 				return true;
 			}
 			else {
 				return false;
-			}
+			}*/
 		}
 	}
 	
@@ -62,14 +63,15 @@ public class RollerShutter {
 			return false;
 		}
 		else {
-			String success = jo.getString("success");
+			return jo.getBoolean("success");
+			/*String success = jo.getString("success");
 			
 			if (success=="true") {
 				return true;
 			}
 			else {
 				return false;
-			}
+			}*/
 		}
 	}
 	
@@ -80,14 +82,15 @@ public class RollerShutter {
 			return false;
 		}
 		else {
-			String success = jo.getString("success");
+			return jo.getBoolean("success");
+			/*String success = jo.getString("success");
 			
 			if (success=="true") {
 				return true;
 			}
 			else {
 				return false;
-			}
+			}*/
 		}
 	}
 		
@@ -148,6 +151,7 @@ public class RollerShutter {
 			}
 						
 			JSONObject json = new JSONObject(response.toString());
+			
 		    return json;
 			}
 			else {

@@ -33,7 +33,9 @@ pour ouverture = verifier si pas deja ouvert (appel via http)*/
 
 
 public class RollerShutterService implements Runnable {
-
+    
+	//I think only one scheduler can be used instead of many
+	
 	// Logger
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
@@ -238,7 +240,8 @@ public class RollerShutterService implements Runnable {
 						public void run() {
 							OpenRollerShutters();
 							_weekmorningOpenScheduler.deschedule(_weekmorningOpenSchedulerId);
-						}});					
+						}});	
+					_weekmorningOpenScheduler.start();
 				} 
 				else {
 					_weekmorningOpenScheduler.setTimeZone(timeZone);
@@ -396,6 +399,7 @@ public class RollerShutterService implements Runnable {
 				public void run() {
 					CloseRollerShutters();
 				}});
+			_weeknightCloseScheduler.start();
 			
 		} else {			
 			_weeknightCloseScheduler.setTimeZone(timeZone);
