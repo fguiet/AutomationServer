@@ -227,9 +227,8 @@ public class RollerShutterService implements Runnable {
 			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
 				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+closedate.getTime());
-				//OpenRollerShutters();
 				
-				String morningOpenCron = minutes + " " + hours + " * * 1,2,3,4,5";
+				String morningOpenCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
 				
 				if (_weekmorningOpenSchedulerId == null) {
 					
@@ -382,10 +381,20 @@ public class RollerShutterService implements Runnable {
 
 		_sunset = calculator.getOfficialSunsetCalendarForDate(Calendar.getInstance());
 		_sunrise = calculator.getOfficialSunriseCalendarForDate(Calendar.getInstance());
-		
+				
 		_logger.info("Computing sunrise/sunset...");
 		_logger.info("Sunrise : " + _sunrise.getTime());
 		_logger.info("Sunset : " + _sunset.getTime());
+		
+		
+		_logger.info("Adjusting sunrise/sunset...");
+		//Add 20 minutes to sunset (sky will begin de be dark)
+		//Delete 20 minutes to sunrise (sky is already clear)
+		_sunset.add(Calendar.MINUTE, 20);
+		_sunrise.add(Calendar.MINUTE, -20);
+		
+		_logger.info("Adjusted Sunrise : " + _sunrise.getTime());
+		_logger.info("Adjusted Sunset : " + _sunset.getTime());
 		
 		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
 		
