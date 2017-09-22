@@ -34,7 +34,7 @@ pour ouverture = verifier si pas deja ouvert (appel via http)*/
 
 public class RollerShutterService implements Runnable {
     
-	//I think only one scheduler can be used instead of many
+	//I think only one scheduler can be used instead of many...lets see if it works...
 	
 	// Logger
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
@@ -44,17 +44,19 @@ public class RollerShutterService implements Runnable {
 	private boolean _automaticManagementStatus = false; //By default
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
-	private Scheduler _computeSunSetSunRiseScheduler = null;
-	private String _cronComputeSunSetSunRiseScheduler = null;
-	private Scheduler _weekCloseScheduler = null;
-	private String _cronWeekCloseScheduler = null;
-	private Scheduler _weekOpenScheduler = null;
-	private String _cronWeekOpenScheduler = null;
-	private Scheduler _weeknightCloseScheduler = null;
-	private String _weeknightCloseSchedulerId = null;
+	private Scheduler _rollerShutterScheduler = null;
 	
-	private Scheduler _weekmorningOpenScheduler = null;
-	private String _weekmorningOpenSchedulerId = null;
+	//private Scheduler _computeSunSetSunRiseScheduler = null;
+	private String _cronComputeSunSetSunRise = null;
+	//private Scheduler _weekCloseScheduler = null;
+	private String _cronMorningWeekClose = null;
+	//private Scheduler _weekOpenScheduler = null;
+	private String _cronMorningWeekOpen = null;
+	//private Scheduler _weeknightCloseScheduler = null;
+	private String _weekNightCloseId = null;
+	
+	//private Scheduler _weekmorningOpenScheduler = null;
+	private String _weekMorningOpenId = null;
 	
 	private String _apikey = null;
 	private String _baseUrlRs1 = null;
@@ -76,13 +78,13 @@ public class RollerShutterService implements Runnable {
 			Properties prop = new Properties();
 			prop.load(is);
 			
-			String apikey = prop.getProperty("url.apikey");
+			String apikey = prop.getProperty("api.key");
 			if (apikey != null)
 				_apikey = apikey;
 			else
 				_apikey = "xxx";
 							
-			String baseUrlRs1 = prop.getProperty("url.rollershutter_west");
+			String baseUrlRs1 = prop.getProperty("rollershutter.west.url");
 			if (baseUrlRs1 != null) {
 				_baseUrlRs1 = baseUrlRs1;
 			}
@@ -90,7 +92,7 @@ public class RollerShutterService implements Runnable {
 				_baseUrlRs1 = "http://127.0.0.1";
 			}
 			
-			String baseUrlRs2 = prop.getProperty("url.rollershutter_north");
+			String baseUrlRs2 = prop.getProperty("rollershutter.north.url");
 			if (baseUrlRs2 != null) {
 				_baseUrlRs2 = baseUrlRs2;
 			}
@@ -98,28 +100,28 @@ public class RollerShutterService implements Runnable {
 				_baseUrlRs2 = "http://127.0.0.1";
 			}
 			
-			String cronComputeSunSetSunRiseScheduler = prop.getProperty("scheduler.sunsetsunrise");
-			if (cronComputeSunSetSunRiseScheduler != null) {
-				_cronComputeSunSetSunRiseScheduler = cronComputeSunSetSunRiseScheduler;
+			String cronComputeSunSetSunRise = prop.getProperty("rollershutter.schedule.sunsetsunrise");
+			if (cronComputeSunSetSunRise != null) {
+				_cronComputeSunSetSunRise = cronComputeSunSetSunRise;
 			}
 			else {
-				_cronComputeSunSetSunRiseScheduler = "0 5 * * *";
+				_cronComputeSunSetSunRise = "0 5 * * *";
 			}
 			
-			String cronWeekCloseScheduler = prop.getProperty("scheduler.weekclose");
-			if (cronWeekCloseScheduler != null) {
-				_cronWeekCloseScheduler = cronWeekCloseScheduler;
+			String cronMorningWeekClose = prop.getProperty("rollershutter.schedule.weekmorningclose");
+			if (cronMorningWeekClose != null) {
+				_cronMorningWeekClose = cronMorningWeekClose;
 			}
 			else {
-				_cronWeekCloseScheduler = "47 7 * * 1,2,3,4,5";
+				_cronMorningWeekClose = "47 7 * * 1,2,3,4,5";
 			}
 			
-			String cronWeekOpenScheduler = prop.getProperty("scheduler.weekopen");
-			if (cronWeekOpenScheduler != null) {
-				_cronWeekOpenScheduler = cronWeekOpenScheduler;
+			String cronMorningWeekOpen = prop.getProperty("rollershutter.schedule.weekmorningopen");
+			if (cronMorningWeekOpen != null) {
+				_cronMorningWeekOpen = cronMorningWeekOpen;
 			}
 			else {
-				_cronWeekOpenScheduler = "30 6 * * 1,2,3,4,5";
+				_cronMorningWeekOpen = "30 6 * * 1,2,3,4,5";
 			}
 
 		} catch (FileNotFoundException e) {
@@ -169,31 +171,31 @@ public class RollerShutterService implements Runnable {
 		//Get Europe/Paris TimeZone
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 		
-		_logger.info("Starting compute sunrise/sunset scheduler at : "+_cronComputeSunSetSunRiseScheduler);
+		_logger.info("Starting compute sunrise/sunset scheduler at : "+_cronComputeSunSetSunRise);
 		// Creates a Scheduler instance.
-		_computeSunSetSunRiseScheduler = new Scheduler();	
-		_computeSunSetSunRiseScheduler.setTimeZone(timeZone);
-		_computeSunSetSunRiseScheduler.schedule(_cronComputeSunSetSunRiseScheduler, new Runnable() {
+		_rollerShutterScheduler = new Scheduler();	
+		_rollerShutterScheduler.setTimeZone(timeZone);
+		_rollerShutterScheduler.schedule(_cronComputeSunSetSunRise, new Runnable() {
 		public void run() {			
 			ComputeSunsetSunrise();
 		}
 		});
 		
-		//Schedule that close rollershutter automatically at 7h40 every day of the week
-		_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronWeekCloseScheduler);
-		_weekCloseScheduler = new Scheduler();		
-		_weekCloseScheduler.setTimeZone(timeZone);
-		_weekCloseScheduler.schedule(_cronWeekCloseScheduler, new Runnable() {
+		//Schedule that close rollershutter automatically at 7h49 every day of the week
+		_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronMorningWeekClose);
+		//_weekCloseScheduler = new Scheduler();		
+		//_weekCloseScheduler.setTimeZone(timeZone);
+		_rollerShutterScheduler.schedule(_cronMorningWeekClose, new Runnable() {
 		public void run() {			
 			CloseRollerShutters();
 		}
 		});
 		
 		//Schedule that open rollershutter automatically at 6h30 every day of the week
-		_logger.info("Starting automatic rollershutter opening scheduler at : "+_cronWeekOpenScheduler);
-		_weekOpenScheduler = new Scheduler();		
-		_weekOpenScheduler.setTimeZone(timeZone);		
-		_weekOpenScheduler.schedule(_cronWeekOpenScheduler, new Runnable() {
+		_logger.info("Starting automatic rollershutter opening scheduler at : "+_cronMorningWeekOpen);
+		//_weekOpenScheduler = new Scheduler();		
+		//_weekOpenScheduler.setTimeZone(timeZone);		
+		_rollerShutterScheduler.schedule(_cronMorningWeekOpen, new Runnable() {
 		public void run() {
 			
 			Calendar sunrise = Calendar.getInstance(); 			
@@ -212,7 +214,7 @@ public class RollerShutterService implements Runnable {
 				return;
 			}		
 			
-			String [] cron =  _cronWeekCloseScheduler.split(" ");
+			String [] cron =  _cronMorningWeekClose.split(" ");
 			int minutes = Integer.parseInt(cron[0]);
 			int hours = Integer.parseInt(cron[1]);
 			
@@ -230,21 +232,21 @@ public class RollerShutterService implements Runnable {
 				
 				String morningOpenCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
 				
-				if (_weekmorningOpenSchedulerId == null) {
+				if (_weekMorningOpenId == null) {
 					
-					_weekmorningOpenScheduler = new Scheduler();			
-					_weekmorningOpenScheduler.setTimeZone(timeZone);
+					//_weekmorningOpenScheduler = new Scheduler();			
+					//_weekmorningOpenScheduler.setTimeZone(timeZone);
 					
-					_weekmorningOpenSchedulerId = _weekmorningOpenScheduler.schedule(morningOpenCron, new Runnable() {
+					_weekMorningOpenId = _rollerShutterScheduler.schedule(morningOpenCron, new Runnable() {
 						public void run() {
 							OpenRollerShutters();
-							_weekmorningOpenScheduler.deschedule(_weekmorningOpenSchedulerId);
+							_rollerShutterScheduler.deschedule(_weekMorningOpenId);
 						}});	
-					_weekmorningOpenScheduler.start();
+					//_rollerShutterScheduler.start();
 				} 
 				else {
-					_weekmorningOpenScheduler.setTimeZone(timeZone);
-					_weekmorningOpenScheduler.reschedule(_weeknightCloseSchedulerId, morningOpenCron);	
+					//_weekmorningOpenScheduler.setTimeZone(timeZone);
+					_rollerShutterScheduler.reschedule(_weekMorningOpenId, morningOpenCron);	
 				}
 				
 				return;
@@ -253,9 +255,9 @@ public class RollerShutterService implements Runnable {
 		});
 				
 		// Starts the scheduler.
-		_computeSunSetSunRiseScheduler.start();
-		_weekCloseScheduler.start();
-		_weekOpenScheduler.start();
+		_rollerShutterScheduler.start();
+		//_weekCloseScheduler.start();
+		//_weekOpenScheduler.start();
 
 		while (!_isStopped) {
 
@@ -365,9 +367,9 @@ public class RollerShutterService implements Runnable {
 	}
 	
 	public void StopService() {
-		_computeSunSetSunRiseScheduler.stop();
-		_weekCloseScheduler.stop();
-		_weekOpenScheduler.stop();
+		_rollerShutterScheduler.stop();
+		//_weekCloseScheduler.stop();
+		//_weekOpenScheduler.stop();
 		
 		_logger.info("Stopping RollerShutter service...");
 
@@ -398,21 +400,21 @@ public class RollerShutterService implements Runnable {
 		
 		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
 		
-		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-		if (_weeknightCloseSchedulerId == null) {
+		//TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		if (_weekNightCloseId == null) {
 			
-			_weeknightCloseScheduler = new Scheduler();			
-			_weeknightCloseScheduler.setTimeZone(timeZone);
+			//_weeknightCloseScheduler = new Scheduler();			
+			//_weeknightCloseScheduler.setTimeZone(timeZone);
 			
-			_weeknightCloseSchedulerId = _weeknightCloseScheduler.schedule(cron, new Runnable() {
+			_weekNightCloseId = _rollerShutterScheduler.schedule(cron, new Runnable() {
 				public void run() {
 					CloseRollerShutters();
 				}});
-			_weeknightCloseScheduler.start();
+			//_weeknightCloseScheduler.start();
 			
 		} else {			
-			_weeknightCloseScheduler.setTimeZone(timeZone);
-			_weeknightCloseScheduler.reschedule(_weeknightCloseSchedulerId, cron);	
+			//_weeknightCloseScheduler.setTimeZone(timeZone);
+			_rollerShutterScheduler.reschedule(_weekNightCloseId, cron);	
 		}
 		
 		_logger.info("Rescheduling rollershutter closing at night using : " + cron);

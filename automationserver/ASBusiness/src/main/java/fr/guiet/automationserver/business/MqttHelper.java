@@ -206,10 +206,12 @@ public class MqttHelper implements MqttCallback {
 				if (awayMode.equals("ON")) {
 					_roomService.SetAwayModeOn();
 					_waterHeaterService.SetAwayModeOn();
-					_rollerShutterService.SetAutomaticManagementOff();					
+					_rollerShutterService.SetAutomaticManagementOff();
+					_alarmService.SetAutomaticModeOff();
 				} else {
 					_roomService.SetAwayModeOff();
-					_waterHeaterService.SetAwayModeOff();					
+					_waterHeaterService.SetAwayModeOff();
+					//_alarmService.SetAutomaticModeOn();
 				}
 
 				break;

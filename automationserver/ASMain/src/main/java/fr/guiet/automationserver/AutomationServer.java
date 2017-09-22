@@ -39,8 +39,8 @@ public class AutomationServer implements Daemon {
 	private boolean _alertSentMore = false; // Réinitialisation
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(AutomationServer.class);
-
+	private static Logger _logger = Logger.getLogger(AutomationServer.class);	
+	
 	// Init deamon
 	@Override
 	public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
@@ -144,9 +144,13 @@ public class AutomationServer implements Daemon {
 					}					
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
+					
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Error occured in main loop !");
+					_smsGammuService.sendMessage(sms, true);
 
 					//try to stop services properly
-					stop();
+					//stop();
 				}
 			}
 		};
@@ -232,12 +236,13 @@ public class AutomationServer implements Daemon {
 			_logger.info("Stopping automation server...");
 			
 			// Stopping all services
+			_alarmService.StopService();
 			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
 			_mqttHelper.disconnect();
-
+			
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Automation server has stopped...");
 			_smsGammuService.sendMessage(sms, true);
@@ -247,8 +252,8 @@ public class AutomationServer implements Daemon {
 			
 			_isStopped = true;
 
-			_mainThread.join(5000); // Attend la fin de l'exécution du Thread
-									// principal (5 secondes)
+			_mainThread.join(60000); // Attend la fin de l'exécution du Thread
+									// principal (1 minutes)
 			
 			_logger.info("Bye bye automation server stopped...");
 			
@@ -266,6 +271,7 @@ public class AutomationServer implements Daemon {
 		_roomService = null;
 		_waterHeater = null;
 		_mqttHelper = null;
+		_alarmService = null;		
 	}
 
 }
