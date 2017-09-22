@@ -347,15 +347,15 @@ public class MqttHelper implements MqttCallback {
 		//Compute Bill Cost every one hour
 		if (diffMinutes >= 60) {			
 			_electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
-			_lastComputeBillCost = new Date();
-			
+			_lastComputeBillCost = new Date();			
 		}	
 		
 		String awayModeStatus = _roomService.GetAwayModeStatus();
 		String automaticManagementStatus = _rollerShutterService.GetAutomaticManagementStatus();
 		String westRSState = _rollerShutterService.getWestRSState();
+		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
 		
-		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState;
+		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
 		
 		return message;
 	}

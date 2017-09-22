@@ -304,9 +304,9 @@ public class RoomService implements Runnable {
 						// DbManager dbManager = new DbManager();
 						_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());
-						_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
-								+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
-								+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
+						//_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
+						//		+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
+						//		+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
 
 						_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());

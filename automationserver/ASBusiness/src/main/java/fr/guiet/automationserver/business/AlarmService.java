@@ -20,7 +20,7 @@ public class AlarmService {
 	private RollerShutterService _rollerShutterService = null;
 	private Scheduler _alarmScheduler = null;
 	private String _cronNightAlarmOn = null;
-	private boolean _automaticModestatus = true; //activated by default
+	private boolean _automaticModeStatus = true; //activated by default
 	
 	public AlarmService (RollerShutterService rollerShutterService) {
 		
@@ -60,15 +60,23 @@ public class AlarmService {
 		_alarmScheduler.setTimeZone(timeZone);
 		_alarmScheduler.schedule(_cronNightAlarmOn, new Runnable() {
 		public void run() {	
-			if (_automaticModestatus)
+			if (_automaticModeStatus)
 				SetOn();
 		}
 		});
 		_alarmScheduler.start();
 	}
 	
+	public String GetAutomaticModeStatus() {
+		if (_automaticModeStatus) {
+			return "ON";
+		} else {
+			return "OFF";
+		}
+	}
+	
 	public void SetAutomaticModeOn() {
-		_automaticModestatus = true;
+		_automaticModeStatus = true;
 		_logger.info("Setting automatic alarm mode ON");
 	}
 	
@@ -81,7 +89,7 @@ public class AlarmService {
 	}
 	
 	public void SetAutomaticModeOff() {
-		_automaticModestatus = false;
+		_automaticModeStatus = false;
 		_logger.info("Setting automatic alarm mode OFF");
 	}
 	

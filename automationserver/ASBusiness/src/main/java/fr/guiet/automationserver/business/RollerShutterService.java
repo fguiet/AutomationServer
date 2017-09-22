@@ -390,9 +390,9 @@ public class RollerShutterService implements Runnable {
 		
 		
 		_logger.info("Adjusting sunrise/sunset...");
-		//Add 20 minutes to sunset (sky will begin de be dark)
+		//Add 10 minutes to sunset (sky will begin de be dark)
 		//Delete 20 minutes to sunrise (sky is already clear)
-		_sunset.add(Calendar.MINUTE, 20);
+		_sunset.add(Calendar.MINUTE, 10);
 		_sunrise.add(Calendar.MINUTE, -20);
 		
 		_logger.info("Adjusted Sunrise : " + _sunrise.getTime());
