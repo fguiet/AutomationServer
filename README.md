@@ -8,7 +8,7 @@ DESCRIPTION
   It is both a software and electronic project.
   Currently, it monitors temperatures in my house by controlling independently my electric heaters (wanted temperatures can be set day by day, hour by hour and even minutes by minutes) . 
   Electrical pieces of information from my electric provider are also collected. 
-  Moreover, it launches automatically my water boiler at night when electrical cost is less expensive. 
+  Moreover, it launches automatically my water boiler at night when electrical cost is less expensive. My electric rollershutters open and close automatically regarding sunset/sunrise hours.
   All collected data (temperatue, humidity, electric consumption) are saved in a database (PostgreSQL and InfluxDB).
   
   This project is based on :
@@ -16,6 +16,8 @@ DESCRIPTION
     - PostgreSQL 9.4
     - Java 1.8
     - Oracle Jersey Restful framework
+    - cron4j
+    - SunriseSunsetCalculator
     - Ajax Daypilot Scheduling (great scheduling framework)
     - Tomcat 9
     - Wemos ESP8266 Wifi module
@@ -46,6 +48,7 @@ FEATURES
   - All data (electric consumption, humidity, temperature) can be visualized via custom Grafana dashboards
   - All data are published to a Mqtt broker via various topics, so various client subscriber software can access data in real-time
   - Automatic computing of next electricity bill
+  - Automatic rollershutters management (via sunset/sunrise api)
 
 INSTALLATION
 
