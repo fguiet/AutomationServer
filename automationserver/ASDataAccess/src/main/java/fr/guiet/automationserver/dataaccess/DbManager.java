@@ -219,7 +219,7 @@ public class DbManager {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
-			_logger.info("Saving sensor info to InfluxDB");
+			//_logger.info("Saving sensor info to InfluxDB");
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
@@ -252,7 +252,7 @@ public class DbManager {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
-			_logger.info("Saving cave info to InfluxDB");
+			//_logger.info("Saving cave info to InfluxDB");
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);

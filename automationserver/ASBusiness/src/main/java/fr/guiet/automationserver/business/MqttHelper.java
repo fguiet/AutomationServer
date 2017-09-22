@@ -200,6 +200,18 @@ public class MqttHelper implements MqttCallback {
 					}
 				break;
 			
+			case "SETALARMMGT":
+				String automaticAlarmManagement = messageContent[1];
+				
+				if (automaticAlarmManagement.equals("ON")) {
+					_alarmService.SetAutomaticModeOn();
+				}
+				else {
+					_alarmService.SetAutomaticModeOff();
+				}
+			break;
+				
+			
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
 
