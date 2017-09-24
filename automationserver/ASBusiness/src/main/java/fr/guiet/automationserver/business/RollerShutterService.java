@@ -53,6 +53,8 @@ public class RollerShutterService implements Runnable {
 	private SMSGammuService _smsGammuService = null;
 	private Scheduler _rollerShutterScheduler = null;
 	
+	private String _cronNightWeekClose = null;
+	
 	//private Scheduler _computeSunSetSunRiseScheduler = null;
 	private String _cronComputeSunSetSunRise = null;
 	//private Scheduler _weekCloseScheduler = null;
@@ -158,7 +160,15 @@ public class RollerShutterService implements Runnable {
 			else {
 				_cronMorningWeekOpen = "30 6 * * 1,2,3,4,5";
 			}
-
+			
+			String cronNightWeekClose = prop.getProperty("rollershutter.schedule.weeknightclose");
+			if (cronNightWeekClose != null) {
+				_cronNightWeekClose = cronNightWeekClose;
+			}
+			else {
+				_cronNightWeekClose = "30 20 * * 0,1,2,3,4";
+			}
+			
 		} catch (FileNotFoundException e) {
 			_logger.error(
 					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
@@ -466,7 +476,7 @@ public class RollerShutterService implements Runnable {
 			
 		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+closedate.getTime());				
+				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+sunrise.getTime());				
 				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
 			}		
 		}
@@ -522,9 +532,17 @@ public class RollerShutterService implements Runnable {
 	}
 	
 	
+	private String GetCronWithoutTime(String cron) {
+		
+		String [] cronArray =  cron.split(" ");
+				
+		return " " + cronArray[2] + " " + cronArray[3] + " " + cronArray[4];
+		
+	}
+	
 	private void ComputeWeekNightCloseScheduler() {
 		
-		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
+		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronNightWeekClose); 
 		
 		//
 		if (_weekNightCloseId == null) {
