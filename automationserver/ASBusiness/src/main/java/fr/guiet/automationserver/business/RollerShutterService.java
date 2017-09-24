@@ -168,7 +168,7 @@ public class RollerShutterService implements Runnable {
 		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _baseUrlRs1, _apikey);
 		_rsNorth = new RollerShutter("2","Volet roulant Nord", _baseUrlRs2, _apikey);
 		
-		ComputeSunsetSunrise();
+		//ComputeSunsetSunrise();
 		
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
@@ -260,6 +260,9 @@ public class RollerShutterService implements Runnable {
 		});
 		
 		CreateCheckForIntrudersTask();
+		
+		//Initial lauch
+		ComputeSunsetSunrise();
 		
 		// Starts the scheduler.
 		_rollerShutterScheduler.start();
