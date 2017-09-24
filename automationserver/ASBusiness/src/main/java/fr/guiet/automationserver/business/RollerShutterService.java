@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Timer;
@@ -17,6 +18,7 @@ import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 
 import fr.guiet.automationserver.dto.SMSDto;
+import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.Scheduler;
 
 /*si automatic management on 
@@ -71,6 +73,34 @@ public class RollerShutterService implements Runnable {
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
 	private boolean _alertSentMore = false;
+	
+	//Lie à Sunset
+	private String _nextWeekNightCloseDate = "NA";
+	//a 7h79
+	private String _nextWeekMorningCloseDate = "NA";
+	//lié à sunrise
+	private String _nextWeekMorningOpenDate = "NA";
+	
+	public String getNextWeekNightCloseDate() {
+		if (_automaticManagementStatus)
+			return _nextWeekNightCloseDate;
+		else 
+			return "mgt auto. désactivé";
+	}
+	
+	public String getNextWeekMorningCloseDate() {
+		if (_automaticManagementStatus)
+			return _nextWeekMorningCloseDate;
+		else 
+			return "mgt auto. désactivé";
+	}
+	
+	public String getNextWeekMorningOpenDate() {
+		if (_automaticManagementStatus)
+			return _nextWeekMorningOpenDate;
+		else 
+			return "mgt auto. désactivé";
+	}
 	
 	public RollerShutterService(SMSGammuService smsGammuService) {
 				
@@ -167,9 +197,7 @@ public class RollerShutterService implements Runnable {
 		
 		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _baseUrlRs1, _apikey);
 		_rsNorth = new RollerShutter("2","Volet roulant Nord", _baseUrlRs2, _apikey);
-		
-		//ComputeSunsetSunrise();
-		
+	
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
 		
@@ -185,84 +213,38 @@ public class RollerShutterService implements Runnable {
 			ComputeSunsetSunrise();
 		}
 		});
+				
 		
 		//Schedule that close rollershutter automatically at 7h49 every day of the week
 		_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronMorningWeekClose);
 		//_weekCloseScheduler = new Scheduler();		
 		//_weekCloseScheduler.setTimeZone(timeZone);
 		_rollerShutterScheduler.schedule(_cronMorningWeekClose, new Runnable() {
-		public void run() {			
+		public void run() {						
 			CloseRollerShutters();
+			ComputeNextWeekMorningCloseDate();
 		}
 		});
 		
+		
+		
 		//Schedule that open rollershutter automatically at 6h30 every day of the week
-		_logger.info("Starting automatic rollershutter opening scheduler at : "+_cronMorningWeekOpen);
+		//_logger.info("Starting automatic rollershutter opening scheduler at : "+_cronMorningWeekOpen);
 		//_weekOpenScheduler = new Scheduler();		
 		//_weekOpenScheduler.setTimeZone(timeZone);		
-		_rollerShutterScheduler.schedule(_cronMorningWeekOpen, new Runnable() {
-		public void run() {
+		//_rollerShutterScheduler.schedule(_cronMorningWeekOpen, new Runnable() {
+		//public void run() {
 			
-			Calendar sunrise = Calendar.getInstance(); 			
-			Calendar opendate = Calendar.getInstance(); //current time ...currently set to 6am30
-			Calendar closedate = Calendar.getInstance(); //current time ...currently set to 7am47
-			
-			sunrise.set(Calendar.HOUR_OF_DAY, _sunrise.get(Calendar.HOUR_OF_DAY));
-			sunrise.set(Calendar.MINUTE,_sunrise.get(Calendar.MINUTE));
-			sunrise.set(Calendar.SECOND, 0);
-			sunrise.set(Calendar.MILLISECOND, 0);				
-						
-			//sun already rised up
-			if (sunrise.before(opendate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+opendate.getTime()+ ". Try openning rollershutters...");
-				OpenRollerShutters();
-				return;
-			}		
-			
-			String [] cron =  _cronMorningWeekClose.split(" ");
-			int minutes = Integer.parseInt(cron[0]);
-			int hours = Integer.parseInt(cron[1]);
-			
-			closedate.set(Calendar.HOUR_OF_DAY, hours);
-			closedate.set(Calendar.MINUTE, minutes);
-			closedate.set(Calendar.SECOND, 0);
-			closedate.set(Calendar.MILLISECOND, 0);
-			
-			//Remove 10 minutes
-			closedate.add(Calendar.MINUTE, -5);
-			
-			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-			if (sunrise.before(closedate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+closedate.getTime());
 				
-				String morningOpenCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
-				
-				if (_weekMorningOpenId == null) {
-					
-					//_weekmorningOpenScheduler = new Scheduler();			
-					//_weekmorningOpenScheduler.setTimeZone(timeZone);
-					
-					_weekMorningOpenId = _rollerShutterScheduler.schedule(morningOpenCron, new Runnable() {
-						public void run() {
-							OpenRollerShutters();
-							_rollerShutterScheduler.deschedule(_weekMorningOpenId);
-						}});	
-					//_rollerShutterScheduler.start();
-				} 
-				else {
-					//_weekmorningOpenScheduler.setTimeZone(timeZone);
-					_rollerShutterScheduler.reschedule(_weekMorningOpenId, morningOpenCron);	
-				}
-				
-				return;
-			}
-		}
-		});
+		//}
+		//});
 		
 		CreateCheckForIntrudersTask();
 		
 		//Initial lauch
 		ComputeSunsetSunrise();
+		//
+		//ComputeNextWeekMorningCloseDate();
 		
 		// Starts the scheduler.
 		_rollerShutterScheduler.start();
@@ -272,9 +254,7 @@ public class RollerShutterService implements Runnable {
 		while (!_isStopped) {
 
 			try {
-				
-				//CheckForIntruders();
-				
+												
 				// Sleep for 5 minutes
 				Thread.sleep(300000);
 				
@@ -309,6 +289,8 @@ public class RollerShutterService implements Runnable {
 		_timer.schedule(intrudersTask, 5000, 30000);
 
 	}
+	
+	
 	
 	public String getWestRSState() {
 		return _rsWest.getState().name();
@@ -435,14 +417,138 @@ public class RollerShutterService implements Runnable {
 			_timer.cancel();
 		
 		_rollerShutterScheduler.stop();
-		//_weekCloseScheduler.stop();
-		//_weekOpenScheduler.stop();
 		
 		_logger.info("Stopping RollerShutter service...");
 
 		_isStopped = true;
 	}
 	
+	private void ComputeWeekMorningOpenScheduler() {
+		
+		Calendar sunrise = Calendar.getInstance(); 			
+		Calendar opendate = Calendar.getInstance(); //current time ...currently set to 6am30
+		Calendar closedate = Calendar.getInstance(); //current time ...currently set to 7am47
+		
+		String [] cron =  _cronMorningWeekOpen.split(" ");
+		int minutes = Integer.parseInt(cron[0]);
+		int hours = Integer.parseInt(cron[1]);
+		
+		opendate.set(Calendar.HOUR_OF_DAY, hours);
+		opendate.set(Calendar.MINUTE, minutes);
+		opendate.set(Calendar.SECOND, 0);
+		opendate.set(Calendar.MILLISECOND, 0);		
+		
+		sunrise.set(Calendar.HOUR_OF_DAY, _sunrise.get(Calendar.HOUR_OF_DAY));
+		sunrise.set(Calendar.MINUTE,_sunrise.get(Calendar.MINUTE));
+		sunrise.set(Calendar.SECOND, 0);
+		sunrise.set(Calendar.MILLISECOND, 0);			
+			
+		String newCron = "";
+		
+		//sun already rised up
+		if (sunrise.before(opendate)) {
+			_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+opendate.getTime()+ ". Will ope ruller shutter at :"+opendate.getTime());
+			//OpenRollerShutters();
+			newCron = minutes + " " + hours + " * * 1,2,3,4,5 ";			
+		}		
+		else {
+			cron = _cronMorningWeekClose.split(" ");
+			minutes = Integer.parseInt(cron[0]);
+			hours = Integer.parseInt(cron[1]);
+			
+			closedate.set(Calendar.HOUR_OF_DAY, hours);
+			closedate.set(Calendar.MINUTE, minutes);
+			closedate.set(Calendar.SECOND, 0);
+			closedate.set(Calendar.MILLISECOND, 0);
+			
+			//Remove 10 minutes
+			closedate.add(Calendar.MINUTE, -5);
+			
+		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+			if (sunrise.before(closedate)) {
+				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+closedate.getTime());				
+				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
+			}		
+		}
+		
+		if (_weekMorningOpenId == null) {
+			
+			//_weekmorningOpenScheduler = new Scheduler();			
+			//_weekmorningOpenScheduler.setTimeZone(timeZone);
+			
+			_weekMorningOpenId = _rollerShutterScheduler.schedule(newCron, new Runnable() {
+				public void run() {
+					OpenRollerShutters();
+					_rollerShutterScheduler.deschedule(_weekMorningOpenId);
+				}});	
+			//_rollerShutterScheduler.start();
+		} 
+		else {
+			//_weekmorningOpenScheduler.setTimeZone(timeZone);
+			_rollerShutterScheduler.reschedule(_weekMorningOpenId, newCron);			
+		}
+			
+		ComputeWeekMorningOpenDate(newCron);
+	}
+	
+	private void ComputeWeekMorningOpenDate(String cron) {
+		
+		if (!cron.equals("")) {		
+			Predictor predictor = new Predictor(cron);
+			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+			predictor.setTimeZone(timeZone);		
+			_nextWeekMorningOpenDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+		}
+		else {
+			_nextWeekMorningOpenDate = "pas d'ouverture prévue";
+		}
+	}
+	
+	private void ComputeNextWeekMorningCloseDate() {
+		
+		Predictor predictor = new Predictor(_cronMorningWeekClose);
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		predictor.setTimeZone(timeZone);		
+		_nextWeekMorningCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+	}
+	
+	
+	private void ComputeWeekNightCloseDate(String cron) {
+		
+		Predictor predictor = new Predictor(cron);
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		predictor.setTimeZone(timeZone);		
+		_nextWeekNightCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+	}
+	
+	
+	private void ComputeWeekNightCloseScheduler() {
+		
+		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
+		
+		//
+		if (_weekNightCloseId == null) {
+			
+			//_weeknightCloseScheduler = new Scheduler();			
+			//_weeknightCloseScheduler.setTimeZone(timeZone);
+			
+			_weekNightCloseId = _rollerShutterScheduler.schedule(cron, new Runnable() {
+				public void run() {
+					CloseRollerShutters();
+					ComputeWeekNightCloseDate(cron);
+				}});
+			//_weeknightCloseScheduler.start();
+			
+		} else {			
+			//_weeknightCloseScheduler.setTimeZone(timeZone);
+			_rollerShutterScheduler.reschedule(_weekNightCloseId, cron);	
+		}
+		
+		ComputeWeekNightCloseDate(cron);
+		_logger.info("Rescheduling rollershutter closing at night using : " + cron);
+	}
+	
+	//Launched every day at 8h in the morning
 	private void ComputeSunsetSunrise() {
 						
 		Location location = new Location("48.095428", "1.893597");
@@ -464,26 +570,9 @@ public class RollerShutterService implements Runnable {
 		
 		_logger.info("Adjusted Sunrise : " + _sunrise.getTime());
 		_logger.info("Adjusted Sunset : " + _sunset.getTime());
-		
-		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5"; 
-		
-		//TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-		if (_weekNightCloseId == null) {
-			
-			//_weeknightCloseScheduler = new Scheduler();			
-			//_weeknightCloseScheduler.setTimeZone(timeZone);
-			
-			_weekNightCloseId = _rollerShutterScheduler.schedule(cron, new Runnable() {
-				public void run() {
-					CloseRollerShutters();
-				}});
-			//_weeknightCloseScheduler.start();
-			
-		} else {			
-			//_weeknightCloseScheduler.setTimeZone(timeZone);
-			_rollerShutterScheduler.reschedule(_weekNightCloseId, cron);	
-		}
-		
-		_logger.info("Rescheduling rollershutter closing at night using : " + cron);
+				
+		ComputeWeekNightCloseScheduler();		
+		ComputeWeekMorningOpenScheduler();
+		ComputeNextWeekMorningCloseDate();
 	}
 }
