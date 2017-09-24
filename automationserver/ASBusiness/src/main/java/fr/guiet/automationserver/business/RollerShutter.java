@@ -12,6 +12,7 @@ public class RollerShutter {
 
 	private static Logger _logger = Logger.getLogger(RollerShutter.class);
 	private RollerShutterState _state = RollerShutterState.UNDETERMINED;
+	private RollerShutterState _previousState = RollerShutterState.UNDETERMINED;
 	private String _id = null;
 	private String _apikey = null;
 	private String _baseUrl = null;
@@ -93,8 +94,17 @@ public class RollerShutter {
 			}*/
 		}
 	}
+	
+	public RollerShutterState getPreviousState() {
+		
+		return _previousState;
+		
+	}
 		
 	public RollerShutterState getState() {
+		
+		_previousState = _state;
+		
 		JSONObject jo = sendGetRequest(_getStateUrl);
 		
 		//By default!

@@ -4,9 +4,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
@@ -39,6 +42,8 @@ public class RollerShutterService implements Runnable {
 	// Logger
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
+	
+	private Timer _timer = null;
 	private Calendar _sunset = null;
 	private Calendar _sunrise = null;
 	private boolean _automaticManagementStatus = false; //By default
@@ -253,7 +258,9 @@ public class RollerShutterService implements Runnable {
 			}
 		}
 		});
-				
+		
+		CreateCheckForIntrudersTask();
+		
 		// Starts the scheduler.
 		_rollerShutterScheduler.start();
 		//_weekCloseScheduler.start();
@@ -262,6 +269,8 @@ public class RollerShutterService implements Runnable {
 		while (!_isStopped) {
 
 			try {
+				
+				//CheckForIntruders();
 				
 				// Sleep for 5 minutes
 				Thread.sleep(300000);
@@ -277,6 +286,25 @@ public class RollerShutterService implements Runnable {
 				_smsGammuService.sendMessage(sms, true);
 			}
 		}		
+	}
+	
+	
+	private void CreateCheckForIntrudersTask() {
+		
+		_logger.info("Creating CheckForIntrudersTask");
+
+		TimerTask intrudersTask = new TimerTask() {
+			@Override
+			public void run() {
+
+				CheckForIntruders();
+			}
+		};
+
+		_timer = new Timer(true);
+		//Every 30s
+		_timer.schedule(intrudersTask, 5000, 30000);
+
 	}
 	
 	public String getWestRSState() {
@@ -328,9 +356,41 @@ public class RollerShutterService implements Runnable {
 		}
 	}
 	
+	private void CheckForIntruders() {
+		
+		RollerShutterState previousState = _rsWest.getPreviousState();
+		RollerShutterState currentState = _rsWest.getState();		
+		
+		if (currentState != previousState) {
+			_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
+
+			boolean isTimeBetween = false;
+			try {
+				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
+			}
+			catch (ParseException pe) {
+				_logger.error("Erreur lors du parsing de la date", pe);
+			}
+			
+			if (isTimeBetween) {
+				//If state change that way...it is strange...somebody try to enter home??
+				//better send a sms....
+				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
+																   currentState == RollerShutterState.OPENED || 
+																   currentState == RollerShutterState.UNDETERMINED)) {
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Le volet roulant est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
+					_smsGammuService.sendMessage(sms, true);
+				}
+			}
+		}
+	}
+	
 	private void IsSensorAlive() {
 		
-		if (_rsWest.getState() == RollerShutterState.UNREACHABLE && !_alertSent5) {
+		RollerShutterState currentState = _rsWest.getState();
+		
+		if (currentState == RollerShutterState.UNREACHABLE && !_alertSent5) {
 			_alertSent5 = true;
 			
 			SMSDto sms = new SMSDto();
@@ -340,7 +400,7 @@ public class RollerShutterService implements Runnable {
 			return;
 		}
 		
-		if (_rsWest.getState() == RollerShutterState.UNREACHABLE && !_alertSent10) {
+		if (currentState == RollerShutterState.UNREACHABLE && !_alertSent10) {
 			_alertSent10 = true;
 			
 			SMSDto sms = new SMSDto();
@@ -350,7 +410,7 @@ public class RollerShutterService implements Runnable {
 			return;
 		}
 		
-		if (_rsWest.getState() == RollerShutterState.UNREACHABLE && !_alertSentMore) {
+		if (currentState == RollerShutterState.UNREACHABLE && !_alertSentMore) {
 			_alertSentMore = true;
 			
 			SMSDto sms = new SMSDto();
@@ -367,6 +427,10 @@ public class RollerShutterService implements Runnable {
 	}
 	
 	public void StopService() {
+		
+		if (_timer != null)
+			_timer.cancel();
+		
 		_rollerShutterScheduler.stop();
 		//_weekCloseScheduler.stop();
 		//_weekOpenScheduler.stop();

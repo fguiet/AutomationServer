@@ -1,3 +1,18 @@
+/****
+ * Rollershutter manager
+ * 
+ * F. Guiet 
+ * Creation           : 20170910
+ * Last modification  : 20170924
+ * 
+ * Version            : 1.1
+ * 
+ * History            : 1.0 - Initial version
+ *                      1.1 - Set Wifi to STA mode only (no AP)
+ * 
+ * 
+  ****/
+
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <SimpleTimer.h>
@@ -112,6 +127,8 @@ void setup() {
   connectToWifi();
 
   initializeWebServer();
+
+  initUpDownReedSwitch();
 
   blinkTimer.setInterval(1000, blinkBuiltInLed);
 
@@ -321,6 +338,19 @@ void handleRollershutter() {
   }
 }
 
+//In case wifi connexion is lost
+//and rs is already opened or closed 
+//set state correctly
+void initUpDownReedSwitch() {
+  if (upReed.read() == LOW)
+    isOpened=true;
+
+  if (downReed.read() == LOW)
+    isClosed=true;
+      
+  manageUpDownLed();
+}
+
 void handleWebRequest() {
 
   int returnCode = 400; //bad request
@@ -333,8 +363,6 @@ void handleWebRequest() {
     server.send(returnCode, "text/plain", "");
     return;
   }
-
-  
   
   if (server.arg("action")== "up") {
      upAsked = true;  
@@ -395,6 +423,7 @@ void connectToWifi()
   WiFi.disconnect();
   Serial.println("Connecting to WiFi...");
   WiFi.config(ip_wemos, gateway_ip, subnet_mask);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   
   while (WiFi.status() != WL_CONNECTED) {
