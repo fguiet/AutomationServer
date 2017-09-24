@@ -459,7 +459,7 @@ public class RollerShutterService implements Runnable {
 		if (sunrise.before(opendate)) {
 			_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+opendate.getTime()+ ". Will ope ruller shutter at :"+opendate.getTime());
 			//OpenRollerShutters();
-			newCron = minutes + " " + hours + " * * 1,2,3,4,5 ";			
+			newCron = minutes + " " + hours + GetCronWithoutTime(_cronMorningWeekOpen); //" * * 1,2,3,4,5 ";			
 		}		
 		else {
 			cron = _cronMorningWeekClose.split(" ");
@@ -477,7 +477,7 @@ public class RollerShutterService implements Runnable {
 		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
 				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open roller shutter at : "+sunrise.getTime());				
-				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * 1,2,3,4,5";
+				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronMorningWeekOpen); //" * * 1,2,3,4,5";
 			}		
 		}
 		
