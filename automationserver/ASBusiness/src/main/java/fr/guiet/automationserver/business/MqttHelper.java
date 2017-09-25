@@ -365,10 +365,12 @@ public class MqttHelper implements MqttCallback {
 		String awayModeStatus = _roomService.GetAwayModeStatus();
 		String automaticManagementStatus = _rollerShutterService.GetAutomaticManagementStatus();
 		String westRSState = _rollerShutterService.getWestRSState();
+		String northRSState = _rollerShutterService.getNorthRSState();
 		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
 		
 		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
 		message = message + ";" + _rollerShutterService.getNextWeekNightCloseDate() + ";" + _rollerShutterService.getNextWeekMorningCloseDate() + ";" + _rollerShutterService.getNextWeekMorningOpenDate();
+		message = message + ";" + northRSState;
 		
 		return message;
 	}

@@ -72,9 +72,9 @@ public class RollerShutterService implements Runnable {
 	private String _baseUrlRs2 = null;
 	private RollerShutter _rsWest = null;
 	private RollerShutter _rsNorth = null;
-	private boolean _alertSent5 = false;
-	private boolean _alertSent10 = false;
-	private boolean _alertSentMore = false;
+	//private boolean _alertSent5 = false;
+	//private boolean _alertSent10 = false;
+	//private boolean _alertSentMore = false;
 	
 	//Lie à Sunset
 	private String _nextWeekNightCloseDate = "NA";
@@ -269,7 +269,8 @@ public class RollerShutterService implements Runnable {
 				Thread.sleep(300000);
 				
 				//Check state here and send message if not responding!!
-				IsSensorAlive();
+				IsSensorAlive(_rsWest);
+				IsSensorAlive(_rsNorth);
 				
 			} catch (Exception e) {
 				_logger.error("Error occured in rollershutter management service", e);
@@ -300,7 +301,9 @@ public class RollerShutterService implements Runnable {
 
 	}
 	
-	
+	public String getNorthRSState() {
+		return _rsNorth.getState().name();
+	}
 	
 	public String getWestRSState() {
 		return _rsWest.getState().name();
@@ -323,7 +326,19 @@ public class RollerShutterService implements Runnable {
 				else {
 					_logger.info("Close requested for west rollershutter");
 				}
-			}				
+			}
+			
+			if (_rsNorth.getState() != RollerShutterState.CLOSED) {			
+				if (!_rsNorth.Close()) {
+					_logger.info("Error occured when requesting close of north rollershutter");
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Error occured when requesting close of north rollershutter");
+					_smsGammuService.sendMessage(sms, true);
+				}
+				else {
+					_logger.info("Close requested for north rollershutter");
+				}
+			}
 		}
 		else {
 			_logger.info("Close requested but automatic management is OFF, close canceled...");
@@ -344,7 +359,19 @@ public class RollerShutterService implements Runnable {
 				else {
 					_logger.info("Open requested for west rollershutter");
 				}
-			}				
+			}
+			
+			if (_rsNorth.getState() != RollerShutterState.OPENED) {			
+				if (!_rsNorth.Open()) {
+					_logger.info("Error occured when requesting open of north rollershutter");
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Error occured when requesting open of north rollershutter");
+					_smsGammuService.sendMessage(sms, true);
+				}
+				else {
+					_logger.info("Open requested for north rollershutter");
+				}
+			}
 		}	
 		else {
 			_logger.info("Open requested but automatic management is OFF, Open canceled...");
@@ -374,19 +401,46 @@ public class RollerShutterService implements Runnable {
 																   currentState == RollerShutterState.OPENED || 
 																   currentState == RollerShutterState.UNDETERMINED)) {
 					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
+					sms.setMessage("Le volet roulant West est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
+					_smsGammuService.sendMessage(sms, true);
+				}
+			}
+		}
+		
+		previousState = _rsNorth.getPreviousState();
+		currentState = _rsNorth.getState();		
+		
+		if (currentState != previousState) {
+			_logger.info("North Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
+
+			boolean isTimeBetween = false;
+			try {
+				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
+			}
+			catch (ParseException pe) {
+				_logger.error("Erreur lors du parsing de la date", pe);
+			}
+			
+			if (isTimeBetween) {
+				//If state change that way...it is strange...somebody try to enter home??
+				//better send a sms....
+				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
+																   currentState == RollerShutterState.OPENED || 
+																   currentState == RollerShutterState.UNDETERMINED)) {
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Le volet roulant Nord est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
 					_smsGammuService.sendMessage(sms, true);
 				}
 			}
 		}
 	}
 	
-	private void IsSensorAlive() {
+	private void IsSensorAlive(RollerShutter rs) {
 		
-		RollerShutterState currentState = _rsWest.getState();
+		RollerShutterState currentState = rs.getState();
 		
-		if (currentState == RollerShutterState.UNREACHABLE && !_alertSent5) {
-			_alertSent5 = true;
+		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
+			rs._notReachable5 = true;
 			
 			SMSDto sms = new SMSDto();
 			String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)", _rsWest.getName());
@@ -395,8 +449,8 @@ public class RollerShutterService implements Runnable {
 			return;
 		}
 		
-		if (currentState == RollerShutterState.UNREACHABLE && !_alertSent10) {
-			_alertSent10 = true;
+		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
+			rs._notReachable10 = true;
 			
 			SMSDto sms = new SMSDto();
 			String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)", _rsWest.getName());
@@ -405,8 +459,8 @@ public class RollerShutterService implements Runnable {
 			return;
 		}
 		
-		if (currentState == RollerShutterState.UNREACHABLE && !_alertSentMore) {
-			_alertSentMore = true;
+		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
+			rs._notReachable15 = true;
 			
 			SMSDto sms = new SMSDto();
 			String message = String.format("Sensor %s does not send messages anymore (15 minutes alert)", _rsWest.getName());
@@ -415,10 +469,9 @@ public class RollerShutterService implements Runnable {
 			return;
 		}
 		
-		_alertSent5 = false; // Réinitialisation
-		_alertSent10 = false; // Réinitialisation
-		_alertSentMore = false; // Réinitialisation
-		
+		rs._notReachable5 = false;
+		rs._notReachable10 = false;
+		rs._notReachable15 = false;		
 	}
 	
 	public void StopService() {

@@ -35,8 +35,17 @@ Bounce debouncer = Bounce();
 #define UP_LED D8
 #define DOWN_LED D0
 
-String ROLLERSHUTTERID= "1";   //west
-//String ROLLERSHUTTERID= "2"; //north
+//IPAddress ip_wemos(192, 168, 1, 40);
+//String ROLLERSHUTTERID= "1";   //west
+IPAddress ip_wemos(192, 168, 1, 41);
+String ROLLERSHUTTERID= "2"; //north
+const char* ssid = "DUMBLEDORE";
+const char* password = "***";
+String apikey="***";
+
+ESP8266WebServer server(80);
+IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
+IPAddress subnet_mask(255, 255, 255,   0);
 
 // Instantiate a Bounce object
 Bounce upButton = Bounce(); 
@@ -46,11 +55,6 @@ Bounce downButton = Bounce();
 
 Bounce upReed = Bounce(); 
 Bounce downReed = Bounce(); 
-
-const char* ssid = "DUMBLEDORE";
-const char* password = "***";
-
-String apikey="***";
 
 // the timer object
 SimpleTimer timer;
@@ -72,11 +76,6 @@ int closeTimerId = -1;
 int upDownTimeMs = 40000; 
 //Time needed so rollershutter is completly closed
 int completeDownMS = 5000;
-
-ESP8266WebServer server(80);
-IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
-IPAddress ip_wemos(192, 168, 1, 40);
-IPAddress subnet_mask(255, 255, 255,   0);
 
 void setup() {
 

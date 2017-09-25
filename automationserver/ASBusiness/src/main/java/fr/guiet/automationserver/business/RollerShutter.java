@@ -22,6 +22,10 @@ public class RollerShutter {
 	private String _downUrl = null;
 	private String _name = null;
 	
+	public boolean _notReachable5 = false;
+	public boolean _notReachable10 = false;
+	public boolean _notReachable15 = false;
+	
 	public RollerShutter(String id, String name, String baseUrl, String apikey) {
 		_id = id;
 		_apikey = apikey;
