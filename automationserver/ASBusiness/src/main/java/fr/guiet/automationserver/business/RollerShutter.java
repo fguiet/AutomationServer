@@ -22,6 +22,7 @@ public class RollerShutter {
 	private String _downUrl = null;
 	private String _name = null;
 	
+	//TODO : add getter/s
 	public boolean _notReachable5 = false;
 	public boolean _notReachable10 = false;
 	public boolean _notReachable15 = false;
@@ -99,15 +100,13 @@ public class RollerShutter {
 		}
 	}
 	
-	public RollerShutterState getPreviousState() {
-		
-		return _previousState;
-		
+	public RollerShutterState getPreviousState() {		
+			return _previousState;		
 	}
 		
 	public RollerShutterState getState() {
 		
-		_previousState = _state;
+		RollerShutterState previousState = _state;
 		
 		JSONObject jo = sendGetRequest(_getStateUrl);
 		
@@ -132,6 +131,13 @@ public class RollerShutter {
 				break;
 			}
 		}
+		
+		if (previousState != _state) //{
+			_previousState = previousState;
+	//		_previousStateChanged = true;
+	//	}
+	//	else 
+	//		_previousStateChanged = false;
 		
 		return _state;
 	}

@@ -45,6 +45,11 @@ public class RollerShutterService implements Runnable {
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
 	
+	private RollerShutterState _currentStateNorthSave = RollerShutterState.UNREACHABLE;
+	private RollerShutterState _previousStateNorthSave = RollerShutterState.UNREACHABLE;
+	private RollerShutterState _currentStateWestSave = RollerShutterState.UNREACHABLE;
+	private RollerShutterState _previousStateWestSave = RollerShutterState.UNREACHABLE;
+	
 	private Timer _timer = null;
 	private Calendar _sunset = null;
 	private Calendar _sunrise = null;
@@ -380,10 +385,19 @@ public class RollerShutterService implements Runnable {
 	
 	private void CheckForIntruders() {
 		
+		/*private RollerShutterState _currentStateNorthSave;
+		private RollerShutterState _previousStateNorthSave;
+		private RollerShutterState _currentStateWestSave;
+		private RollerShutterState _previousStateWestSave;*/
+		
 		RollerShutterState previousState = _rsWest.getPreviousState();
 		RollerShutterState currentState = _rsWest.getState();		
 		
-		if (currentState != previousState) {
+		if (currentState != previousState && (_currentStateNorthSave != currentState || _previousStateNorthSave != previousState)) {
+			
+			_currentStateNorthSave = currentState;
+			_previousStateNorthSave = previousState;
+			
 			_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
 
 			boolean isTimeBetween = false;
@@ -410,7 +424,12 @@ public class RollerShutterService implements Runnable {
 		previousState = _rsNorth.getPreviousState();
 		currentState = _rsNorth.getState();		
 		
-		if (currentState != previousState) {
+		if (currentState != previousState && (_currentStateWestSave != currentState || _previousStateWestSave != previousState)) {
+			
+			_currentStateWestSave = currentState;
+			_previousStateWestSave = previousState;
+			
+			
 			_logger.info("North Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
 
 			boolean isTimeBetween = false;
