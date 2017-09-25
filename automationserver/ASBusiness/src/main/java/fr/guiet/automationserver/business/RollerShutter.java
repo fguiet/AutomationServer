@@ -132,8 +132,10 @@ public class RollerShutter {
 			}
 		}
 		
-		if (previousState != _state) //{
+		if (previousState != _state) {
 			_previousState = previousState;
+			_logger.info(_name +" passed from : "+previousState.name()+" to "+_state.name());
+		}
 	//		_previousStateChanged = true;
 	//	}
 	//	else 
