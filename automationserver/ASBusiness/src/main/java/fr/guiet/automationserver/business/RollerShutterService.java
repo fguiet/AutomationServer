@@ -45,10 +45,10 @@ public class RollerShutterService implements Runnable {
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
 	
-	private RollerShutterState _currentStateNorthSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _previousStateNorthSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _currentStateWestSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _previousStateWestSave = RollerShutterState.UNREACHABLE;
+	/*private RollerShutterState _currentStateNorthSave = RollerShutterState.VOID;
+	private RollerShutterState _previousStateNorthSave = RollerShutterState.VOID;
+	private RollerShutterState _currentStateWestSave = RollerShutterState.VOID;
+	private RollerShutterState _previousStateWestSave = RollerShutterState.VOID;*/
 	
 	private Timer _timer = null;
 	private Calendar _sunset = null;
@@ -72,9 +72,9 @@ public class RollerShutterService implements Runnable {
 	//private Scheduler _weekmorningOpenScheduler = null;
 	private String _weekMorningOpenId = null;
 	
-	private String _apikey = null;
-	private String _baseUrlRs1 = null;
-	private String _baseUrlRs2 = null;
+	//private String _apikey = null;
+	//private String _baseUrlRs1 = null;
+	//private String _baseUrlRs2 = null;
 	private RollerShutter _rsWest = null;
 	private RollerShutter _rsNorth = null;
 	//private boolean _alertSent5 = false;
@@ -120,7 +120,7 @@ public class RollerShutterService implements Runnable {
 			Properties prop = new Properties();
 			prop.load(is);
 			
-			String apikey = prop.getProperty("api.key");
+			/*String apikey = prop.getProperty("api.key");
 			if (apikey != null)
 				_apikey = apikey;
 			else
@@ -140,7 +140,7 @@ public class RollerShutterService implements Runnable {
 			}
 			else {
 				_baseUrlRs2 = "http://127.0.0.1";
-			}
+			}*/
 			
 			String cronComputeSunSetSunRise = prop.getProperty("rollershutter.schedule.sunsetsunrise");
 			if (cronComputeSunSetSunRise != null) {
@@ -210,8 +210,8 @@ public class RollerShutterService implements Runnable {
 		
 		_logger.info("Starting rollershutters management...");		
 		
-		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _baseUrlRs1, _apikey);
-		_rsNorth = new RollerShutter("2","Volet roulant Nord", _baseUrlRs2, _apikey);
+		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _smsGammuService);
+		_rsNorth = new RollerShutter("2","Volet roulant Nord", _smsGammuService);
 	
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
@@ -254,7 +254,7 @@ public class RollerShutterService implements Runnable {
 		//}
 		//});
 		
-		CreateCheckForIntrudersTask();
+		//CreateCheckForIntrudersTask();
 		
 		//Initial lauch
 		ComputeSunsetSunrise();
@@ -270,12 +270,13 @@ public class RollerShutterService implements Runnable {
 
 			try {
 												
-				// Sleep for 5 minutes
-				Thread.sleep(300000);
+				// Sleep for 2 minutes
+				Thread.sleep(120000);
 				
 				//Check state here and send message if not responding!!
-				IsSensorAlive(_rsWest);
-				IsSensorAlive(_rsNorth);
+				
+				_rsNorth.HasTimeoutOccured();
+				_rsWest.HasTimeoutOccured();
 				
 			} catch (Exception e) {
 				_logger.error("Error occured in rollershutter management service", e);
@@ -288,7 +289,7 @@ public class RollerShutterService implements Runnable {
 	}
 	
 	
-	private void CreateCheckForIntrudersTask() {
+	/*private void CreateCheckForIntrudersTask() {
 		
 		_logger.info("Creating CheckForIntrudersTask");
 
@@ -304,7 +305,19 @@ public class RollerShutterService implements Runnable {
 		//Every 30s
 		_timer.schedule(intrudersTask, 5000, 30000);
 
+	}*/
+	
+	public void setState(long rsId, RollerShutterState state) {
+		if (rsId == 1)
+			_rsNorth.setState(state);
+		
+		if (rsId == 2)
+			_rsWest.setState(state);
 	}
+	
+	/*public void setWestRSState(RollerShutterState state) {
+		_rsWest.setState();
+	}*/
 	
 	public String getNorthRSState() {
 		return _rsNorth.getState().name();
@@ -321,28 +334,14 @@ public class RollerShutterService implements Runnable {
 	private void CloseRollerShutters() {
 		//Only if automatic management status is activated!
 		if (_automaticManagementStatus) {
-			if (_rsWest.getState() != RollerShutterState.CLOSED) {			
-				if (!_rsWest.Close()) {
-					_logger.info("Error occured when requesting close of west rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting close of west rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Close requested for west rollershutter");
-				}
+			if (_rsWest.getState() != RollerShutterState.CLOSED) {
+				_rsWest.Close();				
+				_logger.info("Close requested for west rollershutter");				
 			}
 			
-			if (_rsNorth.getState() != RollerShutterState.CLOSED) {			
-				if (!_rsNorth.Close()) {
-					_logger.info("Error occured when requesting close of north rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting close of north rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Close requested for north rollershutter");
-				}
+			if (_rsNorth.getState() != RollerShutterState.CLOSED) {
+				_rsNorth.Close();				
+				_logger.info("Close requested for north rollershutter");				
 			}
 		}
 		else {
@@ -354,28 +353,15 @@ public class RollerShutterService implements Runnable {
 		//Only if automatic management status is activated!
 		if (_automaticManagementStatus) {
 		
-			if (_rsWest.getState() != RollerShutterState.OPENED) {			
-				if (!_rsWest.Open()) {
-					_logger.info("Error occured when requesting open of west rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting open of west rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Open requested for west rollershutter");
-				}
+			if (_rsWest.getState() != RollerShutterState.OPENED) {
+				_rsWest.Open();				
+				_logger.info("Open requested for west rollershutter");
+				
 			}
 			
-			if (_rsNorth.getState() != RollerShutterState.OPENED) {			
-				if (!_rsNorth.Open()) {
-					_logger.info("Error occured when requesting open of north rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting open of north rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Open requested for north rollershutter");
-				}
+			if (_rsNorth.getState() != RollerShutterState.OPENED) {
+				_rsNorth.Open();				
+				_logger.info("Open requested for north rollershutter");				
 			}
 		}	
 		else {
@@ -383,75 +369,9 @@ public class RollerShutterService implements Runnable {
 		}
 	}
 	
-	private void CheckForIntruders() {
-		
-		//TODO : revoir cette partie
-		
-		RollerShutterState previousState = _rsWest.getPreviousState();
-		RollerShutterState currentState = _rsWest.getState();		
-		
-		if (currentState != previousState && (_currentStateNorthSave != currentState || _previousStateNorthSave != previousState)) {
-			
-			_currentStateNorthSave = currentState;
-			_previousStateNorthSave = previousState;
-			
-			//_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
-
-			boolean isTimeBetween = false;
-			try {
-				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
-			}
-			catch (ParseException pe) {
-				_logger.error("Erreur lors du parsing de la date", pe);
-			}
-			
-			if (isTimeBetween) {
-				//If state change that way...it is strange...somebody try to enter home??
-				//better send a sms....
-				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
-																   currentState == RollerShutterState.OPENED || 
-																   currentState == RollerShutterState.UNDETERMINED)) {
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant West est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
-					_smsGammuService.sendMessage(sms, true);
-				}
-			}
-		}
-		
-		previousState = _rsNorth.getPreviousState();
-		currentState = _rsNorth.getState();		
-		
-		if (currentState != previousState && (_currentStateWestSave != currentState || _previousStateWestSave != previousState)) {
-			
-			_currentStateWestSave = currentState;
-			_previousStateWestSave = previousState;
-			
-			
-			//_logger.info("North Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
-
-			boolean isTimeBetween = false;
-			try {
-				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
-			}
-			catch (ParseException pe) {
-				_logger.error("Erreur lors du parsing de la date", pe);
-			}
-			
-			if (isTimeBetween) {
-				//If state change that way...it is strange...somebody try to enter home??
-				//better send a sms....
-				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
-																   currentState == RollerShutterState.OPENED || 
-																   currentState == RollerShutterState.UNDETERMINED)) {
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant Nord est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
-					_smsGammuService.sendMessage(sms, true);
-				}
-			}
-		}
-	}
 	
-	private void IsSensorAlive(RollerShutter rs) {
+	
+	/*private void IsSensorAlive(RollerShutter rs) {
 		
 		RollerShutterState currentState = rs.getState();
 		
@@ -488,7 +408,7 @@ public class RollerShutterService implements Runnable {
 		rs._notReachable5 = false;
 		rs._notReachable10 = false;
 		rs._notReachable15 = false;		
-	}
+	}*/
 	
 	public void StopService() {
 		

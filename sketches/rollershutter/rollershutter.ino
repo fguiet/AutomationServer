@@ -3,12 +3,13 @@
  * 
  * F. Guiet 
  * Creation           : 20170910
- * Last modification  : 20170924
+ * Last modification  : 20170926
  * 
  * Version            : 1.1
  * 
  * History            : 1.0 - Initial version
  *                      1.1 - Set Wifi to STA mode only (no AP)
+ *                      1.2 - Remove webserver and replace with mqtt
  * 
  * 
   ****/
@@ -46,6 +47,9 @@ const char* password = "***";
 String apikey="***";
 //Mqtt settings
 #define mqtt_server "192.168.1.25"
+#define sub_topic1 "/guiet/openhab/rollershutter"
+#define sub_topic2 "/guiet/automationserver/rollershutter"
+#define pub_topic "/guiet/rollershutter"
 //#define mqtt_user ""
 //#define mqtt_password ""
 
@@ -142,15 +146,28 @@ void setup() {
   
 }
 
-void manageUpDownLed() {
+String sendState() {
 
+  String mess = "SETRSSTATE;"+String(ROLLERSHUTTERID)+";UNDETERMINED"; 
+  
+  if (isOpened) {
+    mess = "SETRSSTATE;"+String(ROLLERSHUTTERID)+";OPENED";         
+  }
+
+  if (isClosed) {
+    mess = "SETRSSTATE;"+String(ROLLERSHUTTERID)+";CLOSED";        
+  }
+
+  client.publish(pub_topic,mess.c_str()); 
+}
+
+void manageUpDownLed() {
+    
   if (isOpened) {
     //rollshutter is opened
     digitalWrite(UP_LED, HIGH);     
     //Turn off internal led 
-    digitalWrite(BUILTIN_LED, HIGH);
-
-    //Send state here to automation server via mqtt
+    digitalWrite(BUILTIN_LED, HIGH);    
   }
   else {
     //rollshutter is closed
@@ -161,18 +178,16 @@ void manageUpDownLed() {
     //rollshutter is closed
     digitalWrite(DOWN_LED, HIGH);    
     //Turn off internal led 
-    digitalWrite(BUILTIN_LED, HIGH);
-
+    digitalWrite(BUILTIN_LED, HIGH);  
     //Send state here to automation server via mqtt
   } else {
     //rollshutter is opened
     digitalWrite(DOWN_LED, LOW);       
-  }   
+  } 
 
-  if (!isOpened && !isClosed) {
-    //Send state here to automation server via mqtt
-  }  
+  sendState();
 }
+
 
 void loop() {
 
@@ -366,6 +381,35 @@ void initUpDownReedSwitch() {
   manageUpDownLed();
 }
 
+String getValue(String data, char separator, int index)
+{
+    int maxIndex = data.length() - 1;
+    int j = 0;
+    String chunkVal = "";
+
+    for (int i = 0; i <= maxIndex && j <= index; i++)
+    {
+        chunkVal.concat(data[i]);
+
+        if (data[i] == separator)
+        {
+            j++;
+
+            if (j > index)
+            {
+                chunkVal.trim();
+                return chunkVal;
+            }
+
+            chunkVal = "";
+        }
+        else if ((i == maxIndex) && (j < index)) {
+            chunkVal = "";
+            return chunkVal;
+        }
+    }   
+}
+
 /*void handleWebRequest() {
 
   int returnCode = 400; //bad request
@@ -435,27 +479,43 @@ void initUpDownReedSwitch() {
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
-  /*int i = 0;
-  if ( debug ) {
-    Serial.println("Message recu =>  topic: " + String(topic));
-    Serial.print(" | longueur: " + String(length,DEC));
-  }
-  // create character buffer with ending null terminator (string)
+  char message_buff[100];
+
+  Serial.println("Message recu =>  topic: " + String(topic));
+
+  int i = 0;
   for(i=0; i<length; i++) {
     message_buff[i] = payload[i];
   }
   message_buff[i] = '\0';
   
-  String msgString = String(message_buff);
-  if ( debug ) {
-    Serial.println("Payload: " + msgString);
+  String receivedPayload = String(message_buff);
+
+  Serial.println("Payload: " + receivedPayload);
+
+  String action = getValue(receivedPayload, ';', 0);
+  String id = getValue(receivedPayload, ';', 1);
+  String request = getValue(receivedPayload, ';', 2);
+
+  if (id == ROLLERSHUTTERID) {
+    if (action == "SETACTION")  {
+      if (request == "UP") {
+        upAsked = true;
+      }
+
+      if (request == "DOWN") {
+        downAsked = true;
+      }
+
+      if (request == "STOP") {
+        stopAsked = true;
+      }
+
+      if (request == "STATE") {
+        sendState();
+      }
+    }    
   }
-  
-  if ( msgString == "ON" ) {
-    digitalWrite(D2,HIGH);  
-  } else {
-    digitalWrite(D2,LOW);  
-  }*/
 }
 
 
@@ -466,14 +526,18 @@ void connectToMqtt() {
 
   Serial.print("Attempting MQTT connection...");
   while (!client.connected()) {
-        
-    if (client.connect("ESP8266_RollershutterID"+ROLLERSHUTTERID)) {
+
+    String mqttClientId = "ESP8266_RollershutterID"+ROLLERSHUTTERID;
+    if (client.connect(mqttClientId.c_str())) {
       Serial.println("connected to MQTT Broker...");
     }
 
     delay(500);
     Serial.print(".");
   }
+
+  client.subscribe(sub_topic1);
+  client.subscribe(sub_topic2);
 }
 
 void connectToWifi() 

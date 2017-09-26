@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business;
 
-public enum RollerShutterState {    
+public enum RollerShutterState {
+	VOID,
     OPENED,
     CLOSED,
     UNDETERMINED,

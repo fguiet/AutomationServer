@@ -304,6 +304,23 @@ public class MqttHelper implements MqttCallback {
 					_logger.error("Could not read or save information received from outside", e);
 				}
 				break;
+			case "SETRSSTATE":
+				long rsId = Long.parseLong(messageContent[1]);
+				String state = messageContent[2];
+				
+				switch(state) {
+				case "UNDETERMINED":
+					_rollerShutterService.setState(rsId, RollerShutterState.UNDETERMINED);
+					break;
+				case "OPENED":
+					_rollerShutterService.setState(rsId, RollerShutterState.OPENED);
+					break;
+				case "CLOSED":
+					_rollerShutterService.setState(rsId, RollerShutterState.CLOSED);
+					break;	
+				}
+				
+				break;
 			case "SETINSIDEINFO":
 				try {
 					long sensorId = Long.parseLong(messageContent[1]);

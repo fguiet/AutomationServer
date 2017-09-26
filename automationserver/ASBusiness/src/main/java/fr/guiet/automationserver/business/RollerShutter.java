@@ -1,75 +1,146 @@
 package fr.guiet.automationserver.business;
 
-import java.io.BufferedReader;
+import java.text.ParseException;
+import java.util.Date;
+
+/*import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URL;*/
 
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
+//import org.json.JSONObject;
+
+import fr.guiet.automationserver.dto.SMSDto;
 
 public class RollerShutter {
 
 	private static Logger _logger = Logger.getLogger(RollerShutter.class);
-	private RollerShutterState _state = RollerShutterState.UNDETERMINED;
-	private RollerShutterState _previousState = RollerShutterState.UNDETERMINED;
+	private RollerShutterState _state = RollerShutterState.VOID;
+	private RollerShutterState _previousState = RollerShutterState.VOID;
 	private String _id = null;
-	private String _apikey = null;
-	private String _baseUrl = null;
-	private String _getStateUrl = null;
-	private String _stopUrl = null;
-	private String _upUrl = null;
-	private String _downUrl = null;
+	//private String _apikey = null;	
 	private String _name = null;
+	private MqttClientMgt _mqttClient;
 	
-	//TODO : add getter/s
-	public boolean _notReachable5 = false;
-	public boolean _notReachable10 = false;
-	public boolean _notReachable15 = false;
+	private boolean _alertSent5 = false;
+	private boolean _alertSent10 = false;
+	private boolean _alertSentMore = false;
 	
-	public RollerShutter(String id, String name, String baseUrl, String apikey) {
+	private Date _lastStateReceived = null;
+	
+	private SMSGammuService _smsGammuService = null;
+	private String _pub_topic ="/guiet/automationserver/rollershutter";
+	
+	public RollerShutter(String id, String name, SMSGammuService smsGammuService) {
 		_id = id;
-		_apikey = apikey;
-		_baseUrl = baseUrl;
+		//_apikey = apikey;
+		//_baseUrl = baseUrl;
 		_name = name;
+			
 		
-		_getStateUrl = _baseUrl + "/api/rollershutter?action=state&apikey=" + _apikey;
-		_stopUrl = _baseUrl + "/api/rollershutter?action=stop&apikey=" + _apikey;
-		_upUrl = _baseUrl + "/api/rollershutter?action=up&apikey=" + _apikey;
-		_downUrl = _baseUrl + "/api/rollershutter?action=down&apikey=" + _apikey;
+		_mqttClient = new MqttClientMgt();
+		_smsGammuService = smsGammuService;
 	}
 	
 	public String getName() {
 		return _name;
 	}
+	
+	public boolean HasTimeoutOccured() {
 
-	public boolean Close() {
-		JSONObject jo = sendGetRequest(_downUrl);
-		
-		if (jo == null) {
-			return false;
-		}
-		else {
-			return jo.getBoolean("success");
-			/*String success = jo.getString("success");
-			
-			if (success=="true") {
-				return true;
+		// Si pas encore recu d'info, on considere que c'est un timeout
+		if (_lastStateReceived == null)
+			return true;
+
+		Date currentDate = new Date();
+
+		long diff = currentDate.getTime() - _lastStateReceived.getTime();
+		long diffMinutes = diff / (60 * 1000);
+
+		if (diffMinutes > 5 && diffMinutes < 10) {
+
+			if (!_alertSent5) {
+
+				setState(RollerShutterState.UNREACHABLE);
+				
+				SMSDto sms = new SMSDto();
+				String message = String.format("Rollershutter %s is not sending state (5 minutes alert)", _name);
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+				
+				_alertSent5 = true;
 			}
-			else {
-				return false;
-			}*/
+
+			return true;
 		}
+
+		if (diffMinutes >= 10 && diffMinutes < 20) {
+
+			if (!_alertSent10) {
+				setState(RollerShutterState.UNREACHABLE);
+				
+				SMSDto sms = new SMSDto();
+				String message = String.format("Rollershutter %s is not sending state (10 minutes alert)", _name);
+				sms.setMessage(message);
+				
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSent10 = true;
+			}
+
+			return true;
+		}
+
+		if (diffMinutes >= 20) {
+
+			if (!_alertSentMore) {
+				setState(RollerShutterState.UNREACHABLE);
+				
+				SMSDto sms = new SMSDto();
+				String message = String.format("Rollershutter %s is not sending state (20 minutes alert)...Time to do something", _name);
+				sms.setMessage(message);
+				_smsGammuService.sendMessage(sms, true);
+
+				_alertSentMore = true;
+			}
+
+			return true;
+		}
+
+		_alertSent5 = false; // Réinitialisation
+		_alertSent10 = false; // Réinitialisation
+		_alertSentMore = false; // Réinitialisation
+
+		return false;
+
+	}
+
+	public void setState(RollerShutterState state) {
+		
+		_lastStateReceived = new Date();
+		
+		
+		if (_previousState != _state) {
+			_previousState = _state;
+			CheckForIntruders();
+			_logger.info(_name+" passed from : "+_previousState.name()+" to "+_state.name());
+		}
+				
+		_state = state;				
 	}
 	
-	public boolean Stop() {
-		JSONObject jo = sendGetRequest(_stopUrl);
+	public void Close() {
 		
-		if (jo == null) {
-			return false;
-		}
-		else {
-			return jo.getBoolean("success");
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
+		
+		//JSONObject jo = sendGetRequest(_downUrl);
+		
+		//if (jo == null) {
+		//	return false;
+		//}
+		//else {
+		//	return jo.getBoolean("success");
 			/*String success = jo.getString("success");
 			
 			if (success=="true") {
@@ -78,11 +149,50 @@ public class RollerShutter {
 			else {
 				return false;
 			}*/
-		}
+		//}
 	}
 	
-	public boolean Open() {
-		JSONObject jo = sendGetRequest(_upUrl);
+	private void CheckForIntruders() {
+		
+		//TODO : revoir cette partie
+		
+	//	RollerShutterState previousState = _rsWest.getPreviousState();
+	//	RollerShutterState currentState = _rsWest.getState();		
+		
+		//if (currentState != previousState && (_currentStateNorthSave != currentState || _previousStateNorthSave != previousState)) {
+			
+		//	_currentStateNorthSave = currentState;
+		//	_previousStateNorthSave = previousState;
+			
+			//_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
+
+			boolean isTimeBetween = false;
+			try {
+				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
+			}
+			catch (ParseException pe) {
+				_logger.error("Erreur lors du parsing de la date", pe);
+			}
+			
+			if (isTimeBetween) {
+				//If state change that way...it is strange...somebody try to enter home??
+				//better send a sms....
+				if (_previousState == RollerShutterState.CLOSED && (_state == RollerShutterState.UNREACHABLE ||
+																	_state == RollerShutterState.OPENED ||
+																   _state == RollerShutterState.VOID ||
+																		   _state == RollerShutterState.UNDETERMINED)) {
+					SMSDto sms = new SMSDto();
+					sms.setMessage("Le volet roulant "+_name+" est passé de l'état : "+_previousState.name()+ " à l'état : "+_state.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
+					_smsGammuService.sendMessage(sms, true);
+				}
+			}
+		}		
+	
+	
+	public void Stop() {
+		
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");
+		/*JSONObject jo = sendGetRequest(_stopUrl);
 		
 		if (jo == null) {
 			return false;
@@ -97,14 +207,37 @@ public class RollerShutter {
 			else {
 				return false;
 			}*/
+		//}
+	}
+	
+	public void Open() {
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";OPEN");
+		/*JSONObject jo = sendGetRequest(_upUrl);
+		
+		if (jo == null) {
+			return false;
 		}
+		else {
+			return jo.getBoolean("success");
+			/*String success = jo.getString("success");
+			
+			if (success=="true") {
+				return true;
+			}
+			else {
+				return false;
+			}*/
+		//}
 	}
 	
 	public RollerShutterState getPreviousState() {		
 			return _previousState;		
 	}
-		
+	
 	public RollerShutterState getState() {
+		return _state;
+	}
+	/*public RollerShutterState getState() {
 		
 		RollerShutterState previousState = _state;
 		
@@ -134,7 +267,7 @@ public class RollerShutter {
 		
 		if (previousState != _state) {
 			_previousState = previousState;
-			_logger.info(_name +" passed from : "+previousState.name()+" to "+_state.name());
+			_logger.info(_name +" passed from : "+previousState.name()+" to "+_state	.name());
 		}
 	//		_previousStateChanged = true;
 	//	}
@@ -142,9 +275,9 @@ public class RollerShutter {
 	//		_previousStateChanged = false;
 		
 		return _state;
-	}
+	}*/
 	
-	private JSONObject sendGetRequest(String url) {
+	/*private JSONObject sendGetRequest(String url) {
 		
 		try {	
 			URL obj = new URL(url);
@@ -190,5 +323,5 @@ public class RollerShutter {
 			return null;
 		}
 		 
-	}
+	}*/
 }
