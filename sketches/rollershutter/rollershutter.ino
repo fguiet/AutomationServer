@@ -13,7 +13,9 @@
  * 
   ****/
 
-#include <ESP8266WebServer.h>
+//Light Mqtt library
+#include <PubSubClient.h>
+
 #include <ESP8266WiFi.h>
 #include <SimpleTimer.h>
 
@@ -42,10 +44,16 @@ String ROLLERSHUTTERID= "2"; //north
 const char* ssid = "DUMBLEDORE";
 const char* password = "***";
 String apikey="***";
+//Mqtt settings
+#define mqtt_server "192.168.1.25"
+//#define mqtt_user ""
+//#define mqtt_password ""
 
-ESP8266WebServer server(80);
 IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
 IPAddress subnet_mask(255, 255, 255,   0);
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 // Instantiate a Bounce object
 Bounce upButton = Bounce(); 
@@ -117,15 +125,14 @@ void setup() {
   // After setting up the button, setup the Bounce instance :
   downReed.attach(DOWN_REED);
   downReed.interval(5); // interval in ms
-  
-  //WiFiServer server(80);  
-  
+     
 
   Serial.begin(115200);
 
   connectToWifi();
 
-  initializeWebServer();
+  //initializeWebServer();
+  connectToMqtt();
 
   initUpDownReedSwitch();
 
@@ -142,10 +149,12 @@ void manageUpDownLed() {
     digitalWrite(UP_LED, HIGH);     
     //Turn off internal led 
     digitalWrite(BUILTIN_LED, HIGH);
+
+    //Send state here to automation server via mqtt
   }
   else {
     //rollshutter is closed
-    digitalWrite(UP_LED, LOW);     
+    digitalWrite(UP_LED, LOW);         
   }
 
   if (isClosed) {
@@ -153,26 +162,33 @@ void manageUpDownLed() {
     digitalWrite(DOWN_LED, HIGH);    
     //Turn off internal led 
     digitalWrite(BUILTIN_LED, HIGH);
+
+    //Send state here to automation server via mqtt
   } else {
     //rollshutter is opened
-    digitalWrite(DOWN_LED, LOW);    
+    digitalWrite(DOWN_LED, LOW);       
+  }   
+
+  if (!isOpened && !isClosed) {
+    //Send state here to automation server via mqtt
   }  
 }
 
 void loop() {
 
   //In case of Wifi deconnection...just reboot it is better...
-  if (WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED || !client.connected()) {
       ESP.restart();
   }
 
-  server.handleClient();
+  client.loop();
+  
   handleButtons();  
   handleRollershutter();
 
   blinkTimer.run();
   timer.run();
-  closeTimer.run();
+  closeTimer.run();  
 }
 
 //Led blink only if roller shutter not closed nor opened
@@ -242,7 +258,7 @@ void handleButtons() {
 
   //ReedSwitch connected, stop rollershutter after 3s so rollershutter is well closed
   if (downReed.fell()) {
-    //Here rollershutter is up (reed switch connected
+    //Here rollershutter is up (reed switch connected)
     Serial.println("Volet roulant en bas");    
  
     closeTimerId = closeTimer.setTimeout(completeDownMS, askToStopRelay);
@@ -350,7 +366,7 @@ void initUpDownReedSwitch() {
   manageUpDownLed();
 }
 
-void handleWebRequest() {
+/*void handleWebRequest() {
 
   int returnCode = 400; //bad request
   String jsonKO = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\",\"success\":false}";
@@ -399,9 +415,9 @@ void handleWebRequest() {
   }
 
   server.send(returnCode, "text/json", json);
-}
+}*/
 
-void initializeWebServer() {
+/*void initializeWebServer() {
   // Start the server
   
   server.on("/api/rollershutter", handleWebRequest);  
@@ -415,6 +431,49 @@ void initializeWebServer() {
   Serial.print("http://");
   Serial.print(WiFi.localIP());
   Serial.println("/");
+}*/
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+
+  /*int i = 0;
+  if ( debug ) {
+    Serial.println("Message recu =>  topic: " + String(topic));
+    Serial.print(" | longueur: " + String(length,DEC));
+  }
+  // create character buffer with ending null terminator (string)
+  for(i=0; i<length; i++) {
+    message_buff[i] = payload[i];
+  }
+  message_buff[i] = '\0';
+  
+  String msgString = String(message_buff);
+  if ( debug ) {
+    Serial.println("Payload: " + msgString);
+  }
+  
+  if ( msgString == "ON" ) {
+    digitalWrite(D2,HIGH);  
+  } else {
+    digitalWrite(D2,LOW);  
+  }*/
+}
+
+
+void connectToMqtt() {
+
+  client.setServer(mqtt_server, 1883); 
+  client.setCallback(mqttCallback);
+
+  Serial.print("Attempting MQTT connection...");
+  while (!client.connected()) {
+        
+    if (client.connect("ESP8266_RollershutterID"+ROLLERSHUTTERID)) {
+      Serial.println("connected to MQTT Broker...");
+    }
+
+    delay(500);
+    Serial.print(".");
+  }
 }
 
 void connectToWifi() 
