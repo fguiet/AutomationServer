@@ -481,7 +481,9 @@ public class RollerShutterService implements Runnable {
 			_weekMorningOpenId = _rollerShutterScheduler.schedule(newCron, new Runnable() {
 				public void run() {
 					OpenRollerShutters();
-					_rollerShutterScheduler.deschedule(_weekMorningOpenId);
+					//This will remove task from scheduler
+					//this is not what we want...
+					//_rollerShutterScheduler.deschedule(_weekMorningOpenId);
 				}});	
 			//_rollerShutterScheduler.start();
 		} 
