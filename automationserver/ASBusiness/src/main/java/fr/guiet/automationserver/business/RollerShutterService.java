@@ -88,6 +88,9 @@ public class RollerShutterService implements Runnable {
 	//lié à sunrise
 	private String _nextWeekMorningOpenDate = "NA";
 	
+	private int ROLLERSHUTTER_WEST_ID = 7;
+	private int ROLLERSHUTTER_NORTH_ID = 8;
+	
 	public String getNextWeekNightCloseDate() {
 		if (_automaticManagementStatus)
 			return _nextWeekNightCloseDate;
@@ -210,8 +213,8 @@ public class RollerShutterService implements Runnable {
 		
 		_logger.info("Starting rollershutters management...");		
 		
-		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _smsGammuService);
-		_rsNorth = new RollerShutter("2","Volet roulant Nord", _smsGammuService);
+		_rsWest = new RollerShutter(ROLLERSHUTTER_WEST_ID, "Volet roulant Ouest", _smsGammuService);
+		_rsNorth = new RollerShutter(ROLLERSHUTTER_NORTH_ID,"Volet roulant Nord", _smsGammuService);
 	
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
@@ -308,10 +311,10 @@ public class RollerShutterService implements Runnable {
 	}*/
 	
 	public void setState(long rsId, RollerShutterState state) {
-		if (rsId == 1)
+		if (rsId == ROLLERSHUTTER_WEST_ID)
 			_rsNorth.setState(state);
 		
-		if (rsId == 2)
+		if (rsId == ROLLERSHUTTER_NORTH_ID)
 			_rsWest.setState(state);
 	}
 	

@@ -1,40 +1,60 @@
-/****
+ /**** 
  * Mailbox Notifier
  * 
  * F. Guiet 
  * Creation           : 20170211
- * Last modification  : 20170211 
+ * Last modification  : 20170930
  * 
- * Version            : 1.0
+ * Version            : 1.1
+ * 
+ * History            : 10 - First version
+ *                      11 - add OTA update
+ *                      
+ * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
+ *                      https://github.com/esp8266/Arduino/issues/1782                     
+ *                      https://github.com/esp8266/Arduino/issues/1017
+ *                      
  */
 
-
-//Light Mqtt library
 #include <PubSubClient.h>
-
-//Wifi library
 #include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 
+/**** VARIABLES ***/
+StaticJsonBuffer<300> JSONBuffer;
+char message_buff[100];
+WiFiClient espClient;
+PubSubClient client(espClient);
 ADC_MODE(ADC_VCC); //vcc read mode
+/**** END VARIABLES ***/
 
+
+/**** DEFINE ***/
+#define MAX_RETRY 100
+String SENSORID =  "6"; 
 //Mqtt settings
+#define MQTT_SERVER "192.168.1.25"
+#define MQTT_CLIENT_ID "MailboxSensor"
 #define mqtt_server "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
 #define mailboxnotifier_topic "/guiet/mailbox/gotmail"
-
 // WiFi settings
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
-
 //Mesure with a voltmeter and calculate that the number mesured from ESP is correct
 #define VCC_ADJ 1.038485804
-
 #define PIN_LED 12
-char message_buff[100];
+const int CURRENT_FIRMWARE_VERSION = 14;
+String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
+String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
+IPAddress ip_wemos (192,168,1,42); 
+IPAddress gateway_ip ( 192,168,1,1);
+IPAddress subnet_mask(255, 255, 255,0);
+/**** END DEFINE ****/
 
-WiFiClient espClient;
-PubSubClient client(espClient);
 
 void setup() {
 
@@ -60,6 +80,11 @@ void setup() {
 
   connectToWifi();
 
+  //Check for firmware update
+  checkForUpdate();
+
+  connectToMqtt();
+
   yield();
 }
 
@@ -73,29 +98,48 @@ void makeLedBlink(int blinkTimes, int millisecond) {
   }
 }
 
-void connectToWifi() {
+void connectToWifi() 
+{
+  byte mac[6];
 
   WiFi.forceSleepWake();
+  WiFi.disconnect();
+  Serial.println("Connecting to WiFi...");
+  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   WiFi.mode(WIFI_STA);
-  
-  int retry = 0;
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED && retry < 100) {
-    retry++;
+
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
     delay(500);
     Serial.print(".");
+    retry++;    
   }
 
-  if (WiFi.status() == WL_CONNECTED) {  
-     Serial.println("");
-     Serial.println("WiFi connected");  
-     // Print the IP address
-     Serial.println(WiFi.localIP());
-  } else {
-    Serial.println("WiFi connection failed...");  
+  if (retry >= MAX_RETRY) {
     makeLedBlink(5,100);
     goDeepSleep();
-  }  
+  }
+  
+  Serial.println ( "" );
+  Serial.print ( "Connected to " );
+  Serial.println ( ssid );
+  Serial.print ( "IP address: " );
+  Serial.println ( WiFi.localIP() );
+  
+  WiFi.macAddress(mac);
+  Serial.print("MAC: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
 }
 
 void goDeepSleep() {
@@ -104,25 +148,23 @@ void goDeepSleep() {
   yield();
 }
 
-void reconnect() {
+void connectToMqtt() {
+  
+  client.setServer(MQTT_SERVER, 1883); 
 
   int retry = 0;
-  // Loop until we're reconnected
-  while (!client.connected() && retry < 10) {
-    Serial.print("Attempting MQTT connection...");
-    
-    if (client.connect("ESP8266_Mailboxnotifier")) {
+  Serial.print("Attempting MQTT connection...");
+  while (!client.connected()) {   
+    if (client.connect(MQTT_CLIENT_ID)) {
       Serial.println("connected to MQTT Broker...");
-    } else {
-      retry++;
-      // Wait 5 seconds before retrying
+    }
+    else {
       delay(500);
-      yield();
+      Serial.print(".");
     }
   }
 
-  if (retry == 10) {
-    Serial.println("MQTT connection failed...");  
+  if (retry >= MAX_RETRY) {
     makeLedBlink(5, 100);
     goDeepSleep();
   }
@@ -132,11 +174,48 @@ float getVcc() {
   return (float)ESP.getVcc() * VCC_ADJ;  
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  if (!client.connected()) {
-    reconnect();
+void checkForUpdate() {
+
+  HTTPClient httpClient;
+  httpClient.setTimeout(2000);
+  Serial.println("Calling : " + CHECK_FIRMWARE_VERSION_URL);
+  httpClient.begin( CHECK_FIRMWARE_VERSION_URL );
+  int httpCode = httpClient.GET();
+  Serial.println("Http code received : "+String(httpCode));
+  if( httpCode == 200 ) {  
+    String result = httpClient.getString();
+    Serial.print("Checking version : "+ result);
+    JsonObject& parsed= JSONBuffer.parseObject(result);
+    if (parsed.success()) {      
+        int lastVersion = parsed["lastversion"];        
+        Serial.println("Version courante : " + String(CURRENT_FIRMWARE_VERSION) + ", dernière version : " + String(lastVersion));
+        if( lastVersion > CURRENT_FIRMWARE_VERSION ) {
+          doOTAUpdate(lastVersion);
+        }
+    }
   }
+  
+  httpClient.end();  
+}
+
+void doOTAUpdate(int version) {
+
+  t_httpUpdate_return ret  = ESPhttpUpdate.update(BASE_FIRMWARE_URL +  "/" + String(version));
+  
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.println("[update] Update failed.");      
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("[update] Update no Updates.");           
+      break;
+    case HTTP_UPDATE_OK:  
+      Serial.println("[update] Update ok.");   
+      break;
+  }  
+}
+
+void loop() {
 
   //Handle MQTT connection
   client.loop();

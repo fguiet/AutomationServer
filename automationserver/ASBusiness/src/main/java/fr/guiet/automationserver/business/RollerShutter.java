@@ -18,7 +18,7 @@ public class RollerShutter {
 	private static Logger _logger = Logger.getLogger(RollerShutter.class);
 	private RollerShutterState _state = RollerShutterState.VOID;
 	private RollerShutterState _previousState = RollerShutterState.VOID;
-	private String _id = null;
+	private int _id = -1;
 	//private String _apikey = null;	
 	private String _name = null;
 	private MqttClientMgt _mqttClient;
@@ -32,7 +32,7 @@ public class RollerShutter {
 	private SMSGammuService _smsGammuService = null;
 	private String _pub_topic ="/guiet/automationserver/rollershutter";
 	
-	public RollerShutter(String id, String name, SMSGammuService smsGammuService) {
+	public RollerShutter(int id, String name, SMSGammuService smsGammuService) {
 		_id = id;
 		//_apikey = apikey;
 		//_baseUrl = baseUrl;

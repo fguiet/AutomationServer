@@ -443,7 +443,7 @@ public class DbManager {
 	 * @param sensorId
 	 * @return
 	 */
-	public SensorDto GetSensorByRoomId(long sensorId) {
+	public SensorDto GetSensorById(long sensorId) {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -453,7 +453,7 @@ public class DbManager {
 		try {
 			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -467,6 +467,7 @@ public class DbManager {
 			dto.sensorAddress = rs.getString("sensor_address");
 			dto.name = rs.getString("name");
 			dto.tempshift = rs.getFloat("tempshift");
+			dto.firmware_version = rs.getInt("firmware_version");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
