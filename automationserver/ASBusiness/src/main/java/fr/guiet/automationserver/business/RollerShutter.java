@@ -122,9 +122,9 @@ public class RollerShutter {
 		
 		
 		if (_previousState != _state) {
-			_previousState = _state;
-			CheckForIntruders();
 			_logger.info(_name+" passed from : "+_previousState.name()+" to "+_state.name());
+			_previousState = _state;
+			CheckForIntruders();			
 		}
 				
 		_state = state;				
@@ -208,6 +208,10 @@ public class RollerShutter {
 				return false;
 			}*/
 		//}
+	}
+	
+	public void SendState() {		
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STATE");		
 	}
 	
 	public void Open() {

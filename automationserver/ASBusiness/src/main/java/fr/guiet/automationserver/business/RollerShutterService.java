@@ -281,6 +281,12 @@ public class RollerShutterService implements Runnable {
 				_rsNorth.HasTimeoutOccured();
 				_rsWest.HasTimeoutOccured();
 				
+				//Ask State to roller shutter every two minutes
+				_rsNorth.SendState();
+				_rsWest.SendState();
+				
+				
+				
 			} catch (Exception e) {
 				_logger.error("Error occured in rollershutter management service", e);
 
