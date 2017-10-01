@@ -42,10 +42,10 @@ Bounce debouncer = Bounce();
 #define DOWN_LED D0
 #define MAX_RETRY 50
 
-String SENSORID= "7";   //west
-//String SENSORID= "8";   //north
-IPAddress ip_wemos(192, 168, 1, 40); //west
-//IPAddress ip_wemos(192, 168, 1, 41); //north
+//String SENSORID= "7";   //west
+String SENSORID= "8";   //north
+//IPAddress ip_wemos(192, 168, 1, 40); //west
+IPAddress ip_wemos(192, 168, 1, 41); //north
 IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
 IPAddress subnet_mask(255, 255, 255,   0);
 const char* ssid = "DUMBLEDORE";

@@ -13,7 +13,6 @@ import com.pi4j.io.gpio.RaspiPin;
 
 import it.sauronsoftware.cron4j.Scheduler;
 
-//TODO : automatic stop at 6AM during week
 public class AlarmService {
 	
 	private final String PIN_ALARM_NAME = "PIN_ALARM";

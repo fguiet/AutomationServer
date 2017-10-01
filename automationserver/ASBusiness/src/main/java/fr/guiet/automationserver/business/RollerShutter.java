@@ -134,105 +134,44 @@ public class RollerShutter {
 	public void Close() {
 		
 		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
-		
-		//JSONObject jo = sendGetRequest(_downUrl);
-		
-		//if (jo == null) {
-		//	return false;
-		//}
-		//else {
-		//	return jo.getBoolean("success");
-			/*String success = jo.getString("success");
-			
-			if (success=="true") {
-				return true;
-			}
-			else {
-				return false;
-			}*/
-		//}
 	}
 	
 	private void CheckForIntruders() {
+				
+		boolean isTimeBetween = false;
+		try {
+			isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
+		}
+		catch (ParseException pe) {
+			_logger.error("Erreur lors du parsing de la date", pe);
+		}
 		
-		//TODO : revoir cette partie
-		
-	//	RollerShutterState previousState = _rsWest.getPreviousState();
-	//	RollerShutterState currentState = _rsWest.getState();		
-		
-		//if (currentState != previousState && (_currentStateNorthSave != currentState || _previousStateNorthSave != previousState)) {
-			
-		//	_currentStateNorthSave = currentState;
-		//	_previousStateNorthSave = previousState;
-			
-			//_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
-
-			boolean isTimeBetween = false;
-			try {
-				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
+		if (isTimeBetween) {
+			//If state change that way...it is strange...somebody try to enter home??
+			//better send a sms....
+			if (_previousState == RollerShutterState.CLOSED && (_state == RollerShutterState.UNREACHABLE ||
+																_state == RollerShutterState.OPENED ||
+															   _state == RollerShutterState.VOID ||
+																	   _state == RollerShutterState.UNDETERMINED)) {
+				SMSDto sms = new SMSDto();
+				sms.setMessage("Le volet roulant "+_name+" est passé de l'état : "+_previousState.name()+ " à l'état : "+_state.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
+				_smsGammuService.sendMessage(sms, true);
 			}
-			catch (ParseException pe) {
-				_logger.error("Erreur lors du parsing de la date", pe);
-			}
-			
-			if (isTimeBetween) {
-				//If state change that way...it is strange...somebody try to enter home??
-				//better send a sms....
-				if (_previousState == RollerShutterState.CLOSED && (_state == RollerShutterState.UNREACHABLE ||
-																	_state == RollerShutterState.OPENED ||
-																   _state == RollerShutterState.VOID ||
-																		   _state == RollerShutterState.UNDETERMINED)) {
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant "+_name+" est passé de l'état : "+_previousState.name()+ " à l'état : "+_state.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
-					_smsGammuService.sendMessage(sms, true);
-				}
-			}
-		}		
+		}
+	}		
 	
 	
 	public void Stop() {
 		
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");
-		/*JSONObject jo = sendGetRequest(_stopUrl);
-		
-		if (jo == null) {
-			return false;
-		}
-		else {
-			return jo.getBoolean("success");
-			/*String success = jo.getString("success");
-			
-			if (success=="true") {
-				return true;
-			}
-			else {
-				return false;
-			}*/
-		//}
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");		
 	}
 	
-	public void SendState() {		
+	public void RequestState() {		
 		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STATE");		
 	}
 	
 	public void Open() {
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";OPEN");
-		/*JSONObject jo = sendGetRequest(_upUrl);
-		
-		if (jo == null) {
-			return false;
-		}
-		else {
-			return jo.getBoolean("success");
-			/*String success = jo.getString("success");
-			
-			if (success=="true") {
-				return true;
-			}
-			else {
-				return false;
-			}*/
-		//}
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";OPEN");		
 	}
 	
 	public RollerShutterState getPreviousState() {		
@@ -242,45 +181,7 @@ public class RollerShutter {
 	public RollerShutterState getState() {
 		return _state;
 	}
-	/*public RollerShutterState getState() {
-		
-		RollerShutterState previousState = _state;
-		
-		JSONObject jo = sendGetRequest(_getStateUrl);
-		
-		//By default!
-		_state = RollerShutterState.UNREACHABLE;
-		
-		if (jo == null) {
-			_state = RollerShutterState.UNREACHABLE;
-		}
-		else {
-			String state = jo.getString("state");
-			
-			switch(state) {
-			case "opened":
-				_state = RollerShutterState.OPENED;
-				break;
-			case "closed":
-				_state = RollerShutterState.CLOSED;
-				break;
-			case "undetermined":
-				_state = RollerShutterState.UNDETERMINED;
-				break;
-			}
-		}
-		
-		if (previousState != _state) {
-			_previousState = previousState;
-			_logger.info(_name +" passed from : "+previousState.name()+" to "+_state	.name());
-		}
-	//		_previousStateChanged = true;
-	//	}
-	//	else 
-	//		_previousStateChanged = false;
-		
-		return _state;
-	}*/
+	
 	
 	/*private JSONObject sendGetRequest(String url) {
 		
