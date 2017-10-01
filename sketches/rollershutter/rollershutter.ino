@@ -5,7 +5,7 @@
  * Creation           : 20170910
  * Last modification  : 20171001
  * 
- * Version            : 15
+ * Version            : 17
  * 
  * History            : 1.0 - Initial version
  *                      1.1 - Set Wifi to STA mode only (no AP)
@@ -13,6 +13,8 @@
  *                      1.3 - Add OTA Update handling
  *                      1.4 - Correct bug in getValue function and sendState function
  *                      1.5 - Correct bugs
+ *                      1.6 - Change static json buffer to dynamic json buffer, handle false up reedswitch detection
+ *                      1.7 -  handle better up reedswitch detection
  * 
  * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
  *                      https://github.com/esp8266/Arduino/issues/1782                     
@@ -54,13 +56,22 @@ const char* password = "frederic";
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-const int CURRENT_FIRMWARE_VERSION = 15;
+const int CURRENT_FIRMWARE_VERSION = 17;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
-String MQTT_CLIENT_ID = "RollerShutterSensorToto_" + SENSORID;
+String MQTT_CLIENT_ID = "RollerShutterSensor" + SENSORID;
 #define sub_topic1 "/guiet/openhab/rollershutter"
 #define sub_topic2 "/guiet/automationserver/rollershutter"
 #define pub_topic "/guiet/rollershutter"
+
+enum lastaction {
+  action_up,
+  action_down,
+  action_stop,
+  action_unknown
+};
+
+lastaction lastactionstate = action_unknown;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -96,7 +107,7 @@ int upDownTimeMs = 40000;
 //Time needed so rollershutter is completly closed
 int completeDownMS = 5000;
 
-StaticJsonBuffer<300> JSONBuffer;
+DynamicJsonBuffer JSONBuffer;
 
 void setup() {
 
@@ -139,7 +150,6 @@ void setup() {
   downReed.attach(DOWN_REED);
   downReed.interval(5); // interval in ms
      
-
   Serial.begin(115200);
 
   connectToWifi();
@@ -288,6 +298,7 @@ void handleButtons() {
   if (upButtonValue == LOW && resetUpButton) {
     Serial.println("Up Pressed");
     upAsked = true;
+    lastactionstate = action_up;
     resetUpButton = false;
   }  
 
@@ -295,21 +306,25 @@ void handleButtons() {
     Serial.println("Up not pressed anymore!! Stop rollershutter");
     stopAsked = true;
     resetUpButton = true;    
+    lastactionstate = action_stop;
   }
 
   if (downButtonValue == LOW && resetDownButton) {
     Serial.println("Down Pressed");
     downAsked = true;
     resetDownButton = false;
+    lastactionstate = action_down;
   }  
 
   if (downButton.rose()) {
     Serial.println("Down not pressed anymore!! Stop rollershutter");
     stopAsked = true;
     resetDownButton = true;
+    lastactionstate = action_stop;
   }
 
-  if (upReed.fell()) {
+  //lastactionstate != down because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on descend le volet)
+  if (upReed.fell() && lastactionstate != action_down) {
     //Here rollershutter is up (reed switch connected
     Serial.println("Volet roulant en haut");        
     stopAsked = true;    
@@ -317,7 +332,8 @@ void handleButtons() {
     manageUpDownLed();
   }
 
-  if (upReed.rose()) {    
+  //lastactionstate != up because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on monte le volet) => provoque des changements d'états non désires
+  if (upReed.rose() && lastactionstate != action_up) {    
     isOpened = false;
     manageUpDownLed();
   }
@@ -472,14 +488,17 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   if (id == SENSORID) {
     if (action == "SETACTION")  {
       if (request == "UP") {
+        lastactionstate = action_up;
         upAsked = true;
       }
 
       if (request == "DOWN") {
+        lastactionstate = action_down;
         downAsked = true;
       }
 
       if (request == "STOP") {
+        lastactionstate = action_stop;
         stopAsked = true;
       }
 

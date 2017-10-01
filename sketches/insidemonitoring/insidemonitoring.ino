@@ -25,7 +25,7 @@
 #include <PubSubClient.h>
 
 /**** VARIABLES ***/
-StaticJsonBuffer<300> JSONBuffer;
+DynamicJsonBuffer JSONBuffer;
 #define DHTTYPE DHT22
 #define DHTPIN D2
 DHT dht(DHTPIN, DHTTYPE);

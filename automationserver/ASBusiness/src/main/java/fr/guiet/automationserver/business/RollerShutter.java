@@ -119,15 +119,16 @@ public class RollerShutter {
 	public void setState(RollerShutterState state) {
 		
 		_lastStateReceived = new Date();
-		
+			
+		//Save previsous state
+		_previousState = _state;
+		//Update current state to new state
+		_state = state;
 		
 		if (_previousState != _state) {
 			_logger.info(_name+" passed from : "+_previousState.name()+" to "+_state.name());
-			_previousState = _state;
 			CheckForIntruders();			
 		}
-				
-		_state = state;				
 	}
 	
 	public void Close() {
