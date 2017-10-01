@@ -3,14 +3,16 @@
  * 
  * F. Guiet 
  * Creation           : 20170910
- * Last modification  : 20170930
+ * Last modification  : 20171001
  * 
- * Version            : 13
+ * Version            : 15
  * 
  * History            : 1.0 - Initial version
  *                      1.1 - Set Wifi to STA mode only (no AP)
  *                      1.2 - Remove webserver and replace with mqtt
  *                      1.3 - Add OTA Update handling
+ *                      1.4 - Correct bug in getValue function and sendState function
+ *                      1.5 - Correct bugs
  * 
  * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
  *                      https://github.com/esp8266/Arduino/issues/1782                     
@@ -45,17 +47,17 @@ IPAddress ip_wemos(192, 168, 1, 40); //west
 IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
 IPAddress subnet_mask(255, 255, 255,   0);
 const char* ssid = "DUMBLEDORE";
-const char* password = "***";
+const char* password = "frederic";
 //Mqtt settings
 
 #define mqtt_server "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-const int CURRENT_FIRMWARE_VERSION = 13;
+const int CURRENT_FIRMWARE_VERSION = 15;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
-String MQTT_CLIENT_ID = "RollerShutterSensor_" + SENSORID;
+String MQTT_CLIENT_ID = "RollerShutterSensorToto_" + SENSORID;
 #define sub_topic1 "/guiet/openhab/rollershutter"
 #define sub_topic2 "/guiet/automationserver/rollershutter"
 #define pub_topic "/guiet/rollershutter"
@@ -154,16 +156,16 @@ void setup() {
   
 }
 
-String sendState() {
+void sendState() {
 
-  String mess = "SETRSSTATE;"+String(SENSORID)+";UNDETERMINED"; 
+  String mess = "SETRSSTATE;"+String(SENSORID)+";UNDETERMINED" + ";" + String(CURRENT_FIRMWARE_VERSION);
   
   if (isOpened) {
-    mess = "SETRSSTATE;"+String(SENSORID)+";OPENED";         
+    mess = "SETRSSTATE;"+String(SENSORID)+";OPENED" + ";" + String(CURRENT_FIRMWARE_VERSION);
   }
 
   if (isClosed) {
-    mess = "SETRSSTATE;"+String(SENSORID)+";CLOSED";        
+    mess = "SETRSSTATE;"+String(SENSORID)+";CLOSED" + ";" + String(CURRENT_FIRMWARE_VERSION);
   }
 
   client.publish(pub_topic,mess.c_str()); 
@@ -432,31 +434,19 @@ void initUpDownReedSwitch() {
 
 String getValue(String data, char separator, int index)
 {
-    int maxIndex = data.length() - 1;
-    int j = 0;
-    String chunkVal = "";
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
 
-    for (int i = 0; i <= maxIndex && j <= index; i++)
-    {
-        chunkVal.concat(data[i]);
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
 
-        if (data[i] == separator)
-        {
-            j++;
-
-            if (j > index)
-            {
-                chunkVal.trim();
-                return chunkVal;
-            }
-
-            chunkVal = "";
-        }
-        else if ((i == maxIndex) && (j < index)) {
-            chunkVal = "";
-            return chunkVal;
-        }
-    }   
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
