@@ -33,12 +33,9 @@ public class RollerShutter {
 	private String _pub_topic ="/guiet/automationserver/rollershutter";
 	
 	public RollerShutter(int id, String name, SMSGammuService smsGammuService) {
-		_id = id;
-		//_apikey = apikey;
-		//_baseUrl = baseUrl;
+		_id = id;	
 		_name = name;
-			
-		
+					
 		_mqttClient = new MqttClientMgt();
 		_smsGammuService = smsGammuService;
 	}
@@ -130,12 +127,7 @@ public class RollerShutter {
 			CheckForIntruders();			
 		}
 	}
-	
-	public void Close() {
 		
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
-	}
-	
 	private void CheckForIntruders() {
 				
 		boolean isTimeBetween = false;
@@ -158,9 +150,17 @@ public class RollerShutter {
 				_smsGammuService.sendMessage(sms, true);
 			}
 		}
-	}		
+	}
 	
+	public void Open() {
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";UP");		
+	}
 	
+	public void Close() {
+		
+		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
+	}
+		
 	public void Stop() {
 		
 		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");		
@@ -169,11 +169,7 @@ public class RollerShutter {
 	public void RequestState() {		
 		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STATE");		
 	}
-	
-	public void Open() {
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";OPEN");		
-	}
-	
+		
 	public RollerShutterState getPreviousState() {		
 			return _previousState;		
 	}
