@@ -49,6 +49,10 @@ public class ScenariiManager {
 		_rollerShutterService = rollerShutterService;
 		_alarmService = alarmService;
 		
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		_scenariiScheduler = new Scheduler();
+		_scenariiScheduler.setTimeZone(timeZone);
+		
 		// 0 = Sunday
 		_scenariiScheduler.schedule("05 00 * * 0,1,2,3,4,5,6", new Runnable() {
 		public void run() {	
