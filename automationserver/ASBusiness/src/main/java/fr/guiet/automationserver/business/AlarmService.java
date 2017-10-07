@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.pi4j.io.gpio.RaspiPin;
 
+import fr.guiet.automationserver.dto.SMSDto;
 import it.sauronsoftware.cron4j.Scheduler;
 
 public class AlarmService {
@@ -18,11 +19,13 @@ public class AlarmService {
 	private final String PIN_ALARM_NAME = "PIN_ALARM";
 	private static Logger _logger = Logger.getLogger(AlarmService.class);
 	private RollerShutterService _rollerShutterService = null;
+	private SMSGammuService _smsGammuService = null;
 	private Scheduler _alarmScheduler = null;
 	private String _cronNightAlarmOn = null;
 	private boolean _automaticModeStatus = true; //activated by default
 	
-	public AlarmService (RollerShutterService rollerShutterService) {
+	public AlarmService (RollerShutterService rollerShutterService,
+						 SMSGammuService smsGammuService) {
 		
 		InputStream is = null;
 		try {
@@ -50,6 +53,7 @@ public class AlarmService {
 		}
 		
 		_rollerShutterService = rollerShutterService;
+		_smsGammuService = smsGammuService;
 				
 		_logger.info("Starting Alarm service...");
 		
@@ -108,6 +112,10 @@ public class AlarmService {
 			
 			//Close all rollers shutters if not allready closed
 			_rollerShutterService.CloseAllRollerShutters();
+			
+			SMSDto sms = new SMSDto();
+			sms.setMessage("L'alarme vient d'être activée. Bonne et douce journée Maître");
+			_smsGammuService.sendMessage(sms, true);
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm on", e);
@@ -126,6 +134,10 @@ public class AlarmService {
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
 					PIN_ALARM_NAME, null);
+			
+			SMSDto sms = new SMSDto();
+			sms.setMessage("L'alarme vient d'être désactivée.");
+			_smsGammuService.sendMessage(sms, true);
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm off", e);
