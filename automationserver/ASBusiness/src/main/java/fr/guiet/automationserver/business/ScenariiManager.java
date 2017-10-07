@@ -14,7 +14,7 @@ import it.sauronsoftware.cron4j.Scheduler;
 public class ScenariiManager {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(RoomService.class);
+	private static Logger _logger = Logger.getLogger(ScenariiManager.class);
 		
 	private Scheduler _scenariiScheduler = null;
 	private Scheduler _sundayScheduler = null;
@@ -128,27 +128,41 @@ public class ScenariiManager {
 	}*/
 	
 	private void StopAllSchedulers() {
-				
-		_sundayScheduler.stop();
-		_sundayScheduler = null;
 		
-		_mondayScheduler.stop();
-		_mondayScheduler = null;
+		if (_sundayScheduler !=null) {
+			_sundayScheduler.stop();
+			_sundayScheduler = null;
+		}
 		
-		_tuesdayScheduler.stop();
-		_tuesdayScheduler = null;
+		if (_mondayScheduler !=null) {
+			_mondayScheduler.stop();
+			_mondayScheduler = null;
+		}
 		
-		_wesnesdayScheduler.stop();
-		_wesnesdayScheduler = null;
+		if (_tuesdayScheduler !=null) {
+			_tuesdayScheduler.stop();
+			_tuesdayScheduler = null;
+		}
 		
-		_thursdayScheduler.stop();
-		_thursdayScheduler = null;
+		if (_wesnesdayScheduler !=null) {
+			_wesnesdayScheduler.stop();
+			_wesnesdayScheduler = null;
+		}
 		
-		_fridayScheduler.stop();
-		_fridayScheduler = null;
+		if (_thursdayScheduler !=null) {
+			_thursdayScheduler.stop();
+			_thursdayScheduler = null;
+		}
 		
-		_saturdayScheduler.stop();
-		_saturdayScheduler = null;		
+		if (_fridayScheduler !=null) {
+			_fridayScheduler.stop();
+			_fridayScheduler = null;
+		}
+		
+		if (_saturdayScheduler !=null) {
+			_saturdayScheduler.stop();
+			_saturdayScheduler = null;		
+		}
 	}
 	
 	private void StartCurrentDayScenario() {
