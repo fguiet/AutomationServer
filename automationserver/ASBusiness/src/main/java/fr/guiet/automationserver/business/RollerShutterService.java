@@ -58,8 +58,7 @@ public class RollerShutterService implements Runnable {
 	private SMSGammuService _smsGammuService = null;
 	private Scheduler _rollerShutterScheduler = null;
 	
-	private String _cronNightWeekClose = null;
-	
+	private String _cronNightWeekClose = null;	
 	//private Scheduler _computeSunSetSunRiseScheduler = null;
 	private String _cronComputeSunSetSunRise = null;
 	//private Scheduler _weekCloseScheduler = null;
@@ -350,7 +349,7 @@ public class RollerShutterService implements Runnable {
 		}
 	}
 	
-	private void OpenRollerShutters() {
+	public void OpenAllRollerShutters() {
 		//Only if automatic management status is activated!
 		if (_automaticManagementStatus) {
 		
@@ -557,7 +556,7 @@ public class RollerShutterService implements Runnable {
 			
 			_weekMorningOpenId = _rollerShutterScheduler.schedule(newCron, new Runnable() {
 				public void run() {
-					OpenRollerShutters();
+					OpenAllRollerShutters();
 					_rollerShutterScheduler.deschedule(_weekMorningOpenId);
 				}});	
 			//_rollerShutterScheduler.start();
