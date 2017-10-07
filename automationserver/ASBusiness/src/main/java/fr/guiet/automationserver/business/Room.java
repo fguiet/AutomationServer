@@ -240,7 +240,7 @@ public class Room {
 		_influxdbMeasurement = dto.influxdbMeasurement;
 
 		_dbManager = new DbManager();
-		SensorDto sensorDto = _dbManager.GetSensorByRoomId(dto.idSensor);
+		SensorDto sensorDto = _dbManager.GetSensorById(dto.idSensor);
 
 		ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
 		for (HeaterDto heaterDto : heaterDtoList) {

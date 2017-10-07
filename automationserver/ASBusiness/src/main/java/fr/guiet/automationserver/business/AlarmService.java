@@ -22,6 +22,7 @@ public class AlarmService {
 	private SMSGammuService _smsGammuService = null;
 	private Scheduler _alarmScheduler = null;
 	private String _cronNightAlarmOn = null;
+	private String _cronMorningAlarmOff = null;
 	private boolean _automaticModeStatus = true; //activated by default
 	
 	public AlarmService (RollerShutterService rollerShutterService,
@@ -41,7 +42,13 @@ public class AlarmService {
 				_cronNightAlarmOn = cronNightAlarmOn;
 			else
 				_cronNightAlarmOn = "00 22 * * 1,2,3,4,5";
-									
+			
+			String cronMorningAlarmOff = prop.getProperty("alarm.schedule.weekmorningoff");
+			if (cronMorningAlarmOff != null)
+				_cronMorningAlarmOff = cronMorningAlarmOff;
+			else
+				_cronMorningAlarmOff = "00 6 * * 1,2,3,4,5";
+											
 		} catch (FileNotFoundException e) {
 			_logger.error(
 					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
@@ -57,7 +64,7 @@ public class AlarmService {
 				
 		_logger.info("Starting Alarm service...");
 		
-		_logger.info("Starting automatic alarm scheduler at : "+_cronNightAlarmOn);
+		_logger.info("Starting automatic alarm ON scheduler at : "+_cronNightAlarmOn);
 		_alarmScheduler = new Scheduler();
 		//Get Europe/Paris TimeZone
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
@@ -68,6 +75,14 @@ public class AlarmService {
 				SetOn();
 		}
 		});
+		_logger.info("Starting automatic alarm OFF scheduler at : "+_cronMorningAlarmOff);
+		_alarmScheduler.schedule(_cronMorningAlarmOff, new Runnable() {
+			public void run() {	
+				if (_automaticModeStatus)
+					SetOff();
+			}
+			});
+		
 		_alarmScheduler.start();
 	}
 	

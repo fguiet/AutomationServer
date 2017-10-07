@@ -3,27 +3,31 @@
  * 
  * F. Guiet 
  * Creation           : 20170910
- * Last modification  : 20170924
+ * Last modification  : 20171001
  * 
- * Version            : 1.1
+ * Version            : 17
  * 
  * History            : 1.0 - Initial version
  *                      1.1 - Set Wifi to STA mode only (no AP)
+ *                      1.2 - Remove webserver and replace with mqtt
+ *                      1.3 - Add OTA Update handling
+ *                      1.4 - Correct bug in getValue function and sendState function
+ *                      1.5 - Correct bugs
+ *                      1.6 - Change static json buffer to dynamic json buffer, handle false up reedswitch detection
+ *                      1.7 -  handle better up reedswitch detection
  * 
- * 
-  ****/
-
-//Light Mqtt library
+ * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
+ *                      https://github.com/esp8266/Arduino/issues/1782                     
+ *                      https://github.com/esp8266/Arduino/issues/1017
+ *                      Wemos D1 Datasheet : https://wiki.wemos.cc/products:d1:d1_mini
+ */
+ 
 #include <PubSubClient.h>
-
 #include <ESP8266WiFi.h>
 #include <SimpleTimer.h>
-
-
-/*
- * Wemos D1 Datasheet : https://wiki.wemos.cc/products:d1:d1_mini
- */
-
+#include <ArduinoJson.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 #include <Bounce2.h>
 
 Bounce debouncer = Bounce();
@@ -36,21 +40,38 @@ Bounce debouncer = Bounce();
 #define DOWN_REED D7
 #define UP_LED D8
 #define DOWN_LED D0
+#define MAX_RETRY 50
 
-//IPAddress ip_wemos(192, 168, 1, 40);
-//String ROLLERSHUTTERID= "1";   //west
-IPAddress ip_wemos(192, 168, 1, 41);
-String ROLLERSHUTTERID= "2"; //north
+//String SENSORID= "7";   //west
+String SENSORID= "8";   //north
+//IPAddress ip_wemos(192, 168, 1, 40); //west
+IPAddress ip_wemos(192, 168, 1, 41); //north
+IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
+IPAddress subnet_mask(255, 255, 255,   0);
 const char* ssid = "DUMBLEDORE";
-const char* password = "***";
-String apikey="***";
+const char* password = "frederic";
 //Mqtt settings
+
 #define mqtt_server "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
-IPAddress subnet_mask(255, 255, 255,   0);
+const int CURRENT_FIRMWARE_VERSION = 17;
+String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
+String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
+String MQTT_CLIENT_ID = "RollerShutterSensor" + SENSORID;
+#define sub_topic1 "/guiet/openhab/rollershutter"
+#define sub_topic2 "/guiet/automationserver/rollershutter"
+#define pub_topic "/guiet/rollershutter"
+
+enum lastaction {
+  action_up,
+  action_down,
+  action_stop,
+  action_unknown
+};
+
+lastaction lastactionstate = action_unknown;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -67,6 +88,7 @@ Bounce downReed = Bounce();
 // the timer object
 SimpleTimer timer;
 SimpleTimer blinkTimer;
+SimpleTimer checkForUpdateTimer;
 SimpleTimer closeTimer;
 
 bool upAsked = false;
@@ -84,6 +106,8 @@ int closeTimerId = -1;
 int upDownTimeMs = 40000; 
 //Time needed so rollershutter is completly closed
 int completeDownMS = 5000;
+
+DynamicJsonBuffer JSONBuffer;
 
 void setup() {
 
@@ -126,7 +150,6 @@ void setup() {
   downReed.attach(DOWN_REED);
   downReed.interval(5); // interval in ms
      
-
   Serial.begin(115200);
 
   connectToWifi();
@@ -137,20 +160,34 @@ void setup() {
   initUpDownReedSwitch();
 
   blinkTimer.setInterval(1000, blinkBuiltInLed);
+  checkForUpdateTimer.setInterval(60000, checkForUpdate);
 
   Serial.println("Ready...");
   
 }
 
-void manageUpDownLed() {
+void sendState() {
 
+  String mess = "SETRSSTATE;"+String(SENSORID)+";UNDETERMINED" + ";" + String(CURRENT_FIRMWARE_VERSION);
+  
+  if (isOpened) {
+    mess = "SETRSSTATE;"+String(SENSORID)+";OPENED" + ";" + String(CURRENT_FIRMWARE_VERSION);
+  }
+
+  if (isClosed) {
+    mess = "SETRSSTATE;"+String(SENSORID)+";CLOSED" + ";" + String(CURRENT_FIRMWARE_VERSION);
+  }
+
+  client.publish(pub_topic,mess.c_str()); 
+}
+
+void manageUpDownLed() {
+    
   if (isOpened) {
     //rollshutter is opened
     digitalWrite(UP_LED, HIGH);     
     //Turn off internal led 
-    digitalWrite(BUILTIN_LED, HIGH);
-
-    //Send state here to automation server via mqtt
+    digitalWrite(BUILTIN_LED, HIGH);    
   }
   else {
     //rollshutter is closed
@@ -161,16 +198,54 @@ void manageUpDownLed() {
     //rollshutter is closed
     digitalWrite(DOWN_LED, HIGH);    
     //Turn off internal led 
-    digitalWrite(BUILTIN_LED, HIGH);
-
+    digitalWrite(BUILTIN_LED, HIGH);  
     //Send state here to automation server via mqtt
   } else {
     //rollshutter is opened
     digitalWrite(DOWN_LED, LOW);       
-  }   
+  } 
 
-  if (!isOpened && !isClosed) {
-    //Send state here to automation server via mqtt
+  sendState();
+}
+
+void checkForUpdate() {
+
+  HTTPClient httpClient;
+  httpClient.setTimeout(2000);
+  Serial.println("Calling : " + CHECK_FIRMWARE_VERSION_URL);
+  httpClient.begin( CHECK_FIRMWARE_VERSION_URL );
+  int httpCode = httpClient.GET();
+  Serial.println("Http code received : "+String(httpCode));
+  if( httpCode == 200 ) {  
+    String result = httpClient.getString();
+    Serial.print("Checking version : "+ result);
+    JsonObject& parsed= JSONBuffer.parseObject(result);
+    if (parsed.success()) {      
+        int lastVersion = parsed["lastversion"];        
+        Serial.println("Version courante : " + String(CURRENT_FIRMWARE_VERSION) + ", dernière version : " + String(lastVersion));
+        if( lastVersion > CURRENT_FIRMWARE_VERSION ) {
+          doOTAUpdate(lastVersion);
+        }
+    }
+  }
+  
+  httpClient.end();  
+}
+
+void doOTAUpdate(int version) {
+
+  t_httpUpdate_return ret  = ESPhttpUpdate.update(BASE_FIRMWARE_URL +  "/" + String(version));
+  
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.println("[update] Update failed.");      
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("[update] Update no Updates.");           
+      break;
+    case HTTP_UPDATE_OK:  
+      Serial.println("[update] Update ok.");   
+      break;
   }  
 }
 
@@ -189,6 +264,7 @@ void loop() {
   blinkTimer.run();
   timer.run();
   closeTimer.run();  
+  checkForUpdateTimer.run();
 }
 
 //Led blink only if roller shutter not closed nor opened
@@ -222,6 +298,7 @@ void handleButtons() {
   if (upButtonValue == LOW && resetUpButton) {
     Serial.println("Up Pressed");
     upAsked = true;
+    lastactionstate = action_up;
     resetUpButton = false;
   }  
 
@@ -229,21 +306,25 @@ void handleButtons() {
     Serial.println("Up not pressed anymore!! Stop rollershutter");
     stopAsked = true;
     resetUpButton = true;    
+    lastactionstate = action_stop;
   }
 
   if (downButtonValue == LOW && resetDownButton) {
     Serial.println("Down Pressed");
     downAsked = true;
     resetDownButton = false;
+    lastactionstate = action_down;
   }  
 
   if (downButton.rose()) {
     Serial.println("Down not pressed anymore!! Stop rollershutter");
     stopAsked = true;
     resetDownButton = true;
+    lastactionstate = action_stop;
   }
 
-  if (upReed.fell()) {
+  //lastactionstate != down because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on descend le volet)
+  if (upReed.fell() && lastactionstate != action_down) {
     //Here rollershutter is up (reed switch connected
     Serial.println("Volet roulant en haut");        
     stopAsked = true;    
@@ -251,7 +332,8 @@ void handleButtons() {
     manageUpDownLed();
   }
 
-  if (upReed.rose()) {    
+  //lastactionstate != up because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on monte le volet) => provoque des changements d'états non désires
+  if (upReed.rose() && lastactionstate != action_up) {    
     isOpened = false;
     manageUpDownLed();
   }
@@ -366,133 +448,129 @@ void initUpDownReedSwitch() {
   manageUpDownLed();
 }
 
-/*void handleWebRequest() {
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
 
-  int returnCode = 400; //bad request
-  String jsonKO = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\",\"success\":false}";
-  String jsonOk = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\",\"success\":true}";
-  String json = jsonKO;
-
-  if (server.arg("apikey") == "" || server.arg("apikey") != apikey) {
-    returnCode = 403;    
-    server.send(returnCode, "text/plain", "");
-    return;
-  }
-  
-  if (server.arg("action")== "up") {
-     upAsked = true;  
-     returnCode = 200;
-     json = jsonOk;          
-  }  
-
-  if (server.arg("action")== "down") {
-    downAsked = true;
-    returnCode = 200;
-    json = jsonOk;    
-  }
-
-  if (server.arg("action")== "stop") {
-    stopAsked = true;
-    returnCode = 200;
-    json = jsonOk;
-  }
-
-  if (server.arg("action")== "state") {
-    if (isClosed) {
-      returnCode = 200;
-      json = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\", \"state\":\"closed\"}";
-    }
-
-    if (isOpened) {
-      returnCode = 200;
-      json = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\", \"state\":\"opened\"}";      
-    }
-
-    if (!isClosed && !isOpened) {
-      returnCode = 200;
-      json = "{\"rollershutterid\":\""+ROLLERSHUTTERID + "\", \"state\":\"undetermined\"}";       
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
     }
   }
 
-  server.send(returnCode, "text/json", json);
-}*/
-
-/*void initializeWebServer() {
-  // Start the server
-  
-  server.on("/api/rollershutter", handleWebRequest);  
-
-  server.begin();
-
-  Serial.println("Server started");
- 
-  // Print the IP address
-  Serial.print("Use this URL : ");
-  Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("/");
-}*/
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
-  /*int i = 0;
-  if ( debug ) {
-    Serial.println("Message recu =>  topic: " + String(topic));
-    Serial.print(" | longueur: " + String(length,DEC));
-  }
-  // create character buffer with ending null terminator (string)
+  char message_buff[100];
+
+  Serial.println("Message recu =>  topic: " + String(topic));
+
+  int i = 0;
   for(i=0; i<length; i++) {
     message_buff[i] = payload[i];
   }
   message_buff[i] = '\0';
   
-  String msgString = String(message_buff);
-  if ( debug ) {
-    Serial.println("Payload: " + msgString);
+  String receivedPayload = String(message_buff);
+
+  Serial.println("Payload: " + receivedPayload);
+
+  String action = getValue(receivedPayload, ';', 0);
+  String id = getValue(receivedPayload, ';', 1);
+  String request = getValue(receivedPayload, ';', 2);
+
+  if (id == SENSORID) {
+    if (action == "SETACTION")  {
+      if (request == "UP") {
+        lastactionstate = action_up;
+        upAsked = true;
+      }
+
+      if (request == "DOWN") {
+        lastactionstate = action_down;
+        downAsked = true;
+      }
+
+      if (request == "STOP") {
+        lastactionstate = action_stop;
+        stopAsked = true;
+      }
+
+      if (request == "STATE") {
+        sendState();
+      }
+    }    
   }
-  
-  if ( msgString == "ON" ) {
-    digitalWrite(D2,HIGH);  
-  } else {
-    digitalWrite(D2,LOW);  
-  }*/
 }
 
-
 void connectToMqtt() {
-
+  
   client.setServer(mqtt_server, 1883); 
   client.setCallback(mqttCallback);
 
+  int retry = 0;
   Serial.print("Attempting MQTT connection...");
-  while (!client.connected()) {
-        
-    if (client.connect("ESP8266_RollershutterID"+ROLLERSHUTTERID)) {
+  while (!client.connected()) {   
+    if (client.connect(MQTT_CLIENT_ID.c_str())) {
       Serial.println("connected to MQTT Broker...");
     }
+    else {
+      delay(500);
+      Serial.print(".");
+    }
+  }
 
-    delay(500);
-    Serial.print(".");
+  if (retry >= MAX_RETRY) {
+    ESP.restart();
+  } else {
+    client.subscribe(sub_topic1);
+    client.subscribe(sub_topic2);
   }
 }
 
 void connectToWifi() 
 {
+  byte mac[6];
+
   WiFi.disconnect();
   Serial.println("Connecting to WiFi...");
   WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED) {
+
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
     delay(500);
     Serial.print(".");
-    //handleButtons();
+    retry++;    
   }
 
+  if (retry >= MAX_RETRY)
+    ESP.restart();
+  
   Serial.println ( "" );
   Serial.print ( "Connected to " );
   Serial.println ( ssid );
   Serial.print ( "IP address: " );
   Serial.println ( WiFi.localIP() );
+  
+  WiFi.macAddress(mac);
+  Serial.print("MAC: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
 }

@@ -1,106 +1,93 @@
 /**** 
- * Mailbox Notifier
+ * Inside monitoring
  * 
  * F. Guiet 
  * Creation           : 20170218
- * Last modification  : 20170515
+ * Last modification  : 20170930
  * 
- * Version            : 1.2
+ * Version            : 1.4
  * 
- * History            : 1.2 - Change wifi gateway address
- * 
+ * History            : 12 - Change wifi gateway address
+ *                      13 - Activate OTA update, remove DeepSleep                
+ *                      14 - OTA update works with server now, re-add DeepSleep fonctionality
+ *                      
+ * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
+ *                      https://github.com/esp8266/Arduino/issues/1782                     
+ *                      https://github.com/esp8266/Arduino/issues/1017
+ *                      
  */
 
+#include <ArduinoJson.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
+#include <ESP8266WiFi.h>  
 #include <DHT.h>
-
-//Light Mqtt library
 #include <PubSubClient.h>
 
-//Wifi library
-#include <ESP8266WiFi.h>
-
+/**** VARIABLES ***/
+DynamicJsonBuffer JSONBuffer;
 #define DHTTYPE DHT22
 #define DHTPIN D2
 DHT dht(DHTPIN, DHTTYPE);
+WiFiClient espClient;
+PubSubClient client(espClient);
+char message_buff[100];
+/**** END VARIABLES ***/
 
-//#define SENSORID 5 //Parents
-//#define SENSORID 4 //Manon
-//#define SENSORID 3 //Nohé
-//#define SENSORID 2 //Salon
-#define SENSORID 1 //Bureau
-
-//#define MQTT_CLIENT_ID "ParentsSensor"
-//#define MQTT_CLIENT_ID "ManonSensor"
-//#define MQTT_CLIENT_ID "NoheSensor"
+/**** DEFINE ***/
+const int SLEEP_TIME_SECONDS = 60;
+//String SENSORID =  "1"; //Bureau
+//String SENSORID =  "2"; //Salon
+//String SENSORID =  "3"; //Nohe
+String SENSORID =  "4"; //Manon
+//String SENSORID =  "5"; //Parents
+#define MAX_RETRY 50
+//#define MQTT_CLIENT_ID "BureauSensor"
 //#define MQTT_CLIENT_ID "SalonSensor"
-#define MQTT_CLIENT_ID "BureauSensor"
-
-IPAddress ip_wemos(192,  168,   1,   35); //bureau
-//IPAddress ip_wemos(192,  168,   1,   36); //Salon
-//IPAddress ip_wemos(192,  168,   1,   37); //Manon
-//IPAddress ip_wemos(192,  168,   1,   38); //Parents
-//IPAddress ip_wemos(192,  168,   1,   39); //Nohe
-
-//Mqtt settings
-
+//#define MQTT_CLIENT_ID "NoheSensor"
+//#define MQTT_CLIENT_ID "ParentSensor"
+#define MQTT_CLIENT_ID "ManonSensor"
 #define MQTT_SERVER "192.168.1.25"
 //#define mqtt_user ""
 //#define mqtt_password ""
 #define MQTT_TOPIC "/guiet/inside/sensor"
-
-const int SLEEP_TIME_SECONDS = 60;
-#define MAX_RETRY 50
-
-// WiFi settings
+const int CURRENT_FIRMWARE_VERSION = 14;
+String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
+String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
+//IPAddress ip_wemos (192,168,1,35); //Bureau
+//IPAddress ip_wemos (192,168,1,36); //Salon
+IPAddress ip_wemos (192,168,1,37); //Manon
+//IPAddress ip_wemos (192,168,1,38); //Parents
+//IPAddress ip_wemos (192,168,1,39); //Nohe
+IPAddress gateway_ip ( 192,168,1,1);
+IPAddress subnet_mask(255, 255, 255,0);
 
-IPAddress gateway_ip ( 192,  168,   1,   254);
-IPAddress subnet_mask(255, 255, 255,   0);
+/**** END DEFINE ***/ 
 
-WiFiClient espClient;
-PubSubClient client(espClient);
 
-char message_buff[100];
 
 void setup() {
 
-  Serial.begin(115200); 
-
-  delay(1000);
-
-  Serial.println("Initializing DHT...");
-
-  dht.begin();
-
-  Serial.println("Initializing MQTT...");
-  client.setServer(MQTT_SERVER, 1883); 
+  //Initialize Serial
+  Serial.begin(115200);
   
+  //Connecting to WiFi
   connectToWifi();
-  
-  Serial.println("ready!");
 
+  //Check for firmware update
+  checkForUpdate();
+
+  //No update necessary
+  //Connect to Mqtt
+  connectToMqtt();   
 }
 
 void loop() {
 
-  if (WiFi.status() != WL_CONNECTED) {
-    if (!connectToWifi())
-      goDeepSleep();      
-      return;
-  }  
-
-  if (!client.connected()) {
-    if (!reconnect()) {
-      goDeepSleep();      
-      return;
-    }
-  }
-
   //Handle MQTT connection
-  client.loop();
-
-  //delay(1000);
+  client.loop();  
   
   float h = dht.readHumidity();
   float t = dht.readTemperature();
@@ -114,22 +101,125 @@ void loop() {
 
   if (isnan(t) || isnan(h)) 
   {
-    Serial.println("Failed to read from DHT");        
-    //goDeepSleep();
+    Serial.println("Failed to read from DHT");            
   }
   else {
 
     Serial.println("Temp : "+String(t,2));
     Serial.println("Humi : "+String(h,2));
 
-    String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2);
+    String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2)+";"+String(CURRENT_FIRMWARE_VERSION);
     mess.toCharArray(message_buff, mess.length()+1);
     client.publish(MQTT_TOPIC,message_buff);
   }
 
   //Deep sleep...ZZzzzZZzzz
-  goDeepSleep();
+  goDeepSleep();  
+  
+}
 
+void checkForUpdate() {
+
+  HTTPClient httpClient;
+  httpClient.setTimeout(2000);
+  Serial.println("Calling : " + CHECK_FIRMWARE_VERSION_URL);
+  httpClient.begin( CHECK_FIRMWARE_VERSION_URL );
+  int httpCode = httpClient.GET();
+  Serial.println("Http code received : "+String(httpCode));
+  if( httpCode == 200 ) {  
+    String result = httpClient.getString();
+    Serial.print("Checking version : "+ result);
+    JsonObject& parsed= JSONBuffer.parseObject(result);
+    if (parsed.success()) {      
+        int lastVersion = parsed["lastversion"];        
+        Serial.println("Version courante : " + String(CURRENT_FIRMWARE_VERSION) + ", dernière version : " + String(lastVersion));
+        if( lastVersion > CURRENT_FIRMWARE_VERSION ) {
+          doOTAUpdate(lastVersion);
+        }
+    }
+  }
+  
+  httpClient.end();  
+}
+
+void doOTAUpdate(int version) {
+
+  t_httpUpdate_return ret  = ESPhttpUpdate.update(BASE_FIRMWARE_URL +  "/" + String(version));
+  
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.println("[update] Update failed.");      
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("[update] Update no Updates.");           
+      break;
+    case HTTP_UPDATE_OK:  
+      Serial.println("[update] Update ok.");   
+      break;
+  }  
+}
+
+void connectToMqtt() {
+  
+  client.setServer(MQTT_SERVER, 1883); 
+
+  int retry = 0;
+  Serial.print("Attempting MQTT connection...");
+  while (!client.connected()) {   
+    if (client.connect(MQTT_CLIENT_ID)) {
+      Serial.println("connected to MQTT Broker...");
+    }
+    else {
+      delay(500);
+      Serial.print(".");
+    }
+  }
+
+  if (retry >= MAX_RETRY) {
+    goDeepSleep();
+  }
+}
+
+void connectToWifi() 
+{
+  byte mac[6];
+
+  WiFi.forceSleepWake();
+  WiFi.disconnect();
+  Serial.println("Connecting to WiFi...");
+  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
+    delay(500);
+    Serial.print(".");
+    retry++;    
+  }
+
+  if (retry >= MAX_RETRY)
+    goDeepSleep();
+  
+  Serial.println ( "" );
+  Serial.print ( "Connected to " );
+  Serial.println ( ssid );
+  Serial.print ( "IP address: " );
+  Serial.println ( WiFi.localIP() );
+  
+  WiFi.macAddress(mac);
+  Serial.print("MAC: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
 }
 
 void disconnectMqtt() {
@@ -143,74 +233,16 @@ void disconnectWifi() {
 }
 
 void goDeepSleep() {
-  //Disconnect properly
-
+  //Disconnect pro
   if (client.connected()) {
     disconnectMqtt();  
   }
 
   if (WiFi.status() == WL_CONNECTED) {
     disconnectWifi();  
-  }
-
-  /*rst_info *rsti;
-  rsti = ESP.getResetInfoPtr();
-  Serial.println( String( "ResetInfo.reason = " ) + rsti->reason );*/
+  }  
 
   Serial.println("Entering deep sleep mode...good dreams fellows...ZzzzzZzzZZZZzzz");
   ESP.deepSleep(SLEEP_TIME_SECONDS * 1000000);
   delay(200); //Recommanded
 }
-
-boolean reconnect() {
-
-  int retry = 0;
-  // Loop until we're reconnected
-  while (!client.connected() && retry < MAX_RETRY) {
-    Serial.print("Attempting MQTT connection...");
-    
-    if (client.connect(MQTT_CLIENT_ID)) {
-      Serial.println("connected to MQTT Broker...");
-    } else {
-      retry++;
-      // Wait 5 seconds before retrying
-      delay(500);
-      Serial.print(".");
-      //yield();
-    }
-  }
-
-  if (retry >= MAX_RETRY) {
-    Serial.println("MQTT connection failed...");  
-    return false;
-  }
-
-  return true;
-}
-
-boolean connectToWifi() {
-
-  WiFi.forceSleepWake();
-  WiFi.mode(WIFI_STA);
-  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
-  
-  int retry = 0;
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
-    retry++;
-    delay(500);
-    Serial.print(".");
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {  
-     Serial.println("");
-     Serial.println("WiFi connected");  
-     // Print the IP address
-     Serial.println(WiFi.localIP());
-     return true;
-  } else {
-    Serial.println("WiFi connection failed...");   
-    return false;
-  }  
-}
-

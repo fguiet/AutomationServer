@@ -65,6 +65,7 @@ public class TeleInfoService implements Runnable {
 	private float _ctaCost = 0;
 	private float _cspeCost = 0;
 	private float _tcfeCost = 0;
+	//TODO : reload date without restarting automation server
 	private Date _lastBillDate;
 	private Date _nextBillDate;
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;

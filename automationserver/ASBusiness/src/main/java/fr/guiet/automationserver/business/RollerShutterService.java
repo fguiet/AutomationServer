@@ -4,13 +4,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
@@ -39,18 +36,10 @@ pour ouverture = verifier si pas deja ouvert (appel via http)*/
 
 public class RollerShutterService implements Runnable {
     
-	//I think only one scheduler can be used instead of many...lets see if it works...
-	
 	// Logger
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
-	
-	private RollerShutterState _currentStateNorthSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _previousStateNorthSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _currentStateWestSave = RollerShutterState.UNREACHABLE;
-	private RollerShutterState _previousStateWestSave = RollerShutterState.UNREACHABLE;
-	
-	private Timer _timer = null;
+	//private Timer _timer = null;
 	private Calendar _sunset = null;
 	private Calendar _sunrise = null;
 	private boolean _automaticManagementStatus = false; //By default
@@ -59,26 +48,18 @@ public class RollerShutterService implements Runnable {
 	private Scheduler _rollerShutterScheduler = null;
 	
 	private String _cronNightWeekClose = null;	
-	//private Scheduler _computeSunSetSunRiseScheduler = null;
-	private String _cronComputeSunSetSunRise = null;
-	//private Scheduler _weekCloseScheduler = null;
-	private String _cronMorningWeekClose = null;
-	//private Scheduler _weekOpenScheduler = null;
-	private String _cronMorningWeekOpen = null;
-	//private Scheduler _weeknightCloseScheduler = null;
-	private String _weekNightCloseId = null;
 	
-	//private Scheduler _weekmorningOpenScheduler = null;
+	private String _cronComputeSunSetSunRise = null;	
+	private String _cronMorningWeekClose = null;	
+	private String _cronMorningWeekOpen = null;	
+	
+	private String _weekWestNightCloseId = null;
+	private String _weekNorthNightCloseId = null;
+	
 	private String _weekMorningOpenId = null;
-	
-	private String _apikey = null;
-	private String _baseUrlRs1 = null;
-	private String _baseUrlRs2 = null;
+		
 	private RollerShutter _rsWest = null;
 	private RollerShutter _rsNorth = null;
-	//private boolean _alertSent5 = false;
-	//private boolean _alertSent10 = false;
-	//private boolean _alertSentMore = false;
 	
 	//Lie à Sunset
 	private String _nextWeekNightCloseDate = "NA";
@@ -86,6 +67,9 @@ public class RollerShutterService implements Runnable {
 	private String _nextWeekMorningCloseDate = "NA";
 	//lié à sunrise
 	private String _nextWeekMorningOpenDate = "NA";
+	
+	private int ROLLERSHUTTER_WEST_ID = 7;
+	private int ROLLERSHUTTER_NORTH_ID = 8;
 	
 	public String getNextWeekNightCloseDate() {
 		if (_automaticManagementStatus)
@@ -118,28 +102,6 @@ public class RollerShutterService implements Runnable {
 
 			Properties prop = new Properties();
 			prop.load(is);
-			
-			String apikey = prop.getProperty("api.key");
-			if (apikey != null)
-				_apikey = apikey;
-			else
-				_apikey = "xxx";
-							
-			String baseUrlRs1 = prop.getProperty("rollershutter.west.url");
-			if (baseUrlRs1 != null) {
-				_baseUrlRs1 = baseUrlRs1;
-			}
-			else {
-				_baseUrlRs1 = "http://127.0.0.1";
-			}
-			
-			String baseUrlRs2 = prop.getProperty("rollershutter.north.url");
-			if (baseUrlRs2 != null) {
-				_baseUrlRs2 = baseUrlRs2;
-			}
-			else {
-				_baseUrlRs2 = "http://127.0.0.1";
-			}
 			
 			String cronComputeSunSetSunRise = prop.getProperty("rollershutter.schedule.sunsetsunrise");
 			if (cronComputeSunSetSunRise != null) {
@@ -209,8 +171,8 @@ public class RollerShutterService implements Runnable {
 		
 		_logger.info("Starting rollershutters management...");		
 		
-		_rsWest = new RollerShutter("1", "Volet roulant Ouest", _baseUrlRs1, _apikey);
-		_rsNorth = new RollerShutter("2","Volet roulant Nord", _baseUrlRs2, _apikey);
+		_rsWest = new RollerShutter(ROLLERSHUTTER_WEST_ID, "Volet roulant Ouest", _smsGammuService);
+		_rsNorth = new RollerShutter(ROLLERSHUTTER_NORTH_ID,"Volet roulant Nord", _smsGammuService);
 	
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
@@ -228,53 +190,39 @@ public class RollerShutterService implements Runnable {
 		}
 		});
 				
-		
 		//Schedule that close rollershutter automatically at 7h49 every day of the week
 		_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronMorningWeekClose);
-		//_weekCloseScheduler = new Scheduler();		
-		//_weekCloseScheduler.setTimeZone(timeZone);
+
 		_rollerShutterScheduler.schedule(_cronMorningWeekClose, new Runnable() {
 		public void run() {						
-			CloseRollerShutters();
+			CloseRollerShutters(true, true);
 			ComputeNextWeekMorningCloseDate();
 		}
 		});
 		
-		
-		
-		//Schedule that open rollershutter automatically at 6h30 every day of the week
-		//_logger.info("Starting automatic rollershutter opening scheduler at : "+_cronMorningWeekOpen);
-		//_weekOpenScheduler = new Scheduler();		
-		//_weekOpenScheduler.setTimeZone(timeZone);		
-		//_rollerShutterScheduler.schedule(_cronMorningWeekOpen, new Runnable() {
-		//public void run() {
-			
-				
-		//}
-		//});
-		
-		CreateCheckForIntrudersTask();
-		
 		//Initial lauch
 		ComputeSunsetSunrise();
-		//
-		//ComputeNextWeekMorningCloseDate();
 		
 		// Starts the scheduler.
-		_rollerShutterScheduler.start();
-		//_weekCloseScheduler.start();
-		//_weekOpenScheduler.start();
+		_rollerShutterScheduler.start();		
 
 		while (!_isStopped) {
 
 			try {
 												
-				// Sleep for 5 minutes
-				Thread.sleep(300000);
+				// Sleep for 2 minutes
+				Thread.sleep(120000);
 				
 				//Check state here and send message if not responding!!
-				IsSensorAlive(_rsWest);
-				IsSensorAlive(_rsNorth);
+				
+				_rsNorth.HasTimeoutOccured();
+				_rsWest.HasTimeoutOccured();
+				
+				//Ask State to roller shutter every two minutes
+				_rsNorth.RequestState();
+				_rsWest.RequestState();
+				
+				
 				
 			} catch (Exception e) {
 				_logger.error("Error occured in rollershutter management service", e);
@@ -284,26 +232,16 @@ public class RollerShutterService implements Runnable {
 				_smsGammuService.sendMessage(sms, true);
 			}
 		}		
-	}
+	}	
 	
-	
-	private void CreateCheckForIntrudersTask() {
+	public void setState(long rsId, RollerShutterState state) {
+		if (rsId == ROLLERSHUTTER_WEST_ID)
+			_rsWest.setState(state);
 		
-		_logger.info("Creating CheckForIntrudersTask");
-
-		TimerTask intrudersTask = new TimerTask() {
-			@Override
-			public void run() {
-
-				CheckForIntruders();
-			}
-		};
-
-		_timer = new Timer(true);
-		//Every 30s
-		_timer.schedule(intrudersTask, 5000, 30000);
-
-	}
+		if (rsId == ROLLERSHUTTER_NORTH_ID)
+			_rsNorth.setState(state);
+			
+	}	
 	
 	public String getNorthRSState() {
 		return _rsNorth.getState().name();
@@ -314,34 +252,20 @@ public class RollerShutterService implements Runnable {
 	}
 	
 	public void CloseAllRollerShutters() {
-		CloseRollerShutters();
+		CloseRollerShutters(true, true);
 	}
 	
-	private void CloseRollerShutters() {
+	private void CloseRollerShutters(boolean closeNorthRS, boolean closeWestRS) {
 		//Only if automatic management status is activated!
 		if (_automaticManagementStatus) {
-			if (_rsWest.getState() != RollerShutterState.CLOSED) {			
-				if (!_rsWest.Close()) {
-					_logger.info("Error occured when requesting close of west rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting close of west rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Close requested for west rollershutter");
-				}
+			if (_rsWest.getState() != RollerShutterState.CLOSED && closeWestRS) {
+				_rsWest.Close();				
+				_logger.info("Close requested for west rollershutter");				
 			}
 			
-			if (_rsNorth.getState() != RollerShutterState.CLOSED) {			
-				if (!_rsNorth.Close()) {
-					_logger.info("Error occured when requesting close of north rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting close of north rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Close requested for north rollershutter");
-				}
+			if (_rsNorth.getState() != RollerShutterState.CLOSED && closeNorthRS) {
+				_rsNorth.Close();				
+				_logger.info("Close requested for north rollershutter");				
 			}
 		}
 		else {
@@ -353,146 +277,26 @@ public class RollerShutterService implements Runnable {
 		//Only if automatic management status is activated!
 		if (_automaticManagementStatus) {
 		
-			if (_rsWest.getState() != RollerShutterState.OPENED) {			
-				if (!_rsWest.Open()) {
-					_logger.info("Error occured when requesting open of west rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting open of west rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Open requested for west rollershutter");
-				}
+			if (_rsWest.getState() != RollerShutterState.OPENED) {
+				_rsWest.Open();				
+				_logger.info("Open requested for west rollershutter");
+				
 			}
 			
-			if (_rsNorth.getState() != RollerShutterState.OPENED) {			
-				if (!_rsNorth.Open()) {
-					_logger.info("Error occured when requesting open of north rollershutter");
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Error occured when requesting open of north rollershutter");
-					_smsGammuService.sendMessage(sms, true);
-				}
-				else {
-					_logger.info("Open requested for north rollershutter");
-				}
+			if (_rsNorth.getState() != RollerShutterState.OPENED) {
+				_rsNorth.Open();				
+				_logger.info("Open requested for north rollershutter");				
 			}
 		}	
 		else {
 			_logger.info("Open requested but automatic management is OFF, Open canceled...");
 		}
-	}
-	
-	private void CheckForIntruders() {
-		
-		//TODO : revoir cette partie
-		
-		RollerShutterState previousState = _rsWest.getPreviousState();
-		RollerShutterState currentState = _rsWest.getState();		
-		
-		if (currentState != previousState && (_currentStateNorthSave != currentState || _previousStateNorthSave != previousState)) {
-			
-			_currentStateNorthSave = currentState;
-			_previousStateNorthSave = previousState;
-			
-			//_logger.info("West Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
-
-			boolean isTimeBetween = false;
-			try {
-				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
-			}
-			catch (ParseException pe) {
-				_logger.error("Erreur lors du parsing de la date", pe);
-			}
-			
-			if (isTimeBetween) {
-				//If state change that way...it is strange...somebody try to enter home??
-				//better send a sms....
-				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
-																   currentState == RollerShutterState.OPENED || 
-																   currentState == RollerShutterState.UNDETERMINED)) {
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant West est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
-					_smsGammuService.sendMessage(sms, true);
-				}
-			}
-		}
-		
-		previousState = _rsNorth.getPreviousState();
-		currentState = _rsNorth.getState();		
-		
-		if (currentState != previousState && (_currentStateWestSave != currentState || _previousStateWestSave != previousState)) {
-			
-			_currentStateWestSave = currentState;
-			_previousStateWestSave = previousState;
-			
-			
-			//_logger.info("North Rollershutter passed from : "+previousState.name()+" to "+currentState.name());
-
-			boolean isTimeBetween = false;
-			try {
-				isTimeBetween = DateUtils.isTimeBetweenTwoTime("21:00:00","06:00:00",DateUtils.getTimeFromCurrentDate());
-			}
-			catch (ParseException pe) {
-				_logger.error("Erreur lors du parsing de la date", pe);
-			}
-			
-			if (isTimeBetween) {
-				//If state change that way...it is strange...somebody try to enter home??
-				//better send a sms....
-				if (previousState == RollerShutterState.CLOSED && (currentState == RollerShutterState.UNREACHABLE ||
-																   currentState == RollerShutterState.OPENED || 
-																   currentState == RollerShutterState.UNDETERMINED)) {
-					SMSDto sms = new SMSDto();
-					sms.setMessage("Le volet roulant Nord est passé de l'état : "+previousState.name()+ " à l'état : "+currentState.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
-					_smsGammuService.sendMessage(sms, true);
-				}
-			}
-		}
-	}
-	
-	private void IsSensorAlive(RollerShutter rs) {
-		
-		RollerShutterState currentState = rs.getState();
-		
-		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
-			rs._notReachable5 = true;
-			
-			SMSDto sms = new SMSDto();
-			String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)", _rsWest.getName());
-			sms.setMessage(message);
-			_smsGammuService.sendMessage(sms, true);
-			return;
-		}
-		
-		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
-			rs._notReachable10 = true;
-			
-			SMSDto sms = new SMSDto();
-			String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)", _rsWest.getName());
-			sms.setMessage(message);
-			_smsGammuService.sendMessage(sms, true);
-			return;
-		}
-		
-		if (currentState == RollerShutterState.UNREACHABLE && !rs._notReachable5) {
-			rs._notReachable15 = true;
-			
-			SMSDto sms = new SMSDto();
-			String message = String.format("Sensor %s does not send messages anymore (15 minutes alert)", _rsWest.getName());
-			sms.setMessage(message);
-			_smsGammuService.sendMessage(sms, true);
-			return;
-		}
-		
-		rs._notReachable5 = false;
-		rs._notReachable10 = false;
-		rs._notReachable15 = false;		
-	}
+	}	
 	
 	public void StopService() {
 		
-		if (_timer != null)
-			_timer.cancel();
+		//if (_timer != null)
+		//	_timer.cancel();
 		
 		_rollerShutterScheduler.stop();
 		
@@ -551,18 +355,12 @@ public class RollerShutterService implements Runnable {
 		
 		if (_weekMorningOpenId == null) {
 			
-			//_weekmorningOpenScheduler = new Scheduler();			
-			//_weekmorningOpenScheduler.setTimeZone(timeZone);
-			
 			_weekMorningOpenId = _rollerShutterScheduler.schedule(newCron, new Runnable() {
 				public void run() {
-					OpenAllRollerShutters();
-					_rollerShutterScheduler.deschedule(_weekMorningOpenId);
+					
 				}});	
-			//_rollerShutterScheduler.start();
 		} 
-		else {
-			//_weekmorningOpenScheduler.setTimeZone(timeZone);
+		else {			
 			_rollerShutterScheduler.reschedule(_weekMorningOpenId, newCron);			
 		}
 			
@@ -610,28 +408,41 @@ public class RollerShutterService implements Runnable {
 	
 	private void ComputeWeekNightCloseScheduler() {
 		
-		String cron = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronNightWeekClose); 
+		String cronNorthRS = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronNightWeekClose); 
 		
 		//
-		if (_weekNightCloseId == null) {
+		if (_weekNorthNightCloseId == null) {
 			
-			//_weeknightCloseScheduler = new Scheduler();			
-			//_weeknightCloseScheduler.setTimeZone(timeZone);
-			
-			_weekNightCloseId = _rollerShutterScheduler.schedule(cron, new Runnable() {
+			_weekNorthNightCloseId = _rollerShutterScheduler.schedule(cronNorthRS, new Runnable() {
 				public void run() {
-					CloseRollerShutters();
-					ComputeWeekNightCloseDate(cron);
-				}});
-			//_weeknightCloseScheduler.start();
+					CloseRollerShutters(true, false);
+					ComputeWeekNightCloseDate(cronNorthRS);
+				}});			
 			
-		} else {			
-			//_weeknightCloseScheduler.setTimeZone(timeZone);
-			_rollerShutterScheduler.reschedule(_weekNightCloseId, cron);	
+		} else {						
+			_rollerShutterScheduler.reschedule(_weekNorthNightCloseId, cronNorthRS);	
 		}
 		
-		ComputeWeekNightCloseDate(cron);
-		_logger.info("Rescheduling rollershutter closing at night using : " + cron);
+		ComputeWeekNightCloseDate(cronNorthRS);
+		_logger.info("Rescheduling North rollershutter closing at night using : " + cronNorthRS);
+		
+		//10 minutes later
+		Calendar newSunset= (Calendar) _sunset.clone();
+		newSunset.add(Calendar.MINUTE, -10);
+		
+		String cronWestRS = newSunset.get(Calendar.MINUTE) + " " + newSunset.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronNightWeekClose); 
+		if (_weekWestNightCloseId == null) {
+			
+			_weekWestNightCloseId = _rollerShutterScheduler.schedule(cronWestRS, new Runnable() {
+				public void run() {
+					CloseRollerShutters(false, true);					
+				}});			
+			
+		} else {			
+			_rollerShutterScheduler.reschedule(_weekWestNightCloseId, cronWestRS);				
+		}		
+		
+		_logger.info("Rescheduling West rollershutter closing at night using : " + cronWestRS);
 	}
 	
 	//Launched every day at 8h in the morning
