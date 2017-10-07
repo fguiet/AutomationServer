@@ -60,7 +60,7 @@ public class ScenariiManager {
 		}
 		});
 		
-		_logger.info("Starting scenarii manager...");
+		//_logger.info("Starting scenarii manager...");
 		_scenariiScheduler.start();
 		
 		//Start current day
@@ -184,6 +184,7 @@ public class ScenariiManager {
 		    	_sundayScheduler = new Scheduler();
 		    	_sundayScheduler.setTimeZone(timeZone);
 		    	
+		    	_logger.info("Creating Sunday scenarii...");
 		    	CreateSundayScenarii(_sundayScheduler, 0);
 		    	break;
 
@@ -191,6 +192,7 @@ public class ScenariiManager {
 		    	_mondayScheduler = new Scheduler();
 				_mondayScheduler.setTimeZone(timeZone);
 		    	
+				_logger.info("Creating Monday scenarii...");
 		    	CreateMondayScenarii(_mondayScheduler, 1);
 		    	
 		    	break;
@@ -199,6 +201,7 @@ public class ScenariiManager {
 		    	_tuesdayScheduler = new Scheduler();
 		    	_tuesdayScheduler.setTimeZone(timeZone);
 		    	
+		    	_logger.info("Creating Tuesday scenarii...");
 		    	CreateStandardDayScenarii(_tuesdayScheduler, 2);
 		    	
 		    	break;
@@ -207,6 +210,7 @@ public class ScenariiManager {
 		    	_wesnesdayScheduler = new Scheduler();
 		    	_wesnesdayScheduler.setTimeZone(timeZone);
 		    	
+		    	_logger.info("Creating Wednesday scenarii...");
 		    	CreateStandardDayScenarii(_wesnesdayScheduler, 3);		    		 
 		    	break;
 		    
@@ -214,6 +218,7 @@ public class ScenariiManager {
 		    	_thursdayScheduler = new Scheduler();
 		    	_thursdayScheduler.setTimeZone(timeZone);
 		    	
+		    	_logger.info("Creating Thursday scenarii...");
 		    	CreateStandardDayScenarii(_thursdayScheduler, 4);
 		    	
 		    	break;
@@ -222,12 +227,13 @@ public class ScenariiManager {
 		    	_fridayScheduler = new Scheduler();
 		    	_fridayScheduler.setTimeZone(timeZone);
 		    	
+		    	_logger.info("Creating Friday scenarii...");
 		    	CreateFridayScenarii(_fridayScheduler, 5);
 		    	
 		    	break;
 		    
 		    case Calendar.SATURDAY:
-		    	
+		    	_logger.info("Creating Saturday scenarii...");
 		    	break;		    
 		}	
 	}
@@ -236,7 +242,7 @@ public class ScenariiManager {
 		
 		String cron;
 		
-		_logger.info("Creating standard scenarii...");
+		//_logger.info("Creating standard scenarii...");
 				
 		//Elo & Fred at work
 		if (!_eloAtHome && !_fredAtHome) {
@@ -279,7 +285,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn off at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOff();			
+					_alarmService.SetAutomaticOff();			
 					}
 				});
 			
@@ -287,7 +293,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOn();			
+					_alarmService.SetAutomaticOn();			
 					}
 				});
 			
@@ -295,7 +301,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
-				_alarmService.SetOn();			
+				_alarmService.SetAutomaticOn();			
 				}
 			});
 						
@@ -305,7 +311,7 @@ public class ScenariiManager {
 			//************
 		}		
 		
-		_logger.info("Starting standard scenarri scheduler...");
+		//_logger.info("Starting standard scenarri scheduler...");
 		scheduler.start();
 	}	
 	
@@ -313,7 +319,7 @@ public class ScenariiManager {
 		
 		String cron;
 		
-		_logger.info("Creating standard scenarii...");
+		//_logger.info("Creating standard scenarii...");
 				
 		//Elo & Fred at work
 		if (!_eloAtHome && !_fredAtHome) {
@@ -356,7 +362,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn off at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOff();			
+					_alarmService.SetAutomaticOff();			
 					}
 				});
 			
@@ -364,7 +370,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOn();			
+					_alarmService.SetAutomaticOn();			
 					}
 				});*/
 			
@@ -372,7 +378,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
-				_alarmService.SetOn();			
+				_alarmService.SetAutomaticOn();			
 				}
 			});
 						
@@ -382,7 +388,7 @@ public class ScenariiManager {
 			//************
 		}		
 		
-		_logger.info("Starting standard scenarri scheduler...");
+		//_logger.info("Starting standard scenarri scheduler...");
 		scheduler.start();
 	}
 	
@@ -390,7 +396,7 @@ public class ScenariiManager {
 		
 		String cron;
 		
-		_logger.info("Creating standard scenarii...");
+		//_logger.info("Creating standard scenarii...");
 				
 		//Elo & Fred at work
 		if (!_eloAtHome && !_fredAtHome) {
@@ -433,7 +439,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn off at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOff();			
+					_alarmService.SetAutomaticOff();			
 					}
 				});
 			
@@ -441,7 +447,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOn();			
+					_alarmService.SetAutomaticOn();			
 					}
 				});
 			
@@ -449,7 +455,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
-				_alarmService.SetOn();			
+				_alarmService.SetAutomaticOn();			
 				}
 			});*/
 						
@@ -459,7 +465,7 @@ public class ScenariiManager {
 			//************
 		}		
 		
-		_logger.info("Starting standard scenarri scheduler...");
+		//_logger.info("Starting standard scenarri scheduler...");
 		scheduler.start();
 	}
 	
@@ -467,7 +473,7 @@ public class ScenariiManager {
 		
 		String cron;
 		
-		_logger.info("Creating monday scenarii...");
+		//_logger.info("Creating monday scenarii...");
 				
 		//Elo & Fred at work
 		if (!_eloAtHome && !_fredAtHome) {
@@ -519,7 +525,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn off at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOff();			
+					_alarmService.SetAutomaticOff();			
 					}
 				});
 			
@@ -527,7 +533,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOn();			
+					_alarmService.SetAutomaticOn();			
 					}
 				});
 			
@@ -535,7 +541,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn off at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
-					_alarmService.SetOff();			
+					_alarmService.SetAutomaticOff();			
 					}
 				});
 			
@@ -543,7 +549,7 @@ public class ScenariiManager {
 			_logger.info("Scheduling alarm to turn on at :" + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
-				_alarmService.SetOn();			
+				_alarmService.SetAutomaticOn();			
 				}
 			});
 			
@@ -552,7 +558,7 @@ public class ScenariiManager {
 			//************
 		}		
 		
-		_logger.info("Starting monday scenarri scheduler...");
+		//_logger.info("Starting monday scenarri scheduler...");
 		scheduler.start();
 	}
 	

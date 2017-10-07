@@ -1,12 +1,5 @@
 package fr.guiet.automationserver.business;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.TimeZone;
-
 import org.apache.log4j.Logger;
 
 import com.pi4j.io.gpio.RaspiPin;
@@ -21,14 +14,14 @@ public class AlarmService {
 	private RollerShutterService _rollerShutterService = null;
 	private SMSGammuService _smsGammuService = null;
 	private Scheduler _alarmScheduler = null;
-	private String _cronNightAlarmOn = null;
-	private String _cronMorningAlarmOff = null;
+	//private String _cronNightAlarmOn = null;
+	//private String _cronMorningAlarmOff = null;
 	private boolean _automaticModeStatus = true; //activated by default
 	
 	public AlarmService (RollerShutterService rollerShutterService,
 						 SMSGammuService smsGammuService) {
 		
-		InputStream is = null;
+		/*InputStream is = null;
 		try {
 
 			String configPath = System.getProperty("automationserver.config.path");
@@ -57,14 +50,14 @@ public class AlarmService {
 			_logger.error(
 					"Erreur lors de la lecture du fichier de configuration classpath_folder/config/automationserver.properties",
 					e);
-		}
+		}*/
 		
 		_rollerShutterService = rollerShutterService;
 		_smsGammuService = smsGammuService;
 				
 		_logger.info("Starting Alarm service...");
 		
-		_logger.info("Starting automatic alarm ON scheduler at : "+_cronNightAlarmOn);
+		/*_logger.info("Starting automatic alarm ON scheduler at : "+_cronNightAlarmOn);
 		_alarmScheduler = new Scheduler();
 		//Get Europe/Paris TimeZone
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
@@ -83,7 +76,7 @@ public class AlarmService {
 			}
 			});
 		
-		_alarmScheduler.start();
+		_alarmScheduler.start();*/
 	}
 	
 	public String GetAutomaticModeStatus() {
@@ -112,8 +105,17 @@ public class AlarmService {
 		_logger.info("Setting automatic alarm mode OFF");
 	}
 	
-	public void SetOn() {
+	public void SetAutomaticOn() {
+		if (!_automaticModeStatus) {
+			_logger.info("Alarm was asked to be turned on...but automatic mode is OFF");
+			return;
+		}
+		
+		SetOn();
+	}
 	
+	public void SetOn() {
+			
 		//GPIO_06 (notation Pi4J) = GPIO_25 (notation raspberry) = PIN22 
 		try {
 			String logMessage = "Turning house alarm ON";
@@ -137,7 +139,16 @@ public class AlarmService {
 		}		
 	}
 	
-	public void SetOff() {
+	public void SetAutomaticOff() {
+		if (!_automaticModeStatus) {
+			_logger.info("Alarm was asked to be turned off...but automatic mode is OFF");
+			return;
+		}
+		
+		SetOff();
+	}
+	
+	public void SetOff() {		
 		
 		//GPIO_25 (notation Pi4J) = GPIO_26 (notation raspberry) = PIN37
 		try {
