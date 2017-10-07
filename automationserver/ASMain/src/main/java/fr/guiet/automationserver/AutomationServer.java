@@ -22,6 +22,7 @@ public class AutomationServer implements Daemon {
 
 	private Thread _mainThread = null; // Thread principal
 	private AlarmService _alarmService = null; //Alarm service
+	private ScenariiManager _scenariiManager = null;
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
 	private RoomService _roomService = null; // service de room service
 	private WaterHeater _waterHeater = null; // service de gestion du
@@ -118,12 +119,15 @@ public class AutomationServer implements Daemon {
 					_rollerShutterServiceThread.start();
 					
 					//Start alarm service
-					_alarmService = new AlarmService(_rollerShutterService);
+					_alarmService = new AlarmService(_rollerShutterService, _smsGammuService);
+					
+					//Start scenarii service
+					_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
 					
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService, _scenariiManager);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();
@@ -237,6 +241,7 @@ public class AutomationServer implements Daemon {
 			
 			// Stopping all services
 			_alarmService.StopService();
+			_scenariiManager.StopScenariiManager();
 			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
 			_roomService.StopService();

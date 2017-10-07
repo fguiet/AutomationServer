@@ -30,6 +30,7 @@ public class MqttHelper implements MqttCallback {
 	private TeleInfoService _teleInfoService = null;
 	private WaterHeater _waterHeaterService = null;
 	private AlarmService _alarmService = null;
+	private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
@@ -44,7 +45,7 @@ public class MqttHelper implements MqttCallback {
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, 
 			TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService,
-			RollerShutterService rollerShutterService) {
+			RollerShutterService rollerShutterService, ScenariiManager scenariiManager) {
 
 		InputStream is = null;
 		try {
@@ -66,6 +67,7 @@ public class MqttHelper implements MqttCallback {
 			_waterHeaterService = waterHeaterService;
 			_alarmService = alarmService;
 			_rollerShutterService = rollerShutterService;
+			_scenariiManager = scenariiManager;
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -386,7 +388,7 @@ public class MqttHelper implements MqttCallback {
 		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
 		
 		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
-		message = message + ";" + _rollerShutterService.getNextWeekNightCloseDate() + ";" + _rollerShutterService.getNextWeekMorningCloseDate() + ";" + _rollerShutterService.getNextWeekMorningOpenDate();
+		message = message + ";" + _scenariiManager.getNextWeekNightCloseDate() + ";" + _scenariiManager.getNextWeekMorningCloseDate() + ";" + _scenariiManager.getNextWeekMorningOpenDate();
 		message = message + ";" + northRSState;
 		
 		return message;

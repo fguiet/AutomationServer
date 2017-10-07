@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 
+import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.Scheduler;
 
 public class ScenariiManager {
@@ -31,7 +32,14 @@ public class ScenariiManager {
 	private Calendar _sunrise = null;
 	
 	private RollerShutterService _rollerShutterService = null;
-	private AlarmService _alarmService = null;
+	private AlarmService _alarmService = null;	
+	
+	//Lie à Sunset
+	private String _nextWeekNightCloseDate = "NA";
+	//a 7h79
+	private String _nextWeekMorningCloseDate = "NA";
+	//lié à sunrise
+	private String _nextWeekMorningOpenDate = "NA";
 
 	public ScenariiManager(RollerShutterService rollerShutterService,
 							AlarmService alarmService) {		
@@ -48,7 +56,32 @@ public class ScenariiManager {
 		}
 		});
 		
+		_logger.info("Starting scenarii manager...");
 		_scenariiScheduler.start();
+		
+		//Start current day
+		StartCurrentDayScenario();
+	}
+	
+	public String getNextWeekNightCloseDate() {
+		if (_rollerShutterService.GetAutomaticManagementStatus().equals("ON"))
+			return _nextWeekNightCloseDate;
+		else 
+			return "mgt auto. désactivé";
+	}
+	
+	public String getNextWeekMorningCloseDate() {
+		if (_rollerShutterService.GetAutomaticManagementStatus().equals("ON"))
+			return _nextWeekMorningCloseDate;
+		else 
+			return "mgt auto. désactivé";
+	}
+	
+	public String getNextWeekMorningOpenDate() {
+		if (_rollerShutterService.GetAutomaticManagementStatus().equals("ON"))
+			return _nextWeekMorningOpenDate;
+		else 
+			return "mgt auto. désactivé";
 	}
 	
 	public void StopScenariiManager() {
@@ -58,25 +91,60 @@ public class ScenariiManager {
 		_scenariiScheduler.stop();
 	}
 	
-	public void StartingScenariiManager() {
+	
+	
+	/*private void ComputeWeekMorningOpenDate(String cron) {
 		
-		_logger.info("Starting scenarii manager...");
-		_scenariiScheduler.start();
-		
-		//Don't wait! start now!
-		StartCurrentDayScenario();
+		if (!cron.equals("")) {		
+			Predictor predictor = new Predictor(cron);
+			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+			predictor.setTimeZone(timeZone);		
+			_nextWeekMorningOpenDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+		}
+		else {
+			_nextWeekMorningOpenDate = "pas d'ouverture prévue";
+		}
 	}
+	
+	private void ComputeNextWeekMorningCloseDate() {
+		
+		Predictor predictor = new Predictor(_cronMorningWeekClose);
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		predictor.setTimeZone(timeZone);		
+		_nextWeekMorningCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+	}
+	
+	
+	private void ComputeWeekNightCloseDate(String cron) {
+		
+		Predictor predictor = new Predictor(cron);
+		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+		predictor.setTimeZone(timeZone);		
+		_nextWeekNightCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
+	}*/
 	
 	private void StopAllSchedulers() {
 				
 		_sundayScheduler.stop();
-		_mondayScheduler.stop();
-		_tuesdayScheduler.stop();
-		_wesnesdayScheduler.stop();
-		_thursdayScheduler.stop();
-		_fridayScheduler.stop();
-		_saturdayScheduler.stop();
+		_sundayScheduler = null;
 		
+		_mondayScheduler.stop();
+		_mondayScheduler = null;
+		
+		_tuesdayScheduler.stop();
+		_tuesdayScheduler = null;
+		
+		_wesnesdayScheduler.stop();
+		_wesnesdayScheduler = null;
+		
+		_thursdayScheduler.stop();
+		_thursdayScheduler = null;
+		
+		_fridayScheduler.stop();
+		_fridayScheduler = null;
+		
+		_saturdayScheduler.stop();
+		_saturdayScheduler = null;		
 	}
 	
 	private void StartCurrentDayScenario() {
@@ -95,64 +163,92 @@ public class ScenariiManager {
 
 		switch (day) {
 		    case Calendar.SUNDAY:
-		    	//_sundayScheduler.start();
+		    	_sundayScheduler = new Scheduler();
+		    	_sundayScheduler.setTimeZone(timeZone);
+		    	
+		    	CreateSundayScenarii(_sundayScheduler, 0);
 		    	break;
 
 		    case Calendar.MONDAY:
-		    	_mondayScheduler = null;
-		    	
 		    	_mondayScheduler = new Scheduler();
 				_mondayScheduler.setTimeZone(timeZone);
 		    	
-		    	CreateMondayScenarii();
-		    	//_mondayScheduler.start();
+		    	CreateMondayScenarii(_mondayScheduler, 1);
+		    	
 		    	break;
 
 		    case Calendar.TUESDAY:
-		    	//_tuesdayScheduler.start();
+		    	_tuesdayScheduler = new Scheduler();
+		    	_tuesdayScheduler.setTimeZone(timeZone);
+		    	
+		    	CreateStandardDayScenarii(_tuesdayScheduler, 2);
+		    	
 		    	break;
 		    
 		    case Calendar.WEDNESDAY:
-		    	//_wesnesdayScheduler.start();
+		    	_wesnesdayScheduler = new Scheduler();
+		    	_wesnesdayScheduler.setTimeZone(timeZone);
+		    	
+		    	CreateStandardDayScenarii(_wesnesdayScheduler, 3);		    		 
 		    	break;
 		    
 		    case Calendar.THURSDAY:
-		    	//_thursdayScheduler.start();
+		    	_thursdayScheduler = new Scheduler();
+		    	_thursdayScheduler.setTimeZone(timeZone);
+		    	
+		    	CreateStandardDayScenarii(_thursdayScheduler, 4);
+		    	
 		    	break;
 		    
 		    case Calendar.FRIDAY:
-		    	//_fridayScheduler.start();
+		    	_fridayScheduler = new Scheduler();
+		    	_fridayScheduler.setTimeZone(timeZone);
+		    	
+		    	CreateFridayScenarii(_fridayScheduler, 5);
+		    	
 		    	break;
 		    
 		    case Calendar.SATURDAY:
-		    	//_saturdayScheduler.start();
+		    	
 		    	break;		    
 		}	
 	}
 	
-	
-	private void CreateMondayScenarii() {
+	private void CreateStandardDayScenarii(Scheduler scheduler, int dayOfWeek) {
 		
 		String cron;
 		
-		_logger.info("Creating monday scenarii...");
-		
-		//*************
-		//RollerShutter Management
-		//*************
+		_logger.info("Creating standard scenarii...");
+				
+		//Elo & Fred at work
 		if (!_eloAtHome && !_fredAtHome) {
-			//Compute Open
-			cron = CreateCronRSMorningOpen(6,30,8,40,1);
 			
-			_mondayScheduler.schedule(cron, new Runnable() {
+			//*************
+			//RollerShutter Management
+			//*************
+						
+			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
+			cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
+						
+			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.OpenAllRollerShutters();				
 				}
 			});
 			
-			//Close at 8am40
-			cron = CreateStandardCron(8,40,1);
-			_mondayScheduler.schedule(cron, new Runnable() {
+			//Close at 7am49
+			cron = CreateStandardCron(7,49,dayOfWeek);
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});
+									
+			//Close at sunset
+			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
 				}
@@ -161,22 +257,292 @@ public class ScenariiManager {
 			//*************
 			//Alarm Management
 			//*************
-			cron = CreateStandardCron(8,45,1);
-			_mondayScheduler.schedule(cron, new Runnable() {
-				public void run() {	
-					_alarmService.SetOn();			
-					}
-				});
-			
-			cron = CreateStandardCron(9,00,1);
-			_mondayScheduler.schedule(cron, new Runnable() {
+			cron = CreateStandardCron(6,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn off at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetOff();			
 					}
 				});
 			
+			cron = CreateStandardCron(7,55,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOn();			
+					}
+				});
+			
+			cron = CreateStandardCron(22,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_alarmService.SetOn();			
+				}
+			});
+						
+			
+			//************
 			//Light Strip
+			//************
 		}		
+		
+		_logger.info("Starting standard scenarri scheduler...");
+		scheduler.start();
+	}	
+	
+	private void CreateSundayScenarii(Scheduler scheduler, int dayOfWeek) {
+		
+		String cron;
+		
+		_logger.info("Creating standard scenarii...");
+				
+		//Elo & Fred at work
+		if (!_eloAtHome && !_fredAtHome) {
+			
+			//*************
+			//RollerShutter Management
+			//*************
+						
+			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
+			/*cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
+						
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.OpenAllRollerShutters();				
+				}
+			});*/
+			
+			//Close at 7am49
+			/*cron = CreateStandardCron(7,49,dayOfWeek);
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});*/
+									
+			//Close at sunset
+			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});
+			
+			//*************
+			//Alarm Management
+			//*************
+			/*cron = CreateStandardCron(6,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn off at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOff();			
+					}
+				});
+			
+			cron = CreateStandardCron(7,55,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOn();			
+					}
+				});*/
+			
+			cron = CreateStandardCron(22,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_alarmService.SetOn();			
+				}
+			});
+						
+			
+			//************
+			//Light Strip
+			//************
+		}		
+		
+		_logger.info("Starting standard scenarri scheduler...");
+		scheduler.start();
+	}
+	
+	private void CreateFridayScenarii(Scheduler scheduler, int dayOfWeek) {
+		
+		String cron;
+		
+		_logger.info("Creating standard scenarii...");
+				
+		//Elo & Fred at work
+		if (!_eloAtHome && !_fredAtHome) {
+			
+			//*************
+			//RollerShutter Management
+			//*************
+						
+			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
+			cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
+						
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.OpenAllRollerShutters();				
+				}
+			});
+			
+			//Close at 7am49
+			cron = CreateStandardCron(7,49,dayOfWeek);
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});
+									
+			//Close at sunset
+			/*cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});*/
+			
+			//*************
+			//Alarm Management
+			//*************
+			cron = CreateStandardCron(6,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn off at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOff();			
+					}
+				});
+			
+			cron = CreateStandardCron(7,55,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOn();			
+					}
+				});
+			
+			/*cron = CreateStandardCron(22,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_alarmService.SetOn();			
+				}
+			});*/
+						
+			
+			//************
+			//Light Strip
+			//************
+		}		
+		
+		_logger.info("Starting standard scenarri scheduler...");
+		scheduler.start();
+	}
+	
+	private void CreateMondayScenarii(Scheduler scheduler, int dayOfWeek) {
+		
+		String cron;
+		
+		_logger.info("Creating monday scenarii...");
+				
+		//Elo & Fred at work
+		if (!_eloAtHome && !_fredAtHome) {
+			
+			//*************
+			//RollerShutter Management
+			//*************
+						
+			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
+			cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
+						
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.OpenAllRollerShutters();				
+				}
+			});
+			
+			//Close at 8am40
+			cron = CreateStandardCron(8,40,dayOfWeek);
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});
+			
+			//Open at 9ham
+			cron = CreateStandardCron(9,00,dayOfWeek);
+			_logger.info("Scheduling RS to open at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.OpenAllRollerShutters();		
+				}
+			});
+			
+			//Close at sunset
+			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
+			_logger.info("Scheduling RS to close at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_rollerShutterService.CloseAllRollerShutters();			
+				}
+			});
+			
+			//*************
+			//Alarm Management
+			//*************
+			cron = CreateStandardCron(6,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn off at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOff();			
+					}
+				});
+			
+			cron = CreateStandardCron(8,45,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOn();			
+					}
+				});
+			
+			cron = CreateStandardCron(9,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn off at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+				public void run() {	
+					_alarmService.SetOff();			
+					}
+				});
+			
+			cron = CreateStandardCron(22,00,dayOfWeek);
+			_logger.info("Scheduling alarm to turn on at :" + cron);
+			scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+				_alarmService.SetOn();			
+				}
+			});
+			
+			//************
+			//Light Strip
+			//************
+		}		
+		
+		_logger.info("Starting monday scenarri scheduler...");
+		scheduler.start();
+	}
+	
+	private String GetCronWithoutTime(String cron) {
+		
+		String [] cronArray =  cron.split(" ");
+				
+		return " " + cronArray[2] + " " + cronArray[3] + " " + cronArray[4];		
 	}
 	
 	private String CreateStandardCron(int hour, int minute, int dayOfWeek) {				

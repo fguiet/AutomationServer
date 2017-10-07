@@ -1,22 +1,14 @@
 package fr.guiet.automationserver.business;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Properties;
+
 import java.util.TimeZone;
-import java.util.Timer;
+
 
 import org.apache.log4j.Logger;
 
-import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
-import com.luckycatlabs.sunrisesunset.dto.Location;
 
 import fr.guiet.automationserver.dto.SMSDto;
-import it.sauronsoftware.cron4j.Predictor;
-import it.sauronsoftware.cron4j.Scheduler;
+
 
 /*si automatic management on 
 ET
@@ -40,61 +32,33 @@ public class RollerShutterService implements Runnable {
 	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
 	
 	//private Timer _timer = null;
-	private Calendar _sunset = null;
-	private Calendar _sunrise = null;
+	//private Calendar _sunset = null;
+	//private Calendar _sunrise = null;
 	private boolean _automaticManagementStatus = false; //By default
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
-	private Scheduler _rollerShutterScheduler = null;
+	//private Scheduler _rollerShutterScheduler = null;
 	
-	private String _cronNightWeekClose = null;	
+	//private String _cronNightWeekClose = null;	
 	
-	private String _cronComputeSunSetSunRise = null;	
-	private String _cronMorningWeekClose = null;	
-	private String _cronMorningWeekOpen = null;	
+	//private String _cronComputeSunSetSunRise = null;	
+	//private String _cronMorningWeekClose = null;	
+	//private String _cronMorningWeekOpen = null;	
 	
-	private String _weekWestNightCloseId = null;
-	private String _weekNorthNightCloseId = null;
+	//private String _weekWestNightCloseId = null;
+	//private String _weekNorthNightCloseId = null;
 	
-	private String _weekMorningOpenId = null;
+	//private String _weekMorningOpenId = null;
 		
 	private RollerShutter _rsWest = null;
 	private RollerShutter _rsNorth = null;
-	
-	//Lie à Sunset
-	private String _nextWeekNightCloseDate = "NA";
-	//a 7h79
-	private String _nextWeekMorningCloseDate = "NA";
-	//lié à sunrise
-	private String _nextWeekMorningOpenDate = "NA";
-	
+		
 	private int ROLLERSHUTTER_WEST_ID = 7;
 	private int ROLLERSHUTTER_NORTH_ID = 8;
-	
-	public String getNextWeekNightCloseDate() {
-		if (_automaticManagementStatus)
-			return _nextWeekNightCloseDate;
-		else 
-			return "mgt auto. désactivé";
-	}
-	
-	public String getNextWeekMorningCloseDate() {
-		if (_automaticManagementStatus)
-			return _nextWeekMorningCloseDate;
-		else 
-			return "mgt auto. désactivé";
-	}
-	
-	public String getNextWeekMorningOpenDate() {
-		if (_automaticManagementStatus)
-			return _nextWeekMorningOpenDate;
-		else 
-			return "mgt auto. désactivé";
-	}
-	
+		
 	public RollerShutterService(SMSGammuService smsGammuService) {
 				
-		InputStream is = null;
+		/*InputStream is = null;
 		try {
 
 			String configPath = System.getProperty("automationserver.config.path");
@@ -143,7 +107,7 @@ public class RollerShutterService implements Runnable {
 			_logger.error(
 					"Erreur lors de la lecture du fichier de configuration classpath_folder/config/automationserver.properties",
 					e);
-		}
+		}*/
 		
 		_smsGammuService = smsGammuService;
 	}
@@ -180,7 +144,7 @@ public class RollerShutterService implements Runnable {
 		//Get Europe/Paris TimeZone
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 		
-		_logger.info("Starting compute sunrise/sunset scheduler at : "+_cronComputeSunSetSunRise);
+		/*_logger.info("Starting compute sunrise/sunset scheduler at : "+_cronComputeSunSetSunRise);
 		// Creates a Scheduler instance.
 		_rollerShutterScheduler = new Scheduler();	
 		_rollerShutterScheduler.setTimeZone(timeZone);
@@ -188,23 +152,23 @@ public class RollerShutterService implements Runnable {
 		public void run() {			
 			ComputeSunsetSunrise();
 		}
-		});
+		});*/
 				
 		//Schedule that close rollershutter automatically at 7h49 every day of the week
-		_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronMorningWeekClose);
+		/*_logger.info("Starting automatic rollershutter closing scheduler at : "+_cronMorningWeekClose);
 
 		_rollerShutterScheduler.schedule(_cronMorningWeekClose, new Runnable() {
 		public void run() {						
 			CloseRollerShutters(true, true);
 			ComputeNextWeekMorningCloseDate();
 		}
-		});
+		});*/
 		
 		//Initial lauch
-		ComputeSunsetSunrise();
+		//ComputeSunsetSunrise();
 		
 		// Starts the scheduler.
-		_rollerShutterScheduler.start();		
+		//_rollerShutterScheduler.start();		
 
 		while (!_isStopped) {
 
@@ -298,14 +262,14 @@ public class RollerShutterService implements Runnable {
 		//if (_timer != null)
 		//	_timer.cancel();
 		
-		_rollerShutterScheduler.stop();
+		//_rollerShutterScheduler.stop();
 		
 		_logger.info("Stopping RollerShutter service...");
 
 		_isStopped = true;
 	}
 	
-	private void ComputeWeekMorningOpenScheduler() {
+	/*private void ComputeWeekMorningOpenScheduler() {
 		
 		Calendar sunrise = Calendar.getInstance(); 			
 		Calendar opendate = Calendar.getInstance(); //current time ...currently set to 6am30
@@ -365,48 +329,14 @@ public class RollerShutterService implements Runnable {
 		}
 			
 		ComputeWeekMorningOpenDate(newCron);
-	}
-	
-	private void ComputeWeekMorningOpenDate(String cron) {
-		
-		if (!cron.equals("")) {		
-			Predictor predictor = new Predictor(cron);
-			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-			predictor.setTimeZone(timeZone);		
-			_nextWeekMorningOpenDate = DateUtils.getDateToString(predictor.nextMatchingDate());
-		}
-		else {
-			_nextWeekMorningOpenDate = "pas d'ouverture prévue";
-		}
-	}
-	
-	private void ComputeNextWeekMorningCloseDate() {
-		
-		Predictor predictor = new Predictor(_cronMorningWeekClose);
-		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-		predictor.setTimeZone(timeZone);		
-		_nextWeekMorningCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
-	}
+	}*/
 	
 	
-	private void ComputeWeekNightCloseDate(String cron) {
-		
-		Predictor predictor = new Predictor(cron);
-		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
-		predictor.setTimeZone(timeZone);		
-		_nextWeekNightCloseDate = DateUtils.getDateToString(predictor.nextMatchingDate());
-	}
 	
 	
-	private String GetCronWithoutTime(String cron) {
-		
-		String [] cronArray =  cron.split(" ");
-				
-		return " " + cronArray[2] + " " + cronArray[3] + " " + cronArray[4];
-		
-	}
 	
-	private void ComputeWeekNightCloseScheduler() {
+	
+	/*private void ComputeWeekNightCloseScheduler() {
 		
 		String cronNorthRS = _sunset.get(Calendar.MINUTE) + " " + _sunset.get(Calendar.HOUR_OF_DAY) + GetCronWithoutTime(_cronNightWeekClose); 
 		
@@ -443,10 +373,10 @@ public class RollerShutterService implements Runnable {
 		}		
 		
 		_logger.info("Rescheduling West rollershutter closing at night using : " + cronWestRS);
-	}
+	}*/
 	
 	//Launched every day at 8h in the morning
-	private void ComputeSunsetSunrise() {
+	/*private void ComputeSunsetSunrise() {
 						
 		Location location = new Location("48.095428", "1.893597");
 		SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, "Europe/Paris");
@@ -471,5 +401,5 @@ public class RollerShutterService implements Runnable {
 		ComputeWeekNightCloseScheduler();		
 		ComputeWeekMorningOpenScheduler();
 		ComputeNextWeekMorningCloseDate();
-	}
+	}*/
 }
