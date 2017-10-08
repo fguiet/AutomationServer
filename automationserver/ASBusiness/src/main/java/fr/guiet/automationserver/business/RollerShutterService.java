@@ -226,10 +226,16 @@ public class RollerShutterService implements Runnable {
 				_rsWest.Close();				
 				_logger.info("Close requested for west rollershutter");				
 			}
+			else {
+				_logger.info("Close requested for west rollershutter but it is already closed...");
+			}
 			
 			if (_rsNorth.getState() != RollerShutterState.CLOSED && closeNorthRS) {
 				_rsNorth.Close();				
 				_logger.info("Close requested for north rollershutter");				
+			}
+			else {
+				_logger.info("Close requested for north rollershutter but it is already closed...");
 			}
 		}
 		else {

@@ -570,7 +570,7 @@ public class ScenariiManager {
 	}
 	
 	private String CreateStandardCron(int hour, int minute, int dayOfWeek) {				
-		return minute + " " + hour + "* * "+dayOfWeek; //" * * 1,2,3,4,5";		
+		return minute + " " + hour + " * * "+dayOfWeek; //" * * 1,2,3,4,5";		
 	}
 	
 	//0 = Sunday
