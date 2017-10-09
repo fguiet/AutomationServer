@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.TimeZone;
 
@@ -295,42 +296,80 @@ public class ScenariiManager {
 		}		
 	}
 	
-	private String ComputeNextScheduleActivationDate(SchedulingPattern pattern) {
+	private Date ComputeNextScheduleActivationDate(SchedulingPattern pattern) {
 		
 		Predictor predictor = new Predictor(pattern);
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 		predictor.setTimeZone(timeZone);		
-		return DateUtils.getDateToString(predictor.nextMatchingDate());
+		//return DateUtils.getDateToString(predictor.nextMatchingDate());
+		return predictor.nextMatchingDate(); 
 	}
 	
 	private void ComputeNextRSOpen() {
 		
-		//Get Task ID to retreive CRON pattern
-		String scheduleId = _rsOpenScheduleIdList.poll();
+		String scheduleId = null;
+		_nextRSOpenDate = "No more opening today";
 		
-		if (scheduleId != null) {
+		while ((scheduleId = _rsOpenScheduleIdList.poll()) != null)  {
+		
+			//Get Task ID to retreive CRON pattern
+			//String scheduleId = _rsOpenScheduleIdList.poll();
+			
+			//if (scheduleId != null) {
 			SchedulingPattern pattern = ReturnSchedulerByDayOfWeek().getSchedulingPattern(scheduleId);
-			_nextRSOpenDate = ComputeNextScheduleActivationDate(pattern);
-			_logger.info("Computed next RS Open date : "+_nextRSOpenDate);
-		}
-		else {
-			_nextRSOpenDate = "NA";
-		}
+			
+			Date nextActivation = ComputeNextScheduleActivationDate(pattern);
+			
+			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeZone(timeZone);
+			cal.setTime(nextActivation);
+			int nextActivationDay = cal.get(Calendar.DAY_OF_MONTH);
+			cal = Calendar.getInstance();
+			int currentDay = cal.get(Calendar.DAY_OF_MONTH);
+						
+			if (nextActivationDay != currentDay) {
+				_logger.info("Next RS opening is not schedule today...will check another open schedule");
+			}
+			else {			
+				_nextRSOpenDate = DateUtils.getDateToString(nextActivation);
+				_logger.info("Computed next RS Open date : "+_nextRSOpenDate);
+				break;
+			}
+			//}
+		}	
 	}
 	
 	private void ComputeNextRSClose() {
 		
-		//Get Task ID to retreive CRON pattern
-		String scheduleId = _rsCloseScheduleIdList.poll();
+		String scheduleId = null;
+		_nextRSCloseDate = "No more closing today";
 		
-		if (scheduleId != null) {
+		while ((scheduleId = _rsCloseScheduleIdList.poll()) != null)  {			
+			
+			//if (scheduleId != null) {
 			SchedulingPattern pattern = ReturnSchedulerByDayOfWeek().getSchedulingPattern(scheduleId);
-			_nextRSCloseDate = ComputeNextScheduleActivationDate(pattern);
-			_logger.info("Computed next RS Close date : "+_nextRSCloseDate);
-		}
-		else {
-			_nextRSCloseDate = "NA";
-		}
+			
+			Date nextActivation = ComputeNextScheduleActivationDate(pattern);
+			
+			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeZone(timeZone);
+			cal.setTime(nextActivation);
+			int nextActivationDay = cal.get(Calendar.DAY_OF_MONTH);
+			cal = Calendar.getInstance();
+			int currentDay = cal.get(Calendar.DAY_OF_MONTH);
+						
+			if (nextActivationDay != currentDay) {
+				_logger.info("Next RS closing is not schedule today...will check another close schedule");
+			}
+			else {			
+				_nextRSCloseDate = DateUtils.getDateToString(nextActivation);
+				_logger.info("Computed next RS Close date : "+_nextRSCloseDate);
+				break;
+			}
+			//}
+		}	
 	}
 	
 	private void CreateSundayScenarii(Scheduler scheduler, int dayOfWeek) {
