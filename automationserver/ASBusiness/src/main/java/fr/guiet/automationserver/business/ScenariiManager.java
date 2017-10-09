@@ -504,6 +504,10 @@ public class ScenariiManager {
 			cron = CreateStandardCron(9,00,dayOfWeek);
 			AddRSOpenSchedule(scheduler, cron);
 			
+			//Close at 17h15
+			cron = CreateStandardCron(17,15, dayOfWeek); 
+			AddRSCloseSchedule(scheduler, cron);
+			
 			//Close at sunset
 			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
 			AddRSCloseSchedule(scheduler, cron);
