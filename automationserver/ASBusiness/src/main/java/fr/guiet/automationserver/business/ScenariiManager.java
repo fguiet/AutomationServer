@@ -262,7 +262,7 @@ public class ScenariiManager {
 			
 			//Close at 7am49
 			cron = CreateStandardCron(7,49,dayOfWeek);
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -271,7 +271,7 @@ public class ScenariiManager {
 									
 			//Close at sunset
 			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -282,7 +282,7 @@ public class ScenariiManager {
 			//Alarm Management
 			//*************
 			cron = CreateStandardCron(6,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn off at :" + cron);
+			_logger.info("Scheduling alarm to turn off at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOff();			
@@ -290,7 +290,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(7,55,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOn();			
@@ -298,7 +298,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(22,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_alarmService.SetAutomaticOn();			
@@ -348,7 +348,7 @@ public class ScenariiManager {
 									
 			//Close at sunset
 			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -375,7 +375,7 @@ public class ScenariiManager {
 				});*/
 			
 			cron = CreateStandardCron(22,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_alarmService.SetAutomaticOn();			
@@ -416,7 +416,7 @@ public class ScenariiManager {
 			
 			//Close at 7am49
 			cron = CreateStandardCron(7,49,dayOfWeek);
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -436,7 +436,7 @@ public class ScenariiManager {
 			//Alarm Management
 			//*************
 			cron = CreateStandardCron(6,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn off at :" + cron);
+			_logger.info("Scheduling alarm to turn off at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOff();			
@@ -444,7 +444,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(7,55,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOn();			
@@ -484,7 +484,7 @@ public class ScenariiManager {
 						
 			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
 			cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
-						
+			_logger.info("Scheduling RS to open at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.OpenAllRollerShutters();				
@@ -493,7 +493,7 @@ public class ScenariiManager {
 			
 			//Close at 8am40
 			cron = CreateStandardCron(8,40,dayOfWeek);
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -502,7 +502,7 @@ public class ScenariiManager {
 			
 			//Open at 9ham
 			cron = CreateStandardCron(9,00,dayOfWeek);
-			_logger.info("Scheduling RS to open at :" + cron);
+			_logger.info("Scheduling RS to open at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.OpenAllRollerShutters();		
@@ -511,7 +511,7 @@ public class ScenariiManager {
 			
 			//Close at sunset
 			cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek); 
-			_logger.info("Scheduling RS to close at :" + cron);
+			_logger.info("Scheduling RS to close at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_rollerShutterService.CloseAllRollerShutters();			
@@ -522,7 +522,7 @@ public class ScenariiManager {
 			//Alarm Management
 			//*************
 			cron = CreateStandardCron(6,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn off at :" + cron);
+			_logger.info("Scheduling alarm to turn off at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOff();			
@@ -530,7 +530,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(8,45,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOn();			
@@ -538,7 +538,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(9,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn off at :" + cron);
+			_logger.info("Scheduling alarm to turn off at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 				public void run() {	
 					_alarmService.SetAutomaticOff();			
@@ -546,7 +546,7 @@ public class ScenariiManager {
 				});
 			
 			cron = CreateStandardCron(22,00,dayOfWeek);
-			_logger.info("Scheduling alarm to turn on at :" + cron);
+			_logger.info("Scheduling alarm to turn on at : " + cron);
 			scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 				_alarmService.SetAutomaticOn();			
@@ -595,7 +595,7 @@ public class ScenariiManager {
 		//sun already rose up
 		if (sunrise.before(opendate)) {
 			_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+opendate.getTime()+ ". Gonna open rollershutters at :"+opendate.getTime());			
-			newCron = openHour + " " + openMinute + "* * "+dayOfWeek;		
+			newCron = openHour + " " + openMinute + " * * "+dayOfWeek;		
 		}		
 		else {
 			
@@ -610,7 +610,7 @@ public class ScenariiManager {
 		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
 				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open rollershutters at : "+sunrise.getTime());				
-				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + "* * "+dayOfWeek; //" * * 1,2,3,4,5";
+				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * "+dayOfWeek; //" * * 1,2,3,4,5";
 			}	
 			else {
 				_logger.info("Sunrise : "+sunrise.getTime()+" is after : "+closedate.getTime()+ " (planned close time minus 5 minutes). Rollershutters will not be opened this morning...bad season of year...");
