@@ -112,6 +112,10 @@ public class AlarmService {
 		}
 		
 		SetOn();
+		
+		SMSDto sms = new SMSDto();
+		sms.setMessage("L'alarme vient d'être automatiquement activée. Bonne et douce journée Maître");
+		_smsGammuService.sendMessage(sms, true);
 	}
 	
 	public void SetOn() {
@@ -128,11 +132,7 @@ public class AlarmService {
 					PIN_ALARM_NAME, null);
 			
 			//Close all rollers shutters if not allready closed
-			_rollerShutterService.CloseAllRollerShutters();
-			
-			SMSDto sms = new SMSDto();
-			sms.setMessage("L'alarme vient d'être activée. Bonne et douce journée Maître");
-			_smsGammuService.sendMessage(sms, true);
+			_rollerShutterService.CloseAllRollerShutters();				
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm on", e);
@@ -146,6 +146,10 @@ public class AlarmService {
 		}
 		
 		SetOff();
+		
+		SMSDto sms = new SMSDto();
+		sms.setMessage("L'alarme vient d'être automatiquement désactivée.");
+		_smsGammuService.sendMessage(sms, true);
 	}
 	
 	public void SetOff() {		
@@ -159,11 +163,7 @@ public class AlarmService {
 			Thread.sleep(1000);
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
-					PIN_ALARM_NAME, null);
-			
-			SMSDto sms = new SMSDto();
-			sms.setMessage("L'alarme vient d'être désactivée.");
-			_smsGammuService.sendMessage(sms, true);
+					PIN_ALARM_NAME, null);			
 		}
 		catch(Exception e) {
 			_logger.error("Error occured setting alarm off", e);

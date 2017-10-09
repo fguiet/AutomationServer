@@ -334,26 +334,23 @@ public class RoomService implements Runnable {
 			for (Heater h : r.getHeaterList())
 				AddHeater(h);
 		}
+		
+		//Wait a little so information from sensor and teleinformation are receiced
+		//avoid warning message in log file
+		try {
+			_logger.info("Waiting for sensors/teleinfoservice to receive their first information...");
+			Thread.sleep(60000);
+		}
+		catch (Exception e) {
+			_logger.error("Error occured in roomservice", e);
 
-		//Date startDate = new Date();
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in room Service, review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		}
 
-		// Wait a little before starting in order to receive first electrical
-		// information frame
-		// and temp from all sensors
-		//_logger.info("Waiting to launch main roomservice loop...");
-		//while (!_isStopped) {
-			// && _teleInfoService.GetLastTrame() == null) {
-
-			//Date currentDate = new Date();
-			//long diff = currentDate.getTime() - startDate.getTime();
-			//long diffMinutes = diff / (60 * 1000);
-
-			//if (diffMinutes >= 1.5) {
-			//	_logger.info("Launching roomservice main loop...");
-			//	break;
-			//}
-		//}
-
+		_logger.info("Activating Room Service...");
+		
 		while (!_isStopped) {			
 			
 			try {
@@ -364,8 +361,7 @@ public class RoomService implements Runnable {
 					ManageDelestage();
 
 					//Gestion des radiateurs!
-					ManageHeaters();
-					
+					ManageHeaters();					
 				}
 
 				// Toutes les 5 secondes

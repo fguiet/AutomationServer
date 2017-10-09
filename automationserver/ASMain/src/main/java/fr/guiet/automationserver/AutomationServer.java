@@ -136,15 +136,14 @@ public class AutomationServer implements Daemon {
 					
 					while (!_isStopped) {
 
+						//Publication des données toutes les 10s
+						Thread.sleep(10000);
 						
 						_mqttHelper.PublishInfoToMqttBroker();
 						
 						//Check whether sensors are still alive....
 						CheckMessagesReception();
 						
-						//Publication des données toutes les 10s
-						Thread.sleep(10000);
-
 					}					
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);

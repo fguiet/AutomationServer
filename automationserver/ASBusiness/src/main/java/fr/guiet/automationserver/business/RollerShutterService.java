@@ -2,10 +2,7 @@ package fr.guiet.automationserver.business;
 
 
 import java.util.TimeZone;
-
-
 import org.apache.log4j.Logger;
-
 
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -34,7 +31,7 @@ public class RollerShutterService implements Runnable {
 	//private Timer _timer = null;
 	//private Calendar _sunset = null;
 	//private Calendar _sunrise = null;
-	private boolean _automaticManagementStatus = false; //By default
+	private boolean _automaticManagementStatus = true; //By default
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
 	//private Scheduler _rollerShutterScheduler = null;
