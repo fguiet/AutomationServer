@@ -454,7 +454,12 @@ public class ScenariiManager {
 	}
 	
 	private void AddRSOpenSchedule(Scheduler scheduler, String cron) {
+			
 		String schedulerId;
+		
+		if (cron == null || cron.equals("")) {
+			return;
+		}
 		
 		_logger.info("Scheduling RS to open at : " + cron);
 		schedulerId = scheduler.schedule(cron, new Runnable() {
@@ -468,7 +473,12 @@ public class ScenariiManager {
 	}
 	
 	private void AddRSCloseSchedule(Scheduler scheduler, String cron) {
+		
 		String schedulerId;
+		
+		if (cron == null || cron.equals("")) {
+			return;
+		}
 		
 		_logger.info("Scheduling RS to close at : " + cron);
 		schedulerId = scheduler.schedule(cron, new Runnable() {
@@ -549,7 +559,7 @@ public class ScenariiManager {
 		
 		Calendar sunrise = Calendar.getInstance(); 			
 		Calendar opendate = Calendar.getInstance(); //current time ...currently set to 6am30
-		Calendar closedate = Calendar.getInstance(); //current time ...currently set to 7am49
+		Calendar closedate = Calendar.getInstance(); //current  de time ...currently set to 7am49
 		
 		opendate.set(Calendar.HOUR_OF_DAY, openHour);
 		opendate.set(Calendar.MINUTE, openMinute);
@@ -561,7 +571,7 @@ public class ScenariiManager {
 		sunrise.set(Calendar.SECOND, 0);
 		sunrise.set(Calendar.MILLISECOND, 0);	
 		
-		String newCron = "";
+		String newCron = null;
 		
 		//sun already rose up
 		if (sunrise.before(opendate)) {
@@ -576,16 +586,16 @@ public class ScenariiManager {
 			closedate.set(Calendar.MILLISECOND, 0);
 			
 			//Remove 10 minutes
-			closedate.add(Calendar.MINUTE, -5);
+			closedate.add(Calendar.MINUTE, -10);
 			
 		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 5 minutes). Gonna open rollershutters at : "+sunrise.getTime());				
-				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * "+dayOfWeek; //" * * 1,2,3,4,5";
+				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 10 minutes). Gonna open rollershutters at : "+closedate.getTime());				
+				newCron = closedate.get(Calendar.MINUTE) + " " + closedate.get(Calendar.HOUR_OF_DAY) + " * * "+dayOfWeek; //" * * 1,2,3,4,5";
 			}	
 			else {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is after : "+closedate.getTime()+ " (planned close time minus 5 minutes). Rollershutters will not be opened this morning...bad season of year...");
-				newCron = "";
+				_logger.info("Sunrise : "+sunrise.getTime()+" is after : "+closedate.getTime()+ " (planned close time minus 10 minutes). Rollershutters will not be opened this morning...bad season of year...");
+				newCron = null;
 			}
 		}
 		
