@@ -245,7 +245,10 @@ public class ScenariiManager {
 		    	break;
 		    
 		    case Calendar.SATURDAY:
-		    	_logger.info("Creating Saturday scenarii...");
+		    	_saturdayScheduler = new Scheduler();
+		    	_saturdayScheduler.setTimeZone(timeZone);
+		    		    			    	
+		    	_logger.info("Creating Saturday scenarii...");		    		
 		    	break;		    
 		}
 		
