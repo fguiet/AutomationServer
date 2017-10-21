@@ -312,6 +312,7 @@ public class ScenariiManager {
 			
 			//Normal
 			if (schedule[cpt].equals("N")) {
+				cpt++;
 				int h1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
 				int m1 = Integer.parseInt(schedule[cpt]);
@@ -370,6 +371,7 @@ public class ScenariiManager {
 			//Sunset
 			if (schedule[cpt].equals("SS")) {
 								
+				cpt++;
 				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
 				
 				if (isOpen) {
@@ -385,6 +387,7 @@ public class ScenariiManager {
 			
 			//Normal
 			if (schedule[cpt].equals("N")) {
+				cpt++;
 				int h1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
 				int m1 = Integer.parseInt(schedule[cpt]);
@@ -483,7 +486,7 @@ public class ScenariiManager {
 		    	_saturdayScheduler.setTimeZone(timeZone);
 		    		    			    	
 		    	_logger.info("Creating Saturday scenarii...");
-		    	CreateScheduler(_saturdayScheduler, 5);
+		    	CreateScheduler(_saturdayScheduler, 6);
 		    	break;		    
 		}
 		
