@@ -304,18 +304,22 @@ public class ScenariiManager {
 			}*/
 			
 			//Normal
-			if (schedule[cpt] == "N") {
+			if (schedule[cpt].equals("N")) {
 				int h1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
 				int m1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
 				
-				cron = CreateStandardCron(h1,m1, dayOfWeek);
+				cron = CreateStandardCron(h1,m1, dayOfWeek);				
 				
-				if (isOn)
-					AddAlarmOnSchedule(scheduler, cron);				
-				else
+				if (isOn) {
+					_logger.info("Add Alarm ON cron : "+cron);
+					AddAlarmOnSchedule(scheduler, cron);
+				}
+				else {
+					_logger.info("Add Alarm OFF cron :"+cron);
 					AddAlarmOffSchedule(scheduler, cron);
+				}
 				continue;
 			}
 		}
@@ -329,7 +333,7 @@ public class ScenariiManager {
 		while (cpt != schedule.length) {
 		
 			//Sunrise
-			if (schedule[cpt] == "SR") {
+			if (schedule[cpt].equals("SR")) {
 				cpt++;
 				int h1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
@@ -342,26 +346,35 @@ public class ScenariiManager {
 				
 				cron = CreateCronRSMorningOpen(h1,m1,h2,m2, dayOfWeek);
 				
-				if (isOpen)
+				if (isOpen) {
+					_logger.info("Add Sunrise RS Open cron :"+cron);
 					AddRSOpenSchedule(scheduler, cron);
-				else
+				}
+				else {
+					_logger.info("Add Sunrise RS Close cron :"+cron);
 					AddRSCloseSchedule(scheduler, cron);
+				}
 				continue;
 			}
 			
 			//Sunset
-			if (schedule[cpt] == "SS") {
+			if (schedule[cpt].equals("SS")) {
+								
 				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
 				
-				if (isOpen)
+				if (isOpen) {
+					_logger.info("Add Sunset RS Open cron :"+cron);
 					AddRSOpenSchedule(scheduler, cron);
-				else
+				}
+				else {
+					_logger.info("Add Sunset RS Close cron :"+cron);
 					AddRSCloseSchedule(scheduler, cron);
+				}
 				continue;
 			}
 			
 			//Normal
-			if (schedule[cpt] == "N") {
+			if (schedule[cpt].equals("N")) {
 				int h1 = Integer.parseInt(schedule[cpt]);
 				cpt++;
 				int m1 = Integer.parseInt(schedule[cpt]);
@@ -369,10 +382,14 @@ public class ScenariiManager {
 				
 				cron = CreateStandardCron(h1,m1, dayOfWeek);
 				
-				if (isOpen)
-					AddRSOpenSchedule(scheduler, cron);				
-				else
+				if (isOpen) {
+					_logger.info("Add Normla RS Open cron :"+cron);
+					AddRSOpenSchedule(scheduler, cron);
+				}
+				else {
+					_logger.info("Add Normal RS Close cron :"+cron);
 					AddRSCloseSchedule(scheduler, cron);
+				}
 				continue;
 			}
 		}
