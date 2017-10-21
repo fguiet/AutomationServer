@@ -1,8 +1,13 @@
 package fr.guiet.automationserver.business;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
@@ -43,12 +48,21 @@ public class ScenariiManager {
 	private LinkedList<String> _rsOpenScheduleIdList = null;
 	private LinkedList<String> _rsCloseScheduleIdList = null;
 	
-	//Lie à Sunset
-	//private String _nextWeekNightCloseDate = "NA";
-	//a 7h79
-	//private String _nextWeekMorningCloseDate = "NA";
-	//lié à sunrise
-	//private String _nextWeekMorningOpenDate = "NA";
+	public void SetEloHome(boolean isAtHome) {
+		_eloAtHome = isAtHome;
+	}
+	
+	public void SetFredHome(boolean isAtHome) {
+		_fredAtHome = isAtHome;
+	}
+	
+	public boolean IsEloHome() {
+		return _eloAtHome;
+	}
+	
+	public boolean IsFredHome() {
+		return _fredAtHome;
+	}
 
 	public ScenariiManager(RollerShutterService rollerShutterService,
 							AlarmService alarmService) {		
@@ -173,6 +187,198 @@ public class ScenariiManager {
 		return null;
 	}
 	
+	private void CreateScheduler(Scheduler scheduler, int dayOfWeek) {
+		
+		String RSScheduleOpen = "";
+		String RSScheduleClose = "";
+		String AlarmOpen = "";
+		String AlarmClose = "";
+		
+		
+		InputStream is = null;
+		try {
+
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+			
+			RSScheduleOpen = prop.getProperty("rollershutter.schedule.open");
+			if (RSScheduleOpen == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			RSScheduleClose = prop.getProperty("rollershutter.schedule.close");
+			if (RSScheduleClose == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			AlarmOpen = prop.getProperty("alarm.schedule.on");
+			if (AlarmOpen == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			AlarmClose = prop.getProperty("alarm.schedule.off");
+			if (AlarmClose == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+		} catch (FileNotFoundException e) {
+			_logger.error(
+					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+			return;
+		} catch (IOException e) {
+			_logger.error(
+					"Erreur lors de la lecture du fichier de configuration classpath_folder/config/automationserver.properties",
+					e);
+			return;
+		}
+		
+		String[] RSDaysOpen = RSScheduleOpen.split("/");
+		String[] RSDaysClose = RSScheduleClose.split("/");
+		String[] AlarmDaysOpen = AlarmOpen.split("/");
+		String[] AlarmDaysClose = AlarmClose.split("/");
+		
+		String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
+		String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
+		String[] AlarmConfDayOpen = AlarmDaysOpen[dayOfWeek].split(";");
+		String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
+		
+		
+		CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
+		CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
+		CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
+		CreateAlarmDayScheduler(AlarmConfDayClose, scheduler, dayOfWeek, false);
+	}
+	
+	private void CreateAlarmDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
+		
+		int cpt = 1;
+		String cron = "";
+		while (cpt != schedule.length) {
+		
+			//Sunrise
+			/*if (schedule[cpt] == "SR") {
+				cpt++;
+				int h1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int h2 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m2 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				
+				cron = CreateCronRSMorningOpen(h1,m1,h2,m2, dayOfWeek);
+				
+				if (isOpen)
+					AddRSOpenSchedule(scheduler, cron);
+				else
+					AddRSCloseSchedule(scheduler, cron);
+				continue;
+			}
+			
+			//Sunset
+			if (schedule[cpt] == "SS") {
+				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
+				
+				if (isOpen)
+					AddRSOpenSchedule(scheduler, cron);
+				else
+					AddRSCloseSchedule(scheduler, cron);
+				continue;
+			}*/
+			
+			//Normal
+			if (schedule[cpt] == "N") {
+				int h1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				
+				cron = CreateStandardCron(h1,m1, dayOfWeek);
+				
+				if (isOn)
+					AddAlarmOnSchedule(scheduler, cron);				
+				else
+					AddAlarmOffSchedule(scheduler, cron);
+				continue;
+			}
+		}
+		
+	}
+	
+	private void CreateRSDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOpen) {
+		
+		int cpt = 1;
+		String cron = "";
+		while (cpt != schedule.length) {
+		
+			//Sunrise
+			if (schedule[cpt] == "SR") {
+				cpt++;
+				int h1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int h2 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m2 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				
+				cron = CreateCronRSMorningOpen(h1,m1,h2,m2, dayOfWeek);
+				
+				if (isOpen)
+					AddRSOpenSchedule(scheduler, cron);
+				else
+					AddRSCloseSchedule(scheduler, cron);
+				continue;
+			}
+			
+			//Sunset
+			if (schedule[cpt] == "SS") {
+				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
+				
+				if (isOpen)
+					AddRSOpenSchedule(scheduler, cron);
+				else
+					AddRSCloseSchedule(scheduler, cron);
+				continue;
+			}
+			
+			//Normal
+			if (schedule[cpt] == "N") {
+				int h1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				
+				cron = CreateStandardCron(h1,m1, dayOfWeek);
+				
+				if (isOpen)
+					AddRSOpenSchedule(scheduler, cron);				
+				else
+					AddRSCloseSchedule(scheduler, cron);
+				continue;
+			}
+		}
+		
+	}
+	
 	private void StartCurrentDayScenario() {
 		
 		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
@@ -197,7 +403,8 @@ public class ScenariiManager {
 		    	_sundayScheduler.setTimeZone(timeZone);
 		    	
 		    	_logger.info("Creating Sunday scenarii...");
-		    	CreateSundayScenarii(_sundayScheduler, 0);
+		    	
+		    	CreateScheduler(_sundayScheduler, 0);
 		    	break;
 
 		    case Calendar.MONDAY:
@@ -205,7 +412,7 @@ public class ScenariiManager {
 				_mondayScheduler.setTimeZone(timeZone);
 		    	
 				_logger.info("Creating Monday scenarii...");
-		    	CreateMondayScenarii(_mondayScheduler, 1);
+				CreateScheduler(_mondayScheduler, 1);
 		    	
 		    	break;
 
@@ -214,7 +421,7 @@ public class ScenariiManager {
 		    	_tuesdayScheduler.setTimeZone(timeZone);
 		    	
 		    	_logger.info("Creating Tuesday scenarii...");
-		    	CreateStandardDayScenarii(_tuesdayScheduler, 2);
+		    	CreateScheduler(_tuesdayScheduler, 2);
 		    	
 		    	break;
 		    
@@ -223,7 +430,7 @@ public class ScenariiManager {
 		    	_wesnesdayScheduler.setTimeZone(timeZone);
 		    	
 		    	_logger.info("Creating Wednesday scenarii...");
-		    	CreateStandardDayScenarii(_wesnesdayScheduler, 3);		    		 
+		    	CreateScheduler(_wesnesdayScheduler, 3);		    		 
 		    	break;
 		    
 		    case Calendar.THURSDAY:
@@ -231,7 +438,7 @@ public class ScenariiManager {
 		    	_thursdayScheduler.setTimeZone(timeZone);
 		    	
 		    	_logger.info("Creating Thursday scenarii...");
-		    	CreateStandardDayScenarii(_thursdayScheduler, 4);
+		    	CreateScheduler(_thursdayScheduler, 4);
 		    	
 		    	break;
 		    
@@ -240,7 +447,7 @@ public class ScenariiManager {
 		    	_fridayScheduler.setTimeZone(timeZone);
 		    	
 		    	_logger.info("Creating Friday scenarii...");
-		    	CreateFridayScenarii(_fridayScheduler, 5);
+		    	CreateScheduler(_fridayScheduler, 5);
 		    	
 		    	break;
 		    
@@ -248,7 +455,8 @@ public class ScenariiManager {
 		    	_saturdayScheduler = new Scheduler();
 		    	_saturdayScheduler.setTimeZone(timeZone);
 		    		    			    	
-		    	_logger.info("Creating Saturday scenarii...");		    		
+		    	_logger.info("Creating Saturday scenarii...");
+		    	CreateScheduler(_saturdayScheduler, 5);
 		    	break;		    
 		}
 		
@@ -257,7 +465,7 @@ public class ScenariiManager {
 		ComputeNextRSClose();
 	}
 	
-	private void CreateStandardDayScenarii(Scheduler scheduler, int dayOfWeek) {
+	/*private void CreateStandardDayScenarii(Scheduler scheduler, int dayOfWeek) {
 		
 		String cron;		
 				
@@ -269,7 +477,7 @@ public class ScenariiManager {
 			//*************
 						
 			//Compute Open in the morning at 6h30 synchronized with sunset/sunrise
-			cron = CreateCronRSMorningOpen(6,30,8,40,dayOfWeek);
+			cron = CreateCronRSMorningOpen(6,30,7,40,dayOfWeek);
 			AddRSOpenSchedule(scheduler, cron);			
 			
 			//Close at 7am49
@@ -297,7 +505,7 @@ public class ScenariiManager {
 			//Light Strip
 			//************
 		}		
-	}
+	}*/
 	
 	private Date ComputeNextScheduleActivationDate(SchedulingPattern pattern) {
 		
@@ -375,7 +583,7 @@ public class ScenariiManager {
 		}	
 	}
 	
-	private void CreateSundayScenarii(Scheduler scheduler, int dayOfWeek) {
+	/*private void CreateSundayScenarii(Scheduler scheduler, int dayOfWeek) {
 		
 		String cron;		
 				
@@ -402,9 +610,9 @@ public class ScenariiManager {
 			//Light Strip
 			//************
 		}				
-	}
+	}*/
 	
-	private void CreateFridayScenarii(Scheduler scheduler, int dayOfWeek) {
+	/*private void CreateFridayScenarii(Scheduler scheduler, int dayOfWeek) {
 		
 		String cron;			
 				
@@ -436,7 +644,7 @@ public class ScenariiManager {
 			//Light Strip
 			//************
 		}		
-	}
+	}*/
 	
 	private void AddAlarmOnSchedule(Scheduler scheduler, String cron) {
 		_logger.info("Scheduling alarm to turn on at : " + cron);
@@ -494,7 +702,7 @@ public class ScenariiManager {
 		
 	}
 	
-	private void CreateMondayScenarii(Scheduler scheduler, int dayOfWeek) {
+	/*private void CreateMondayScenarii(Scheduler scheduler, int dayOfWeek) {
 		
 		String cron;
 				
@@ -544,7 +752,7 @@ public class ScenariiManager {
 			//Light Strip
 			//************
 		}		
-	}
+	}*/
 	
 	/*private String GetCronWithoutTime(String cron) {
 		
@@ -589,12 +797,12 @@ public class ScenariiManager {
 			closedate.set(Calendar.MILLISECOND, 0);
 			
 			//Remove 10 minutes
-			closedate.add(Calendar.MINUTE, -10);
+			//closedate.add(Calendar.MINUTE, -10);
 			
 		//	TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			if (sunrise.before(closedate)) {
-				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 10 minutes). Gonna open rollershutters at : "+closedate.getTime());				
-				newCron = closedate.get(Calendar.MINUTE) + " " + closedate.get(Calendar.HOUR_OF_DAY) + " * * "+dayOfWeek; //" * * 1,2,3,4,5";
+				_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+closedate.getTime()+ " (planned close time minus 10 minutes). Gonna open rollershutters at : "+sunrise.getTime());				
+				newCron = sunrise.get(Calendar.MINUTE) + " " + sunrise.get(Calendar.HOUR_OF_DAY) + " * * "+dayOfWeek; //" * * 1,2,3,4,5";
 			}	
 			else {
 				_logger.info("Sunrise : "+sunrise.getTime()+" is after : "+closedate.getTime()+ " (planned close time minus 10 minutes). Rollershutters will not be opened this morning...bad season of year...");
@@ -605,6 +813,8 @@ public class ScenariiManager {
 		return newCron;
 		
 	}
+	
+	
 	
 	//Launched every day at 8h in the morning
 	private void ComputeSunsetSunrise() {
