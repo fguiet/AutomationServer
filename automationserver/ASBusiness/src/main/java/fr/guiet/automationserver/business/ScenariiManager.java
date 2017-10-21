@@ -253,10 +253,17 @@ public class ScenariiManager {
 		String[] AlarmDaysOpen = AlarmOpen.split("/");
 		String[] AlarmDaysClose = AlarmClose.split("/");
 		
+		_logger.info("Using RS Conf Open Schedule : "+RSDaysOpen[dayOfWeek]);
+		_logger.info("Using RS Conf Close Schedule : "+RSDaysClose[dayOfWeek]);
+		_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOpen[dayOfWeek]);
+		_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysClose[dayOfWeek]);
+		
 		String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
 		String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
 		String[] AlarmConfDayOpen = AlarmDaysOpen[dayOfWeek].split(";");
 		String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
+		
+		
 		
 		
 		CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
@@ -345,6 +352,9 @@ public class ScenariiManager {
 				cpt++;
 				
 				cron = CreateCronRSMorningOpen(h1,m1,h2,m2, dayOfWeek);
+				
+				if (cron == null)
+					continue;
 				
 				if (isOpen) {
 					_logger.info("Add Sunrise RS Open cron :"+cron);
