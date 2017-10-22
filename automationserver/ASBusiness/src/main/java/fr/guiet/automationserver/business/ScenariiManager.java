@@ -50,14 +50,15 @@ public class ScenariiManager {
 	public void SetHomeModeState(String homeMode) {
 		
 		switch(homeMode) {
-		case "NOTACTIVED":
+		case "0":
 			_logger.info("Setting Home mode : NOT ACTIVATED");
 			_homeModeState = HomeModeState.NOTACTIVED;
 			break;
-		case "HOLIDAY":
+		case "1":
 			_logger.info("Setting Home mode : HOLIDAY");
 			_homeModeState = HomeModeState.HOLIDAY;
-		case "WORK":
+			break;
+		case "2":
 			_logger.info("Setting Home mode : WORK");
 			_homeModeState = HomeModeState.WORK;
 			break;
@@ -72,15 +73,15 @@ public class ScenariiManager {
 	
 	public String GetHomeModeStatus() {
 		if (_homeModeState == HomeModeState.NOTACTIVED) {
-			return "NOTACTIVATED";
+			return "0";
 		}
 		
 		if (_homeModeState == HomeModeState.HOLIDAY) {
-			return "HOLIDAY";
+			return "1";
 		}
 		
 		if (_homeModeState == HomeModeState.WORK) {
-			return "WORK";
+			return "2";
 		}
 		
 		return "NOTACTIVATED";
