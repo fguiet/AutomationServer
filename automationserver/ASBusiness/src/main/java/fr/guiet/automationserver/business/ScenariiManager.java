@@ -48,20 +48,34 @@ public class ScenariiManager {
 	private LinkedList<String> _rsOpenScheduleIdList = null;
 	private LinkedList<String> _rsCloseScheduleIdList = null;
 	
-	public void SetEloHome(boolean isAtHome) {
-		_eloAtHome = isAtHome;
+	public void SetEloHomeYes() {
+		_eloAtHome = true;
 	}
 	
-	public void SetFredHome(boolean isAtHome) {
-		_fredAtHome = isAtHome;
+	public void SetFredHomeYes() {
+		_fredAtHome = true;
 	}
 	
-	public boolean IsEloHome() {
-		return _eloAtHome;
+	public void SetEloHomeNo() {
+		_eloAtHome = false;
 	}
 	
-	public boolean IsFredHome() {
-		return _fredAtHome;
+	public void SetFredHomeNo() {
+		_fredAtHome = false;
+	}
+	
+	public String GetEloHomeStatus() {
+		if (_eloAtHome) 
+			return "YES";
+		else
+			return "NO";
+	}
+	
+	public String GetFredHomeStatus() {
+		if (_fredAtHome) 
+			return "YES";
+		else
+			return "NO";
 	}
 
 	public ScenariiManager(RollerShutterService rollerShutterService,
@@ -264,8 +278,6 @@ public class ScenariiManager {
 		String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
 		
 		
-		
-		
 		CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
 		CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
 		CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
@@ -277,38 +289,6 @@ public class ScenariiManager {
 		int cpt = 1;
 		String cron = "";
 		while (cpt != schedule.length) {
-		
-			//Sunrise
-			/*if (schedule[cpt] == "SR") {
-				cpt++;
-				int h1 = Integer.parseInt(schedule[cpt]);
-				cpt++;
-				int m1 = Integer.parseInt(schedule[cpt]);
-				cpt++;
-				int h2 = Integer.parseInt(schedule[cpt]);
-				cpt++;
-				int m2 = Integer.parseInt(schedule[cpt]);
-				cpt++;
-				
-				cron = CreateCronRSMorningOpen(h1,m1,h2,m2, dayOfWeek);
-				
-				if (isOpen)
-					AddRSOpenSchedule(scheduler, cron);
-				else
-					AddRSCloseSchedule(scheduler, cron);
-				continue;
-			}
-			
-			//Sunset
-			if (schedule[cpt] == "SS") {
-				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
-				
-				if (isOpen)
-					AddRSOpenSchedule(scheduler, cron);
-				else
-					AddRSCloseSchedule(scheduler, cron);
-				continue;
-			}*/
 			
 			//Normal
 			if (schedule[cpt].equals("N")) {
