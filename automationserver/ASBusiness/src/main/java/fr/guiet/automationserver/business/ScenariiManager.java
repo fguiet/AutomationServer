@@ -33,8 +33,7 @@ public class ScenariiManager {
 	private Scheduler _fridayScheduler = null;
 	private Scheduler _saturdayScheduler = null;
 	
-	private boolean _eloAtHome = false;
-	private boolean _fredAtHome = false;
+	private HomeModeState _homeModeState = HomeModeState.NOTACTIVED;
 	
 	private Calendar _sunset = null;
 	private Calendar _sunrise = null;
@@ -48,35 +47,46 @@ public class ScenariiManager {
 	private LinkedList<String> _rsOpenScheduleIdList = null;
 	private LinkedList<String> _rsCloseScheduleIdList = null;
 	
-	public void SetEloHomeYes() {
-		_eloAtHome = true;
+	public void SetHomeModeState(String homeMode) {
+		
+		switch(homeMode) {
+		case "NOTACTIVED":
+			_logger.info("Setting Home mode : NOT ACTIVATED");
+			_homeModeState = HomeModeState.NOTACTIVED;
+			break;
+		case "HOLIDAY":
+			_logger.info("Setting Home mode : HOLIDAY");
+			_homeModeState = HomeModeState.HOLIDAY;
+		case "WORK":
+			_logger.info("Setting Home mode : WORK");
+			_homeModeState = HomeModeState.WORK;
+			break;
+		default:
+			//Default
+			_logger.info("Received unknown home mode : "+homeMode+", Setting default Home mode : NOT ACTIVATED");
+			_homeModeState = HomeModeState.NOTACTIVED;
+			break;
+		}
+			
 	}
 	
-	public void SetFredHomeYes() {
-		_fredAtHome = true;
+	public String GetHomeModeStatus() {
+		if (_homeModeState == HomeModeState.NOTACTIVED) {
+			return "NOTACTIVATED";
+		}
+		
+		if (_homeModeState == HomeModeState.HOLIDAY) {
+			return "HOLIDAY";
+		}
+		
+		if (_homeModeState == HomeModeState.WORK) {
+			return "WORK";
+		}
+		
+		return "NOTACTIVATED";
 	}
 	
-	public void SetEloHomeNo() {
-		_eloAtHome = false;
-	}
 	
-	public void SetFredHomeNo() {
-		_fredAtHome = false;
-	}
-	
-	public String GetEloHomeStatus() {
-		if (_eloAtHome) 
-			return "YES";
-		else
-			return "NO";
-	}
-	
-	public String GetFredHomeStatus() {
-		if (_fredAtHome) 
-			return "YES";
-		else
-			return "NO";
-	}
 
 	public ScenariiManager(RollerShutterService rollerShutterService,
 							AlarmService alarmService) {		
@@ -262,26 +272,31 @@ public class ScenariiManager {
 			return;
 		}
 		
-		String[] RSDaysOpen = RSScheduleOpen.split("/");
-		String[] RSDaysClose = RSScheduleClose.split("/");
-		String[] AlarmDaysOpen = AlarmOpen.split("/");
-		String[] AlarmDaysClose = AlarmClose.split("/");
-		
-		_logger.info("Using RS Conf Open Schedule : "+RSDaysOpen[dayOfWeek]);
-		_logger.info("Using RS Conf Close Schedule : "+RSDaysClose[dayOfWeek]);
-		_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOpen[dayOfWeek]);
-		_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysClose[dayOfWeek]);
-		
-		String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
-		String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
-		String[] AlarmConfDayOpen = AlarmDaysOpen[dayOfWeek].split(";");
-		String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
-		
-		
-		CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
-		CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
-		CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
-		CreateAlarmDayScheduler(AlarmConfDayClose, scheduler, dayOfWeek, false);
+		if (_homeModeState == HomeModeState.WORK) {
+			
+			_logger.info("Activating Home Mode Management : WORK");
+			
+			String[] RSDaysOpen = RSScheduleOpen.split("/");
+			String[] RSDaysClose = RSScheduleClose.split("/");
+			String[] AlarmDaysOpen = AlarmOpen.split("/");
+			String[] AlarmDaysClose = AlarmClose.split("/");
+			
+			_logger.info("Using RS Conf Open Schedule : "+RSDaysOpen[dayOfWeek]);
+			_logger.info("Using RS Conf Close Schedule : "+RSDaysClose[dayOfWeek]);
+			_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOpen[dayOfWeek]);
+			_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysClose[dayOfWeek]);
+			
+			String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
+			String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
+			String[] AlarmConfDayOpen = AlarmDaysOpen[dayOfWeek].split(";");
+			String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
+			
+			
+			CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
+			CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
+			CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
+			CreateAlarmDayScheduler(AlarmConfDayClose, scheduler, dayOfWeek, false);
+		}
 	}
 	
 	private void CreateAlarmDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {

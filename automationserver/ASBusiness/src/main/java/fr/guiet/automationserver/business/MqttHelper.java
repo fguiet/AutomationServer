@@ -213,29 +213,10 @@ public class MqttHelper implements MqttCallback {
 				}
 			break;
 				
-			case "SETFREDHOME":
-				String fredMode = messageContent[1];
-
-				if (fredMode.equals("ON")) {
-					_scenariiManager.SetFredHomeYes();
-				}
-				else {
-					_scenariiManager.SetFredHomeNo();
-				}
-						
-				break;
-			
-			case "SETELOHOME":
-				String eloMode = messageContent[1];
-
-				if (eloMode.equals("ON")) {
-					_scenariiManager.SetEloHomeYes();
-				}
-				else {
-					_scenariiManager.SetEloHomeNo();
-				}
-				
-				break;
+			case "SETHOMEMODE":
+				String homeMode = messageContent[1];
+				_scenariiManager.SetHomeModeState(homeMode);
+				break;			
 				
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
@@ -245,8 +226,7 @@ public class MqttHelper implements MqttCallback {
 					_waterHeaterService.SetAwayModeOn();
 					_rollerShutterService.SetAutomaticManagementOff();
 					_alarmService.SetAutomaticModeOff();
-					_scenariiManager.SetEloHomeNo();
-					_scenariiManager.SetFredHomeNo();
+					_scenariiManager.SetHomeModeState("NOTACTIVATED");					
 				} else {
 					_roomService.SetAwayModeOff();
 					_waterHeaterService.SetAwayModeOff();					
@@ -410,12 +390,12 @@ public class MqttHelper implements MqttCallback {
 		String westRSState = _rollerShutterService.getWestRSState();
 		String northRSState = _rollerShutterService.getNorthRSState();
 		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
-		String eloHomeStatus = _scenariiManager.GetEloHomeStatus();
-		String fredHomeStatus = _scenariiManager.GetFredHomeStatus();
+		String homeModeStatus = _scenariiManager.GetHomeModeStatus();
+		
 		
 		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
 		message = message + ";" + _scenariiManager.getNextRSOpenDate() + ";" + _scenariiManager.getNextRSCloseDate();
-		message = message + ";" + northRSState + ";" + eloHomeStatus + ";" + fredHomeStatus;
+		message = message + ";" + northRSState + ";" + homeModeStatus;
 		
 		return message;
 	}
