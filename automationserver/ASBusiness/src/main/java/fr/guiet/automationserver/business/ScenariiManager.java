@@ -55,8 +55,8 @@ public class ScenariiManager {
 			_homeModeState = HomeModeState.NOTACTIVED;
 			break;
 		case "1":
-			_logger.info("Setting Home mode : HOLIDAY");
-			_homeModeState = HomeModeState.HOLIDAY;
+			_logger.info("Setting Home mode : HOME");
+			_homeModeState = HomeModeState.HOME;
 			break;
 		case "2":
 			_logger.info("Setting Home mode : WORK");
@@ -69,6 +69,8 @@ public class ScenariiManager {
 			break;
 		}
 			
+		//Recompute current day scenario...
+		StartCurrentDayScenario();
 	}
 	
 	public String GetHomeModeStatus() {
@@ -76,7 +78,7 @@ public class ScenariiManager {
 			return "0";
 		}
 		
-		if (_homeModeState == HomeModeState.HOLIDAY) {
+		if (_homeModeState == HomeModeState.HOME) {
 			return "1";
 		}
 		
@@ -214,12 +216,16 @@ public class ScenariiManager {
 	
 	private void CreateScheduler(Scheduler scheduler, int dayOfWeek) {
 		
-		String RSScheduleOpen = "";
-		String RSScheduleClose = "";
-		String AlarmOpen = "";
-		String AlarmClose = "";
+		String RSScheduleWorkOpen = "";
+		String RSScheduleWorkClose = "";
+		String AlarmWorkOn = "";
+		String AlarmWorkOff = "";
 		
-		
+		String RSScheduleHomeOpen = "";
+		String RSScheduleHomeClose = "";
+		String AlarmHomeOn = "";
+		String AlarmHomeOff = "";
+				
 		InputStream is = null;
 		try {
 
@@ -229,32 +235,64 @@ public class ScenariiManager {
 			Properties prop = new Properties();
 			prop.load(is);
 			
-			RSScheduleOpen = prop.getProperty("rollershutter.schedule.open");
-			if (RSScheduleOpen == null) 
+			RSScheduleWorkOpen = prop.getProperty("rollershutter.schedule.work.open");
+			if (RSScheduleWorkOpen == null) 
 			{
 				_logger.info(
 						"Impossible de créer le scheduler...");
 				return;
 			}
 			
-			RSScheduleClose = prop.getProperty("rollershutter.schedule.close");
-			if (RSScheduleClose == null) 
+			RSScheduleWorkClose = prop.getProperty("rollershutter.schedule.work.close");
+			if (RSScheduleWorkClose == null) 
 			{
 				_logger.info(
 						"Impossible de créer le scheduler...");
 				return;
 			}
 			
-			AlarmOpen = prop.getProperty("alarm.schedule.on");
-			if (AlarmOpen == null) 
+			AlarmWorkOn = prop.getProperty("alarm.schedule.work.on");
+			if (AlarmWorkOn == null) 
 			{
 				_logger.info(
 						"Impossible de créer le scheduler...");
 				return;
 			}
 			
-			AlarmClose = prop.getProperty("alarm.schedule.off");
-			if (AlarmClose == null) 
+			AlarmWorkOff = prop.getProperty("alarm.schedule.work.off");
+			if (AlarmWorkOff == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			RSScheduleHomeOpen = prop.getProperty("rollershutter.schedule.home.open");
+			if (RSScheduleHomeOpen == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			RSScheduleHomeClose = prop.getProperty("rollershutter.schedule.home.close");
+			if (RSScheduleHomeClose == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			AlarmHomeOn = prop.getProperty("alarm.schedule.home.on");
+			if (AlarmHomeOn == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			AlarmHomeOff = prop.getProperty("alarm.schedule.home.off");
+			if (AlarmHomeOff == null) 
 			{
 				_logger.info(
 						"Impossible de créer le scheduler...");
@@ -273,26 +311,43 @@ public class ScenariiManager {
 			return;
 		}
 		
+		String[] RSDaysOpen = null;
+		String[] RSDaysClose = null;
+		String[] AlarmDaysOn = null;
+		String[] AlarmDaysOff = null;
+		
+		if (_homeModeState == HomeModeState.HOME) {
+			
+			_logger.info("Activating Home Mode Management : HOME");
+			
+			RSDaysOpen = RSScheduleHomeOpen.split("/");
+			RSDaysClose = RSScheduleHomeClose.split("/");
+			AlarmDaysOn = AlarmHomeOn.split("/");
+			AlarmDaysOff = AlarmHomeOff.split("/");			
+		}
+		
 		if (_homeModeState == HomeModeState.WORK) {
 			
 			_logger.info("Activating Home Mode Management : WORK");
 			
-			String[] RSDaysOpen = RSScheduleOpen.split("/");
-			String[] RSDaysClose = RSScheduleClose.split("/");
-			String[] AlarmDaysOpen = AlarmOpen.split("/");
-			String[] AlarmDaysClose = AlarmClose.split("/");
+			RSDaysOpen = RSScheduleWorkOpen.split("/");
+			RSDaysClose = RSScheduleWorkClose.split("/");
+			AlarmDaysOn = AlarmWorkOn.split("/");
+			AlarmDaysOff = AlarmWorkOff.split("/");				
+		}
+		
+		if (_homeModeState != HomeModeState.NOTACTIVED) {			
 			
 			_logger.info("Using RS Conf Open Schedule : "+RSDaysOpen[dayOfWeek]);
 			_logger.info("Using RS Conf Close Schedule : "+RSDaysClose[dayOfWeek]);
-			_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOpen[dayOfWeek]);
-			_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysClose[dayOfWeek]);
+			_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOn[dayOfWeek]);
+			_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysOff[dayOfWeek]);
 			
 			String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
 			String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
-			String[] AlarmConfDayOpen = AlarmDaysOpen[dayOfWeek].split(";");
-			String[] AlarmConfDayClose = AlarmDaysClose[dayOfWeek].split(";");
-			
-			
+			String[] AlarmConfDayOpen = AlarmDaysOn[dayOfWeek].split(";");
+			String[] AlarmConfDayClose = AlarmDaysOff[dayOfWeek].split(";");
+						
 			CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
 			CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
 			CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
