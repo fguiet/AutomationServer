@@ -56,9 +56,9 @@ public class DbManager {
 	private static String _retentionPolicy = null;
 	
 	//Cache
-	Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
-	Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
-	List<RoomDto> _roomDtoList = null;
+	private static Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
+	private static Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
+	private static List<RoomDto> _roomDtoList = new ArrayList<RoomDto>();
 		
 	private InfluxDB _influxDB = null;
 	
