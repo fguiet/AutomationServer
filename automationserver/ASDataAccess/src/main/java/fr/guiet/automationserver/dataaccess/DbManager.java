@@ -1,6 +1,6 @@
 package fr.guiet.automationserver.dataaccess;
 
-import java.sql.DriverManager;
+//import java.sql.DriverManager;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Date;
@@ -23,9 +24,9 @@ import java.sql.ResultSet;
 import org.apache.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
+import org.postgresql.ds.PGPoolingDataSource;
 
 import java.util.concurrent.TimeUnit;
-
 import fr.guiet.automationserver.dto.*;
 
 /**
@@ -40,6 +41,9 @@ public class DbManager {
 	private static Logger _logger = Logger.getLogger(DbManager.class);
 
 	private static String _postgresqlConnectionString = "jdbc:postgresql://%s:%s/%s";
+	private static String _hostPG = null;
+	private static String _portPG = null;
+	private static String _databasePG = null;
 	private static String _userName = null;
 	private static String _password = null;
 	private static String _postgresqlEnable = null;
@@ -50,8 +54,27 @@ public class DbManager {
 	private static String _passwordInfluxDB = null; // "raspberry";
 	private static String _influxdbEnable = null;
 	private static String _retentionPolicy = null;
-
+	
+	//Cache
+	Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
+	Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
+	List<RoomDto> _roomDtoList = null;
+		
 	private InfluxDB _influxDB = null;
+	
+	private Connection getPGConnection() throws SQLException {
+		PGPoolingDataSource connectionPool = new PGPoolingDataSource();
+
+	    //connectionPool.setApplicationName(CONFIG.DB_SERVER_NAME);
+	    connectionPool.setServerName(_hostPG);
+	    connectionPool.setPortNumber(Integer.parseInt(_portPG));
+	    connectionPool.setDatabaseName(_databasePG);
+	    connectionPool.setUser(_userName);
+	    connectionPool.setPassword(_password);
+	    connectionPool.setMaxConnections(10);
+	    
+		return connectionPool.getConnection();		
+	}
 
 	/**
 	 * Constructor
@@ -72,19 +95,19 @@ public class DbManager {
 			prop.load(is);
 
 			// PostgreSQL
-			String host = prop.getProperty("postgresql.host");
-			String port = prop.getProperty("postgresql.port");
-			String database = prop.getProperty("postgresql.database");
+			_hostPG = prop.getProperty("postgresql.host");
+			_portPG = prop.getProperty("postgresql.port");
+			_databasePG = prop.getProperty("postgresql.database");
 
 			// TODO : Checker les valeurs null
-			_postgresqlConnectionString = String.format(_postgresqlConnectionString, host, port, database);
+			_postgresqlConnectionString = String.format(_postgresqlConnectionString, _hostPG, _portPG, _databasePG);
 			_userName = prop.getProperty("postgresql.username");
 			_password = prop.getProperty("postgresql.password");
 			_postgresqlEnable = prop.getProperty("postgresql.enable");
 
 			// InfluxDB
-			host = prop.getProperty("influxdb.host");
-			port = prop.getProperty("influxdb.port");
+			String host = prop.getProperty("influxdb.host");
+			String port = prop.getProperty("influxdb.port");
 			_influxdbConnectionString = String.format(_influxdbConnectionString, host, port);
 			_databaseInfluxDB = prop.getProperty("influxdb.database");
 			_userNameInfluxDB = prop.getProperty("influxdb.username");
@@ -283,7 +306,7 @@ public class DbManager {
 	 * Saves teleinfo framework into InfluxDB
 	 * 
 	 * @param teleInfoTrameDto
-	 */
+	 */	
 	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
 
 		try {
@@ -331,7 +354,8 @@ public class DbManager {
 	 * @param wantedTemp
 	 * @param humidity
 	 */
-	public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
+	//Plus utiliser depuis le 20171107
+	/*public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
 
 		// TODO : revoir le modèle de données de la base Postgres
 
@@ -380,7 +404,9 @@ public class DbManager {
 			}
 		}
 
-	}
+	}*/
+	
+	
 
 	/**
 	 * Gets list of heaters dto associated with a room
@@ -388,16 +414,23 @@ public class DbManager {
 	 * @param roomId
 	 * @return Returns list of Dto objects representing heaters
 	 */
-	public ArrayList<HeaterDto> GetHeatersByRoomId(long roomId) {
+	public ArrayList<HeaterDto> GetHeatersByRoomId(long roomId) throws Exception {
 
+		//Use cache!
+		if (_heaterDtoList.containsKey(roomId)) {
+			_logger.info("Using cache for heaters of room : "+roomId);
+			return _heaterDtoList.get(roomId);
+		}
+		
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		ArrayList<HeaterDto> dtoList = new ArrayList<HeaterDto>();
 
 		try {
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
-
+			
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);			
+			
 			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from automation.room_heater a, automation.heater b "
 					+ "where a.id_heater = b.id_heater and a.id_room=?";
 
@@ -419,6 +452,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération des radiateurs dans la base de données", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -432,8 +466,12 @@ public class DbManager {
 			} catch (SQLException ex) {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
 			}
-		}
-
+		}		
+		
+		//Add to cache
+		_heaterDtoList.put(roomId, dtoList);
+		_logger.info("Adding heaters of room : "+roomId+" to cache");
+		
 		return dtoList;
 	}
 
@@ -443,15 +481,21 @@ public class DbManager {
 	 * @param sensorId
 	 * @return
 	 */
-	public SensorDto GetSensorById(long sensorId) {
+	public SensorDto GetSensorById(long sensorId) throws Exception {
 
+		//Use cache!
+		if (_sensorDtoList.containsKey(sensorId)) {
+			_logger.info("Using cache for sensor : "+sensorId);
+			return _sensorDtoList.get(sensorId);
+		}
+		
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		SensorDto dto = null;
 
 		try {
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
@@ -471,6 +515,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -486,12 +531,16 @@ public class DbManager {
 			}
 		}
 
+		//Add to cache
+		_sensorDtoList.put(sensorId, dto);		
+		_logger.info("Adding sensor : "+sensorId+" to cache");
+		
 		return dto;
 	}
 
 	// *** Obtient la temperature par defaut à instaurer de la piece pour un
 	// jour de la semaine et une heure
-	public Float GetDefaultTempByRoom(long roomId) {
+	public Float GetDefaultTempByRoom(long roomId) throws Exception {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -500,7 +549,7 @@ public class DbManager {
 
 		try {
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -513,6 +562,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getDefaultTempByRoom)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -538,7 +588,7 @@ public class DbManager {
 
 	// Obtient la priorite du radiateur en fonction du jour de la semaine et de
 	// l'heure
-	public Integer GetCurrentPriorityByHeaterId(long heaterId) {
+	public Integer GetCurrentPriorityByHeaterId(long heaterId) throws Exception {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -547,7 +597,7 @@ public class DbManager {
 
 		try {
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "select priority from automation.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -560,6 +610,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (GetCurrentPriorityByHeaterId)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -586,8 +637,14 @@ public class DbManager {
 	/***
 	 * /* /* Récupère la liste des pièces /*
 	 ***/
-	public List<RoomDto> GetRooms() {
+	public List<RoomDto> GetRooms() throws Exception {
 
+		//Use cache when possible
+		if (_roomDtoList != null) {
+			_logger.info("Using cache for fetching room list");
+			return _roomDtoList;
+		}
+		
 		List<RoomDto> roomList = null;
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -595,7 +652,7 @@ public class DbManager {
 		ResultSet rs = null;
 
 		try {
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic, a.influxdb_measurement FROM automation.room a ";
 
@@ -615,7 +672,9 @@ public class DbManager {
 				roomList.add(r);
 			}
 		} catch (SQLException e) {
-			_logger.error("Erreur lors de la lecture des pièces dans la base de données", e);
+			_logger.error("Erreur lors de la lecture des pièces dans la base de données", e);			
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			
 		} finally {
 			try {
 				if (pst != null) {
@@ -630,13 +689,16 @@ public class DbManager {
 
 			} catch (SQLException ex) {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
-			}
+			}					
 		}
-
+		
+		_roomDtoList = roomList;
+		_logger.info("Adding room list to cache");
+		
 		return roomList;
 	}
 
-	public TempScheduleDto GetNextDefaultTempByRoom(long roomId, int dayOfWeek) {
+	public TempScheduleDto GetNextDefaultTempByRoom(long roomId, int dayOfWeek) throws Exception {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -650,7 +712,7 @@ public class DbManager {
 		TempScheduleDto ts = null;
 
 		try {
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			if (dayOfWeek == dow) {
 
@@ -691,6 +753,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getNextDefaultTempByRoom)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -786,7 +849,8 @@ public class DbManager {
 	/***
 	 * /* /* Sauvegarde de la trame en bdd /*
 	 ***/
-	public void SaveTeleInfoTrame(TeleInfoTrameDto teleInfoTrameDto) {
+	//20171107 - No more data saved in PG
+	/*public void SaveTeleInfoTrame(TeleInfoTrameDto teleInfoTrameDto) {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -847,12 +911,12 @@ public class DbManager {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
 			}
 		}
-	}
+	}*/
 
 	/*
 	 * Returns temperature schedule for all room
 	 */
-	public List<TempScheduleDto> getTempSchedule() {
+	public List<TempScheduleDto> getTempSchedule() throws Exception {
 
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -865,7 +929,7 @@ public class DbManager {
 				return dtoList;
 			}
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			// String query = "select json_agg(f.*) " + "from " + "(select
 			// id_room::text as resource, id_temp_schedule as id, temp::text as
@@ -924,6 +988,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getHeaterScheduleForRoom)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -943,10 +1008,9 @@ public class DbManager {
 		}
 
 		return dtoList;
-
 	}
 
-	public void deleteTempScheduleById(int id) {
+	public void deleteTempScheduleById(int id) throws Exception {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -955,7 +1019,7 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection();  //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String stm = "DELETE FROM automation.temp_schedule where id_temp_schedule=?";
 
@@ -966,6 +1030,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (deleteTempScheduleById)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -984,7 +1049,7 @@ public class DbManager {
 
 	}
 
-	public TempScheduleDto createTempScheduleById(TempScheduleDto dto) {
+	public TempScheduleDto createTempScheduleById(TempScheduleDto dto) throws Exception {
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -994,7 +1059,7 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return null;
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String stm = "INSERT INTO automation.temp_schedule(temp,id_room,day_of_week,hour_begin,hour_end) values (?,?,?,?,?)";
 
@@ -1029,6 +1094,7 @@ public class DbManager {
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (createTempScheduleById)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -1052,7 +1118,7 @@ public class DbManager {
 		return dto;
 	}
 
-	public void updateTempScheduleById(TempScheduleDto dto) {
+	public void updateTempScheduleById(TempScheduleDto dto) throws Exception {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -1061,7 +1127,7 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
 
 			String stm = "UPDATE automation.temp_schedule set temp=?, id_room=?, day_of_week=?, hour_begin=?, hour_end=? where id_temp_schedule=?";
 
@@ -1086,6 +1152,7 @@ public class DbManager {
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (updateTempScheduleById)", e);
+			throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {

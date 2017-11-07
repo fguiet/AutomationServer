@@ -13,7 +13,7 @@ public class AlarmService {
 	private static Logger _logger = Logger.getLogger(AlarmService.class);
 	private RollerShutterService _rollerShutterService = null;
 	private SMSGammuService _smsGammuService = null;
-	private Scheduler _alarmScheduler = null;
+	//private Scheduler _alarmScheduler = null;
 	//private String _cronNightAlarmOn = null;
 	//private String _cronMorningAlarmOff = null;
 	private boolean _automaticModeStatus = true; //activated by default
@@ -93,7 +93,7 @@ public class AlarmService {
 	}
 	
 	public void StopService() {
-		_alarmScheduler.stop();
+		//_alarmScheduler.stop();
 		
 		_logger.info("Stopping AlarmService service...");
 
@@ -165,7 +165,7 @@ public class AlarmService {
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
 					PIN_ALARM_NAME, null);			
 		}
-		catch(Exception e) {
+		catch(Exception e) {			
 			_logger.error("Error occured setting alarm off", e);
 		}	
 		

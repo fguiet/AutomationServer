@@ -112,7 +112,7 @@ public class TeleInfoService implements Runnable {
 		
 			sdl = CreateSerialListener();
 			_serial.addListener(sdl);
-		} catch (IOException e) {
+		} catch (IOException e) {			
 			_logger.error("Impossible d'ouvrir le port série");
 		}
 		//serial.open(_defaultDevice, 1200);
@@ -402,7 +402,7 @@ public class TeleInfoService implements Runnable {
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		_dbManager.SaveTeleInfoTrame(teleInfoTrame);
+		//_dbManager.SaveTeleInfoTrame(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
 
 		// if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {

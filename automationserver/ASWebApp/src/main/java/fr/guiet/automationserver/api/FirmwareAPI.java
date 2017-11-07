@@ -28,23 +28,29 @@ public class FirmwareAPI {
 	@Produces({ MediaType.APPLICATION_JSON})	
 	public Response getVersion(@PathParam("sensorid") String sensorid) {
 		
-		_logger.info("Sensor with ID : "+sensorid + " asked for last firmware version");
-		
-		JSONObject obj = new JSONObject();
-		
-		DbManager dbManager = new DbManager();
-		SensorDto dto = dbManager.GetSensorById(Long.parseLong(sensorid));
-		
-		if ( dto !=null ) {
-			obj.put("sensorid", sensorid);
-			obj.put("lastversion", dto.firmware_version);
+		try {
+			_logger.info("Sensor with ID : "+sensorid + " asked for last firmware version");
+			
+			JSONObject obj = new JSONObject();
+			
+			DbManager dbManager = new DbManager();
+			SensorDto dto = dbManager.GetSensorById(Long.parseLong(sensorid));
+			
+			if ( dto !=null ) {
+				obj.put("sensorid", sensorid);
+				obj.put("lastversion", dto.firmware_version);
+			}
+			else {
+				obj.put("sensorid", sensorid);
+		        obj.put("lastversion", -1);
+			}		
+			
+			return Response.status(Status.OK).entity(obj.toString()).build();
 		}
-		else {
-			obj.put("sensorid", sensorid);
-	        obj.put("lastversion", -1);
-		}		
-		
-		return Response.status(Status.OK).entity(obj.toString()).build();
+		catch(Exception e) {
+			_logger.error("Error lors de la récupération des infos du capteur",e);
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	@GET

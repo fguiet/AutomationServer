@@ -34,6 +34,7 @@ public class Heater implements Comparable<Heater> {
 	//private boolean _waitForOff = false;
 	private final String PIN_CHAUFFAGE_NAME ="PIN_CHAUFFAGE";
 	private DbManager _dbManager = null;
+	private SMSGammuService _smsGammuService = null; 
 
 	/**
 	 * @return Returns Heater name (value stored in PostgreSQL database)
@@ -84,7 +85,7 @@ public class Heater implements Comparable<Heater> {
 	 * @param dto
 	 * @param room
 	 */
-	private Heater(HeaterDto dto, Room room) {
+	private Heater(HeaterDto dto, Room room, SMSGammuService smsGammuService) {
 
 		_room = room;
 		_heaterId = dto.heaterId;
@@ -95,6 +96,7 @@ public class Heater implements Comparable<Heater> {
 		_dbManager = new DbManager();
 		//_teleInfoService = teleInfoService;
 		//_teleInfoService.addListener(this);
+		_smsGammuService = smsGammuService;
 
 		switch (_raspberryPin) {
 		case 1:
@@ -220,8 +222,20 @@ public class Heater implements Comparable<Heater> {
 	 * @return Returns heater priority value regarding current datetime
 	 */
 	public Integer GetCurrentPriority() {
-		//DbManager dbManager = new DbManager();
-		return _dbManager.GetCurrentPriorityByHeaterId(_heaterId);
+		
+		Integer priority = null;
+		
+		try {
+			priority = _dbManager.GetCurrentPriorityByHeaterId(_heaterId);
+		}
+		catch(Exception e) {
+			_logger.error("Erreur lors de la récupération de la priorité du radiateur : "+_heaterId,e);
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in heater class, review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		}
+		
+		return priority;
 	}
 	
 	public long getId() {
@@ -276,9 +290,9 @@ public class Heater implements Comparable<Heater> {
 	 * @param room
 	 * @return Returns Heater object loaded from Dto
 	 */
-	public static Heater LoadFromDto(HeaterDto dto, Room room) {
+	public static Heater LoadFromDto(HeaterDto dto, Room room, SMSGammuService smsGammuService) {
 
-		return new Heater(dto, room);
+		return new Heater(dto, room, smsGammuService);
 	}
 
 	/**

@@ -302,12 +302,13 @@ public class RoomService implements Runnable {
 					if (room.getActualTemp() != null && room.getWantedTemp() != null
 							&& room.getActualHumidity() != null) {
 						// DbManager dbManager = new DbManager();
-						_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
-								room.getWantedTemp(), room.getActualHumidity());
+						//_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
+						//		room.getWantedTemp(), room.getActualHumidity());
 						//_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
 						//		+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
 						//		+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
 
+						
 						_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
 								room.getWantedTemp(), room.getActualHumidity());
 					}
@@ -526,13 +527,20 @@ public class RoomService implements Runnable {
 	private void LoadRoomList() {
 		// Initialisation des pieces et chauffages
 		// DbManager dbManager = new DbManager();
-		List<RoomDto> roomDtoList = _dbManager.GetRooms();
+		List<RoomDto> roomDtoList;
+		try {
+			roomDtoList = _dbManager.GetRooms();
+			
+			for (RoomDto dtoRoom : roomDtoList) {
 
-		for (RoomDto dtoRoom : roomDtoList) {
-
-			Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);
-			_roomList.add(r);
-		}
+				Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);
+				_roomList.add(r);
+			}
+		} catch (Exception e) {
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in room Service, review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		}		
 	}
 
 }

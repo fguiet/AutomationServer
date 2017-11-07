@@ -14,7 +14,7 @@ public class InfluxdbTests {
 		
 		DbManager dbManager = new DbManager();
 		
-		List<TempScheduleDto> dtoList = dbManager.getTempSchedule();
+		//List<TempScheduleDto> dtoList = dbManager.getTempSchedule();
 		
 		
 		

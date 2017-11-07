@@ -21,6 +21,7 @@ public class Room {
 	private String _mqttTopic;
 	private String _influxdbMeasurement;
 	private DbManager _dbManager = null;
+	private SMSGammuService _gammuService = null;
 
 	// Retourne la liste des radiateurs de la piece
 	public List<Heater> getHeaterList() {
@@ -64,45 +65,54 @@ public class Room {
 	 */
 	public String NextChangeDefaultTemp() {
 
-		// DbManager dbManager = new DbManager();
 		String result = "NA";
-		boolean found = false;
-		// Date du jour
-		Calendar calendar = Calendar.getInstance();
-		// Jour de la semaine
-		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-		int dayOfWeekTemp = calendar.get(Calendar.DAY_OF_WEEK);
 
-		// Temporaire
-		Calendar calendarHourBegin = Calendar.getInstance();
+		try {
+			// DbManager dbManager = new DbManager();
 
-		while (!found) {
+			boolean found = false;
+			// Date du jour
+			Calendar calendar = Calendar.getInstance();
+			// Jour de la semaine
+			int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+			int dayOfWeekTemp = calendar.get(Calendar.DAY_OF_WEEK);
 
-			TempScheduleDto ts = _dbManager.GetNextDefaultTempByRoom(_id, dayOfWeek);
+			// Temporaire
+			Calendar calendarHourBegin = Calendar.getInstance();
 
-			if (ts != null) {
-				found = true;
-				calendarHourBegin.setTime(ts.getHourBegin());
-				String hour = String.format("%02d:%02d", calendarHourBegin.get(Calendar.HOUR_OF_DAY),
-						calendarHourBegin.get(Calendar.MINUTE));
-				result = GetDayName(dayOfWeek) + " à " + hour + " (" + String.format("%.2f", ts.getDefaultTempNeeded())
-						+ "°C)";
-				break;
+			while (!found) {
+
+				TempScheduleDto ts = _dbManager.GetNextDefaultTempByRoom(_id, dayOfWeek);
+
+				if (ts != null) {
+					found = true;
+					calendarHourBegin.setTime(ts.getHourBegin());
+					String hour = String.format("%02d:%02d", calendarHourBegin.get(Calendar.HOUR_OF_DAY),
+							calendarHourBegin.get(Calendar.MINUTE));
+					result = GetDayName(dayOfWeek) + " à " + hour + " ("
+							+ String.format("%.2f", ts.getDefaultTempNeeded()) + "°C)";
+					break;
+				}
+
+				if (dayOfWeek == 7)
+					dayOfWeek = 1;
+				else
+					dayOfWeek++;
+
+				if (dayOfWeek == dayOfWeekTemp) {
+					_logger.warn(
+							"Impossible de déterminer le prochain changement de température par défaut pour les pièces : "
+									+ _name);
+					result = "NA à NA (NA °C)";
+					found = true;
+					break;
+				}
 			}
-
-			if (dayOfWeek == 7)
-				dayOfWeek = 1;
-			else
-				dayOfWeek++;
-
-			if (dayOfWeek == dayOfWeekTemp) {
-				_logger.warn(
-						"Impossible de déterminer le prochain changement de température par défaut pour les pièces : "
-								+ _name);
-				result = "NA à NA (NA °C)";
-				found = true;
-				break;
-			}
+		} catch (Exception e) {
+			_logger.error("Erreur lors de la récupération du prochain changement de température", e);
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in room class, review error log for more details");
+			_gammuService.sendMessage(sms, true);
 		}
 
 		return result;
@@ -216,12 +226,23 @@ public class Room {
 	}
 
 	private Float GetDefaultTempByDayAndTime() {
-		// DbManager dbManager = new DbManager();
-		Float defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
-
-		if (defaultTemp == null) {
-			_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
-					+ ".Le radiateur ne va pas etre controler correctement...");
+		
+		Float defaultTemp = null;
+		
+		try {
+		
+			defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
+	
+			if (defaultTemp == null) {
+				_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
+						+ ".Le radiateur ne va pas etre controler correctement...");
+			}
+		}
+		catch (Exception e) {
+			_logger.error("Erreur lors de la récupération de la température par défaut", e);
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in room class, review error log for more details");
+			_gammuService.sendMessage(sms, true);
 		}
 
 		return defaultTemp;
@@ -238,28 +259,34 @@ public class Room {
 		_name = dto.name;
 		_mqttTopic = dto.mqttTopic;
 		_influxdbMeasurement = dto.influxdbMeasurement;
+		_gammuService = gammuService;
 
 		_dbManager = new DbManager();
-		SensorDto sensorDto = _dbManager.GetSensorById(dto.idSensor);
-
-		ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
-		for (HeaterDto heaterDto : heaterDtoList) {
-
-			Heater heater = Heater.LoadFromDto(heaterDto, this);
-			_heaterList.add(heater);
+		
+		try {
+		
+			SensorDto sensorDto = _dbManager.GetSensorById(dto.idSensor);
+	
+			ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
+			for (HeaterDto heaterDto : heaterDtoList) {
+	
+				Heater heater = Heater.LoadFromDto(heaterDto, this, gammuService);
+				_heaterList.add(heater);
+			}
+				
+			_sensor = Sensor.LoadFromDto(sensorDto, this, gammuService);
+	
+			_lastDefaultTemp = GetDefaultTempByDayAndTime();
+			_userWantedTemp = _lastDefaultTemp; // temperature par defaut et
+												// temperature utilisateur identique
+												// au demarrage
 		}
-
-		// _logger.info("Capteur : " + sensorDto.sensorId + ", address : " +
-		// sensorDto.sensorAddress);
-
-		_sensor = Sensor.LoadFromDto(sensorDto, this, gammuService);
-
-		// CreateManageHeaterTask();
-
-		_lastDefaultTemp = GetDefaultTempByDayAndTime();
-		_userWantedTemp = _lastDefaultTemp; // temperature par defaut et
-											// temperature utilisateur identique
-											// au demarrage
+		catch (Exception e) {
+			_logger.error("Erreur dans le constructeur de la class room", e);
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in room class, review error log for more details");
+			_gammuService.sendMessage(sms, true);
+		}
 	}
 
 	public static Room LoadFromDto(RoomDto dto, SMSGammuService gammuService) {
