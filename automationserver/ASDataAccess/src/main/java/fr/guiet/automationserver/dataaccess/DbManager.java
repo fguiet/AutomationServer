@@ -640,7 +640,7 @@ public class DbManager {
 	public List<RoomDto> GetRooms() throws Exception {
 
 		//Use cache when possible
-		if (_roomDtoList != null) {
+		if (!_roomDtoList.isEmpty()) {
 			_logger.info("Using cache for fetching room list");
 			return _roomDtoList;
 		}
