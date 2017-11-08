@@ -537,6 +537,7 @@ public class RoomService implements Runnable {
 				_roomList.add(r);
 			}
 		} catch (Exception e) {
+			_logger.error("Erreur lors de la récupération de la liste des pièces");
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Error occured in room Service, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
