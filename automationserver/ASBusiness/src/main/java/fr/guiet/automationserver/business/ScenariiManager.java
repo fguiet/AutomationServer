@@ -225,6 +225,8 @@ public class ScenariiManager {
 		String RSScheduleHomeClose = "";
 		String AlarmHomeOn = "";
 		String AlarmHomeOff = "";
+		String XmasLightsOn = "";
+		String XmasLightsOff = "";
 				
 		InputStream is = null;
 		try {
@@ -264,6 +266,22 @@ public class ScenariiManager {
 			{
 				_logger.info(
 						"Impossible de créer le scheduler...");
+				return;
+			}
+			
+			XmasLightsOn = prop.getProperty("xmaslights.schedule.on");
+			if (XmasLightsOn == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler XmasLights...");
+				return;
+			}
+			
+			XmasLightsOff = prop.getProperty("xmaslights.schedule.off");
+			if (XmasLightsOff == null) 
+			{
+				_logger.info(
+						"Impossible de créer le scheduler XmasLights...");
 				return;
 			}
 			
@@ -315,6 +333,8 @@ public class ScenariiManager {
 		String[] RSDaysClose = null;
 		String[] AlarmDaysOn = null;
 		String[] AlarmDaysOff = null;
+		String[] XmasLightsDaysOn = null;
+		String[] XmasLightsDaysOff = null;
 		
 		if (_homeModeState == HomeModeState.HOME) {
 			
@@ -336,23 +356,65 @@ public class ScenariiManager {
 			AlarmDaysOff = AlarmWorkOff.split("/");				
 		}
 		
+		if (_homeModeState == HomeModeState.WORK || _homeModeState == HomeModeState.HOME) {
+			_logger.info("Activating Home Mode Management : both WORK/HOME");
+			
+			XmasLightsDaysOn = XmasLightsOn.split("/");
+			XmasLightsDaysOff = XmasLightsOff.split("/");		
+		}
+		
 		if (_homeModeState != HomeModeState.NOTACTIVED) {			
 			
 			_logger.info("Using RS Conf Open Schedule : "+RSDaysOpen[dayOfWeek]);
 			_logger.info("Using RS Conf Close Schedule : "+RSDaysClose[dayOfWeek]);
 			_logger.info("Using Alarm Conf On Schedule : "+AlarmDaysOn[dayOfWeek]);
 			_logger.info("Using Alarm Conf Off Schedule : "+AlarmDaysOff[dayOfWeek]);
+			_logger.info("Using Xmas Lights Conf On Schedule : "+XmasLightsDaysOn[dayOfWeek]);
+			_logger.info("Using Xmas Lights Conf Off Schedule : "+XmasLightsDaysOff[dayOfWeek]);
 			
 			String[] RSConfDayOpen = RSDaysOpen[dayOfWeek].split(";");
 			String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
 			String[] AlarmConfDayOpen = AlarmDaysOn[dayOfWeek].split(";");
 			String[] AlarmConfDayClose = AlarmDaysOff[dayOfWeek].split(";");
+			String [] XmasLightsConfDayOn = XmasLightsDaysOn[dayOfWeek].split(";");
+			String [] XmasLightsConfDayOff = XmasLightsDaysOff[dayOfWeek].split(";");
 						
 			CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
 			CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
 			CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
 			CreateAlarmDayScheduler(AlarmConfDayClose, scheduler, dayOfWeek, false);
+			CreateXmasLightsDayScheduler(XmasLightsConfDayOn, scheduler, dayOfWeek, true);
+			CreateXmasLightsDayScheduler(XmasLightsConfDayOff, scheduler, dayOfWeek, false);
 		}
+	}
+	
+	private void CreateXmasLightsDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
+		
+		int cpt = 1;
+		String cron = "";
+		while (cpt != schedule.length) {
+			
+			//Normal
+			if (schedule[cpt].equals("N")) {
+				cpt++;
+				int h1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				int m1 = Integer.parseInt(schedule[cpt]);
+				cpt++;
+				
+				cron = CreateStandardCron(h1,m1, dayOfWeek);				
+				
+				if (isOn) {
+					_logger.info("Add XmasLights ON cron : "+cron);
+					AddXmasLightsOnSchedule(scheduler, cron);					
+				}
+				else {
+					_logger.info("Add XmasLights OFF cron :"+cron);
+					AddXmasLightsOffSchedule(scheduler, cron);
+				}
+				continue;
+			}
+		}		
 	}
 	
 	private void CreateAlarmDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
@@ -381,8 +443,7 @@ public class ScenariiManager {
 				}
 				continue;
 			}
-		}
-		
+		}		
 	}
 	
 	private void CreateRSDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOpen) {
@@ -726,6 +787,26 @@ public class ScenariiManager {
 			//************
 		}		
 	}*/
+	
+	private void AddXmasLightsOnSchedule(Scheduler scheduler, String cron) {
+		_logger.info("Scheduling Xmas Lights  to turn on at : " + cron);
+		scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+					XmasLightsService service = new XmasLightsService();
+					service.TurnXmasLightsOff();
+				}
+			});
+	}
+	
+	private void AddXmasLightsOffSchedule(Scheduler scheduler, String cron) {
+		_logger.info("Scheduling Xmas Lights to turn off at : " + cron);
+		scheduler.schedule(cron, new Runnable() {
+			public void run() {	
+					XmasLightsService service = new XmasLightsService();
+					service.TurnXmasLightsOn();
+				}
+			});
+	}
 	
 	private void AddAlarmOnSchedule(Scheduler scheduler, String cron) {
 		_logger.info("Scheduling alarm to turn on at : " + cron);
