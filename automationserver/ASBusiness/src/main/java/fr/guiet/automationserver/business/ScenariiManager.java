@@ -609,8 +609,9 @@ public class ScenariiManager {
 			
 			//if (scheduleId != null) {
 			SchedulingPattern pattern = ReturnSchedulerByDayOfWeek().getSchedulingPattern(scheduleId);
-			
+						
 			Date nextActivation = ComputeNextScheduleActivationDate(pattern);
+			_logger.info("Checking Open RS pattern : " + DateUtils.getDateToString(nextActivation));
 			
 			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			Calendar cal = Calendar.getInstance();
@@ -643,6 +644,7 @@ public class ScenariiManager {
 			SchedulingPattern pattern = ReturnSchedulerByDayOfWeek().getSchedulingPattern(scheduleId);
 			
 			Date nextActivation = ComputeNextScheduleActivationDate(pattern);
+			_logger.info("Checking Close RS pattern : " + DateUtils.getDateToString(nextActivation));
 			
 			TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");
 			Calendar cal = Calendar.getInstance();
