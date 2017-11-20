@@ -394,6 +394,23 @@ public class ScenariiManager {
 		String cron = "";
 		while (cpt != schedule.length) {
 			
+			//Sunset
+			if (schedule[cpt].equals("SS")) {
+								
+				cpt++;
+				cron = CreateStandardCron(_sunset.get(Calendar.HOUR_OF_DAY),_sunset.get(Calendar.MINUTE),dayOfWeek);
+				
+				if (isOn) {
+					_logger.info("Add XmasLights ON cron : "+cron);
+					AddRSOpenSchedule(scheduler, cron);
+				}
+				else {
+					_logger.info("Add XmasLights OFF cron :"+cron);
+					AddRSCloseSchedule(scheduler, cron);
+				}
+				continue;
+			}
+			
 			//Normal
 			if (schedule[cpt].equals("N")) {
 				cpt++;
