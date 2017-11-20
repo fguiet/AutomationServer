@@ -402,11 +402,11 @@ public class ScenariiManager {
 				
 				if (isOn) {
 					_logger.info("Add XmasLights ON cron : "+cron);
-					AddRSOpenSchedule(scheduler, cron);
+					AddXmasLightsOnSchedule(scheduler, cron);
 				}
 				else {
 					_logger.info("Add XmasLights OFF cron :"+cron);
-					AddRSCloseSchedule(scheduler, cron);
+					AddXmasLightsOffSchedule(scheduler, cron);
 				}
 				continue;
 			}
