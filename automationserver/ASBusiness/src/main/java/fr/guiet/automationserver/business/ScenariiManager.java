@@ -812,7 +812,7 @@ public class ScenariiManager {
 		scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 					XmasLightsService service = new XmasLightsService();
-					service.TurnXmasLightsOff();
+					service.TurnXmasLightsOn();
 				}
 			});
 	}
@@ -822,7 +822,7 @@ public class ScenariiManager {
 		scheduler.schedule(cron, new Runnable() {
 			public void run() {	
 					XmasLightsService service = new XmasLightsService();
-					service.TurnXmasLightsOn();
+					service.TurnXmasLightsOff();
 				}
 			});
 	}
