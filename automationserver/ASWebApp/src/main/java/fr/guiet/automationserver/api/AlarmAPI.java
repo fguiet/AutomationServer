@@ -14,6 +14,7 @@ public class AlarmAPI {
 	
 	private static Logger _logger = Logger.getLogger(AlarmAPI.class);
 	private static String _topic = "/guiet/api/alarm";
+	private static String _mqttClientId = "AlarmAPIClientId";
 	
 	@GET	
 	public Response sendMsg(@Context UriInfo info) {
@@ -37,7 +38,7 @@ public class AlarmAPI {
 										
 				String message = action + ";" + mode;
 			
-				MqttClientMgt rtt = new MqttClientMgt("AlarmAPIClientId");
+				MqttClientMgt rtt = new MqttClientMgt(_mqttClientId);
 				rtt.SendMsg(_topic, message);
 				
 				break;
