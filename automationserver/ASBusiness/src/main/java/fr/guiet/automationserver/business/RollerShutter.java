@@ -28,6 +28,7 @@ public class RollerShutter {
 	private boolean _alertSentMore = false;
 	
 	private Date _lastStateReceived = null;
+	private static String _mqttClientId = "rollerShutterCliendId";
 	
 	private SMSGammuService _smsGammuService = null;
 	private String _pub_topic ="/guiet/automationserver/rollershutter";
@@ -36,7 +37,7 @@ public class RollerShutter {
 		_id = id;	
 		_name = name;
 					
-		_mqttClient = new MqttClientMgt();
+		_mqttClient = new MqttClientMgt(_mqttClientId);
 		_smsGammuService = smsGammuService;
 	}
 	
