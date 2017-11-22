@@ -18,10 +18,12 @@ public class MqttClientMgt implements MqttCallback {
 	private static Logger _logger = Logger.getLogger(MqttClientMgt.class);
 	private String _uri = "tcp://%s:%s";
 	private MqttClient _client = null;
-	private final String CLIENT_ID = "Tomcat Mqtt Client";
+	private String _clientId = null;
+	//private final String CLIENT_ID = "Tomcat Mqtt Client";
 	
-	public MqttClientMgt() {
+	public MqttClientMgt(String clientId) {
 
+		_clientId = clientId;
 		InputStream is = null;
 		
 		try {
@@ -65,7 +67,7 @@ public class MqttClientMgt implements MqttCallback {
 	public void SendMsg(String topic, String message) {
 		
 		try {
-			_client = new MqttClient(_uri, CLIENT_ID);
+			_client = new MqttClient(_uri, _clientId);
 			_client.setCallback(this);
 			_client.connect();
 			
