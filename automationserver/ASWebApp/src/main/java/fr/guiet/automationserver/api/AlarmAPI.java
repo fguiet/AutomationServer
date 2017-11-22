@@ -37,7 +37,7 @@ public class AlarmAPI {
 										
 				String message = action + ";" + mode;
 			
-				MqttClientMgt rtt = new MqttClientMgt();
+				MqttClientMgt rtt = new MqttClientMgt("AlarmAPIClientId");
 				rtt.SendMsg(_topic, message);
 				
 				break;
