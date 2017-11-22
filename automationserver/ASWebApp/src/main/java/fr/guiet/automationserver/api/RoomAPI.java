@@ -14,6 +14,7 @@ public class RoomAPI {
 	
 	private static Logger _logger = Logger.getLogger(RoomAPI.class);
 	private static String _topic = "/guiet/api/home";
+	private static String _mqttClientId = "RoomAPIClientId";
 	
 	@GET	
 	public Response sendMsg(@Context UriInfo info) {
@@ -38,7 +39,7 @@ public class RoomAPI {
 						
 				String message = action + ";" + roomId + ";" + temp;
 			
-				MqttClientMgt rtt = new MqttClientMgt();
+				MqttClientMgt rtt = new MqttClientMgt(_mqttClientId);
 				rtt.SendMsg(_topic, message);
 				
 				break;
