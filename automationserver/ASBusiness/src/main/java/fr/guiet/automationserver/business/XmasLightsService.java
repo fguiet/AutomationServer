@@ -9,13 +9,14 @@ public class XmasLightsService {
 	
 	private static String _topic = "/guiet/automationserver/xmaslights";
 	private static String _sensorId = "10";
+	private static String _mqttCliendId = "xmasLightsServiceClientId";
 	
 	public void TurnXmasLightsOn() {
 		
 		_logger.info("Turning XmasLights ON");
 		String message = "SETXMASLIGHTSON;" + _sensorId;
 		
-		MqttClientMgt rtt = new MqttClientMgt();
+		MqttClientMgt rtt = new MqttClientMgt(_mqttCliendId);
 		rtt.SendMsg(_topic, message);
 	}
 	
@@ -24,7 +25,7 @@ public class XmasLightsService {
 		_logger.info("Turning XmasLights OFF");
 		String message = "SETXMASLIGHTSOFF;" + _sensorId;
 		
-		MqttClientMgt rtt = new MqttClientMgt();
+		MqttClientMgt rtt = new MqttClientMgt(_mqttCliendId);
 		rtt.SendMsg(_topic, message);
 	}
 	
