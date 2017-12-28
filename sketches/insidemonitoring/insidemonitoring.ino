@@ -3,13 +3,14 @@
  * 
  * F. Guiet 
  * Creation           : 20170218
- * Last modification  : 20170930
+ * Last modification  : 20171228
  * 
- * Version            : 1.4
+ * Version            : 1.5
  * 
  * History            : 12 - Change wifi gateway address
  *                      13 - Activate OTA update, remove DeepSleep                
  *                      14 - OTA update works with server now, re-add DeepSleep fonctionality
+ *                      15 - Change sensor from DHT22 to DS18B20 as DHT22 is not working properly using DeepSleep mode
  *                      
  * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
  *                      https://github.com/esp8266/Arduino/issues/1782                     
@@ -20,18 +21,25 @@
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
-#include <ESP8266WiFi.h>  
-#include <DHT.h>
+#include <ESP8266WiFi.h> 
+#include <OneWire.h> //Librairie du bus OneWire
+#include <DallasTemperature.h> //Librairie du capteur 
+
 #include <PubSubClient.h>
 
 /**** VARIABLES ***/
 DynamicJsonBuffer JSONBuffer;
-#define DHTTYPE DHT22
-#define DHTPIN D2
-DHT dht(DHTPIN, DHTTYPE);
+//#define DHTTYPE DHT22
+//#define DHTPIN D2
+//DHT dht(DHTPIN, DHTTYPE);
 WiFiClient espClient;
 PubSubClient client(espClient);
 char message_buff[100];
+
+OneWire oneWire(D2); //Bus One Wire sur la pin 2 de l'arduino
+DallasTemperature sensor(&oneWire); //Utilistion du bus Onewire pour les capteurs
+DeviceAddress sensorDeviceAddress; //Vérifie la compatibilité des capteurs avec la librairie
+
 /**** END VARIABLES ***/
 
 /**** DEFINE ***/
@@ -51,7 +59,7 @@ String SENSORID =  "4"; //Manon
 //#define mqtt_user ""
 //#define mqtt_password ""
 #define MQTT_TOPIC "/guiet/inside/sensor"
-const int CURRENT_FIRMWARE_VERSION = 14;
+const int CURRENT_FIRMWARE_VERSION = 15;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 const char* ssid = "DUMBLEDORE";
@@ -66,18 +74,21 @@ IPAddress subnet_mask(255, 255, 255,0);
 
 /**** END DEFINE ***/ 
 
-
-
 void setup() {
 
   //Initialize Serial
-  Serial.begin(115200);
+  Serial.begin(115200);  
   
   //Connecting to WiFi
   connectToWifi();
 
   //Check for firmware update
   checkForUpdate();
+
+  //Init Sensor
+  sensor.begin(); //Activation des capteurs
+  sensor.getAddress(sensorDeviceAddress, 0); //Demande l'adresse du capteur à l'index 0 du bus
+  sensor.setResolution(sensorDeviceAddress, 12); //Possible resolution : 9,10,11,12
 
   //No update necessary
   //Connect to Mqtt
@@ -86,20 +97,37 @@ void setup() {
 
 void loop() {
 
+  //Wait a little before beginning
+  delay(2000);
+
   //Handle MQTT connection
-  client.loop();  
+  client.loop();   
   
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  //float h = dht.readHumidity();
+  //float t = dht.readTemperature();
 
-  //https://gist.github.com/tzapu/e6e70b4c094be618b714050a252309a3
+  float t = getTemperature();
+  float h = 0;
+
+  //Useful?
   //Read twice to get accurate result!!
-  delay(2100);
+  delay(2000);
 
-  h = dht.readHumidity();
-  t = dht.readTemperature();
+  t = getTemperature();
 
-  if (isnan(t) || isnan(h)) 
+  String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2)+";"+String(CURRENT_FIRMWARE_VERSION);
+  mess.toCharArray(message_buff, mess.length()+1);
+  client.publish(MQTT_TOPIC,message_buff);
+
+  /*if (isnan(t) || isnan(h)) 
+  {
+    Serial.println("Failed to read from DHT");            
+  }
+
+  //h = dht.readHumidity();
+  //t = dht.readTemperature();
+
+  /*if (isnan(t) || isnan(h)) 
   {
     Serial.println("Failed to read from DHT");            
   }
@@ -111,11 +139,16 @@ void loop() {
     String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2)+";"+String(CURRENT_FIRMWARE_VERSION);
     mess.toCharArray(message_buff, mess.length()+1);
     client.publish(MQTT_TOPIC,message_buff);
-  }
+  }*/
 
   //Deep sleep...ZZzzzZZzzz
   goDeepSleep();  
   
+}
+
+float getTemperature() {
+  sensor.requestTemperatures(); //Demande la température aux capteurs
+  return sensor.getTempCByIndex(0);
 }
 
 void checkForUpdate() {
