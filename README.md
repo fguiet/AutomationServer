@@ -22,7 +22,7 @@ DESCRIPTION
     - Tomcat 9
     - Wemos ESP8266 Wifi module
     - Arduino (not anymore, replaced by Wemos ESP8266)
-    - DHT22 Sensor (temperature and humidity)
+    - DHT22 Sensor (temperature and humidity), not suitable with deep sleep (replaced by DS18B20)
     - XBee (not anymore but it used to, replaced by Wemos WiFi module)
     - Raspberry Pi 3
     - Grafana
