@@ -24,6 +24,7 @@ public class AutomationServer implements Daemon {
 	private AlarmService _alarmService = null; //Alarm service
 	private ScenariiManager _scenariiManager = null;
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
+	private RainGaugeService _rainGaugeService = null; //service raingauge
 	private RoomService _roomService = null; // service de room service
 	private WaterHeater _waterHeater = null; // service de gestion du
 												// chauffe-eau
@@ -31,6 +32,7 @@ public class AutomationServer implements Daemon {
 	private boolean _isStopped = false;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
+	private Thread _rainGaugeServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
 	private SMSGammuService _smsGammuService = null;
@@ -97,6 +99,11 @@ public class AutomationServer implements Daemon {
 					
 					//SMS Service
 					_smsGammuService = new SMSGammuService();
+					
+					// Starting rain gauge service
+					_rainGaugeService = new RainGaugeService(_smsGammuService);
+					_rainGaugeServiceThread = new Thread(_rainGaugeService);
+					_rainGaugeServiceThread.start();
 
 					// Starting teleinfo service
 					_teleInfoService = new TeleInfoService(_smsGammuService);
@@ -239,6 +246,7 @@ public class AutomationServer implements Daemon {
 			_logger.info("Stopping automation server...");
 			
 			// Stopping all services
+			_rainGaugeService.StopService();
 			_alarmService.StopService();
 			_scenariiManager.StopScenariiManager();
 			_rollerShutterService.StopService();
@@ -270,6 +278,7 @@ public class AutomationServer implements Daemon {
 	@Override
 	public void destroy() {
 		_mainThread = null;
+		_rainGaugeService = null;
 		_rollerShutterService = null;
 		_teleInfoService = null;
 		_roomService = null;

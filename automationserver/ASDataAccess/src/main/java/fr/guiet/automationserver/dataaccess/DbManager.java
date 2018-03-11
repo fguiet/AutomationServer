@@ -164,6 +164,37 @@ public class DbManager {
 		}
 	}
 
+	public void SaveRainGaugeBucketTip() {
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+
+			_logger.info("Saving RainGauge bucket tip to InfluxDB");
+
+			// _logger.info("InfluxDB connecting..");
+			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _logger.info("InfluxDB Connected");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("raingauge").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("tip", 1).build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			_influxDB.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			_influxDB.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+	}
+	
 	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
 		try {
 			if (!_influxdbEnable.equals("true"))
