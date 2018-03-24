@@ -148,6 +148,11 @@ public class RainGaugeService implements Runnable {
 	private String convert(byte[] data) {
 	    StringBuilder sb = new StringBuilder(data.length);
 	    for (int i = 0; i < data.length; ++ i) {
+	    	
+	    	_logger.info("DEBUT");
+	    	_logger.info(data[i]);
+	    	_logger.info("FIN");
+	    	
         	//if (data[i] < 0) throw new IllegalArgumentException();
 	        sb.append((char) data[i]);
 	    }
@@ -162,7 +167,7 @@ public class RainGaugeService implements Runnable {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
-				
+				//String s = new String(bytes);
 				String dataSZ = "";
 				 try {
 					dataSZ = convert(event.getBytes());
