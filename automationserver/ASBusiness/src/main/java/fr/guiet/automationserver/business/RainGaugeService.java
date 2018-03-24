@@ -125,7 +125,7 @@ public class RainGaugeService implements Runnable {
 		// open the default serial port provided on the GPIO header at 1200
 		// bauds
 		// serial.open(_defaultDevice, _defaultBaud);
-		SerialConfig config = new SerialConfig();config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN).stopBits(StopBits._1).flowControl(FlowControl.NONE);
+		SerialConfig config = new SerialConfig();config.device(_defaultDevice).baud(Baud._9600).dataBits(DataBits._7).parity(Parity.EVEN).stopBits(StopBits._1).flowControl(FlowControl.NONE);
 
 		try
 		{
