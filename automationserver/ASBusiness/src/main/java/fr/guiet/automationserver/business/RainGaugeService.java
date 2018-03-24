@@ -149,9 +149,9 @@ public class RainGaugeService implements Runnable {
 	    StringBuilder sb = new StringBuilder(data.length);
 	    for (int i = 0; i < data.length; ++ i) {
 	    	
-	    	_logger.info("DEBUT");
-	    	_logger.info(data[i]);
-	    	_logger.info("FIN");
+	    	//_logger.info("DEBUT");
+	    	//_logger.info(data[i]);
+	    	//_logger.info("FIN");
 	    	
         	//if (data[i] < 0) throw new IllegalArgumentException();
 	        sb.append((char) data[i]);
