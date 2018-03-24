@@ -105,10 +105,10 @@ public class RollerShutterService implements Runnable {
 	
 	public void setState(long rsId, RollerShutterState state) {
 		if (rsId == ROLLERSHUTTER_WEST_ID)
-			_rsWest.setState(state);
+			_rsWest.setState(state, true);
 		
 		if (rsId == ROLLERSHUTTER_NORTH_ID)
-			_rsNorth.setState(state);
+			_rsNorth.setState(state, true);
 			
 	}	
 	
