@@ -33,9 +33,13 @@ public class RainGaugeService implements Runnable {
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
+	private static String _mqttClientId = "rainGaugeCliendId";
+	private MqttClientMgt _mqttClient = null;
+	private String _pub_topic ="/guiet/automationserver/raingauge";
 
 	public RainGaugeService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
+		_mqttClient = new MqttClientMgt(_mqttClientId);
 		_dbManager = new DbManager();
 	}
 
@@ -176,17 +180,19 @@ public class RainGaugeService implements Runnable {
 				 } catch (IOException e) {
 					 _logger.error("Unable de read serial port", e);
 				}
-				
+								 				
 				 String[] messageContent = dataSZ.split(";");
 
 				 if (messageContent != null && messageContent.length > 0) {
-				    String action = messageContent[0];
+					 					 					 
+				 String action = messageContent[0];
 
 					switch (action) {
 					   	case "SETRAINGAUGEINFO":
 							float vcc = Float.parseFloat(messageContent[1]);
 							String flipflop = messageContent[2];
-					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);					 	
+					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);
+					   		_mqttClient.SendMsg(_pub_topic, dataSZ);
 					}
 				}				
 			}
