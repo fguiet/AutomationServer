@@ -383,12 +383,12 @@ public class ScenariiManager {
 			CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);
 			CreateAlarmDayScheduler(AlarmConfDayOpen, scheduler, dayOfWeek, true);
 			CreateAlarmDayScheduler(AlarmConfDayClose, scheduler, dayOfWeek, false);
-			CreateXmasLightsDayScheduler(XmasLightsConfDayOn, scheduler, dayOfWeek, true);
-			CreateXmasLightsDayScheduler(XmasLightsConfDayOff, scheduler, dayOfWeek, false);
+			//CreateXmasLightsDayScheduler(XmasLightsConfDayOn, scheduler, dayOfWeek, true);
+			//CreateXmasLightsDayScheduler(XmasLightsConfDayOff, scheduler, dayOfWeek, false);
 		}
 	}
 	
-	private void CreateXmasLightsDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
+	/*private void CreateXmasLightsDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
 		
 		int cpt = 1;
 		String cron = "";
@@ -432,7 +432,7 @@ public class ScenariiManager {
 				continue;
 			}
 		}		
-	}
+	}*/
 	
 	private void CreateAlarmDayScheduler(String[] schedule, Scheduler scheduler, int dayOfWeek, boolean isOn) {
 		
@@ -807,7 +807,7 @@ public class ScenariiManager {
 		}		
 	}*/
 	
-	private void AddXmasLightsOnSchedule(Scheduler scheduler, String cron) {
+	/*private void AddXmasLightsOnSchedule(Scheduler scheduler, String cron) {
 		_logger.info("Scheduling Xmas Lights  to turn on at : " + cron);
 		scheduler.schedule(cron, new Runnable() {
 			public void run() {	
@@ -825,7 +825,7 @@ public class ScenariiManager {
 					service.TurnXmasLightsOff();
 				}
 			});
-	}
+	}*/
 	
 	private void AddAlarmOnSchedule(Scheduler scheduler, String cron) {
 		_logger.info("Scheduling alarm to turn on at : " + cron);

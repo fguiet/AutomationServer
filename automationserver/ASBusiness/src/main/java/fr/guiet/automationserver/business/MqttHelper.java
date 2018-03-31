@@ -173,7 +173,7 @@ public class MqttHelper implements MqttCallback {
 		if (messageContent != null && messageContent.length > 0) {
 			String action = messageContent[0];
 
-			switch (action) {
+			switch (action) {			
 			case "SETALARM":
 				String mode = messageContent[1];
 				if (mode.equals("ON")) {

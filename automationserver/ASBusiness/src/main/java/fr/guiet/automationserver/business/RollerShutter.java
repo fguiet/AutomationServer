@@ -60,7 +60,7 @@ public class RollerShutter {
 
 			if (!_alertSent5) {
 
-				setState(RollerShutterState.UNREACHABLE);
+				setState(RollerShutterState.UNREACHABLE, false);
 				
 				SMSDto sms = new SMSDto();
 				String message = String.format("Rollershutter %s is not sending state (5 minutes alert)", _name);
@@ -76,7 +76,7 @@ public class RollerShutter {
 		if (diffMinutes >= 10 && diffMinutes < 20) {
 
 			if (!_alertSent10) {
-				setState(RollerShutterState.UNREACHABLE);
+				setState(RollerShutterState.UNREACHABLE, false);
 				
 				SMSDto sms = new SMSDto();
 				String message = String.format("Rollershutter %s is not sending state (10 minutes alert)", _name);
@@ -93,7 +93,7 @@ public class RollerShutter {
 		if (diffMinutes >= 20) {
 
 			if (!_alertSentMore) {
-				setState(RollerShutterState.UNREACHABLE);
+				setState(RollerShutterState.UNREACHABLE, false);
 				
 				SMSDto sms = new SMSDto();
 				String message = String.format("Rollershutter %s is not sending state (20 minutes alert)...Time to do something", _name);
@@ -114,9 +114,12 @@ public class RollerShutter {
 
 	}
 
-	public void setState(RollerShutterState state) {
+	public void setState(RollerShutterState state, boolean stateReceivedFromRollerShutter) {
 		
-		_lastStateReceived = new Date();
+		//Mettre à jour la dernière reception que si ca provient du volet
+		//si non la valeur est faussée
+		if (stateReceivedFromRollerShutter)
+			_lastStateReceived = new Date();
 			
 		//Save previsous state
 		_previousState = _state;

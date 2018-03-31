@@ -164,12 +164,12 @@ public class DbManager {
 		}
 	}
 
-	public void SaveRainGaugeBucketTip() {
+	public void SaveRainGaugeInfo(float vcc, String flipflop) {
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
-			_logger.info("Saving RainGauge bucket tip to InfluxDB");
+			_logger.info("Saving RainGauge info to InfluxDB");
 
 			// _logger.info("InfluxDB connecting..");
 			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
@@ -180,7 +180,7 @@ public class DbManager {
 					.build();
 
 			Point point1 = Point.measurement("raingauge").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("tip", 1).build();
+					.addField("vcc", vcc).addField("flipflop", flipflop) .build();
 
 			batchPoints.point(point1);
 
