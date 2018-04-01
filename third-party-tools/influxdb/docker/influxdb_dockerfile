@@ -1,0 +1,30 @@
+FROM resin/rpi-raspbian:stretch
+
+LABEL maintainer="fguiet@gmail.com"
+
+ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/influxdb/conf
+
+#update stretch and install wget
+RUN apt-get update && apt-get install -y wget
+
+RUN groupadd --gid 9003 influxdb
+RUN adduser --system --disabled-password --disabled-login --uid 9003 influxdb --gid 9003
+
+RUN wget -q -O - https://repos.influxdata.com/influxdb.key | apt-key add -
+RUN echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+RUN apt-get update && apt-get install -y influxdb
+
+RUN mkdir -p /influxdb/conf
+
+#COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
+#donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
+COPY conf /influxdb/config
+
+RUN chown -R influxdb:influxdb /influxdb
+
+VOLUME ["/influxdb/config", "/influxdb/data", "/influxdb/log"]
+
+EXPOSE 8086
+
+#launch influxdb
+CMD ["influxd ", "-config", "/influxdb/conf/influxdb.conf"]
