@@ -1,0 +1,8 @@
+docker run \
+        --name mosquitto \
+        -v /home/fred/applications/mosquitto/logs:/mqtt/log \
+        -v /home/fred/applications/mosquitto/conf:/mqtt/conf \
+        -d \
+        --restart=always \
+        guiet/mosquitto:1.4.15
+

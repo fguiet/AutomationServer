@@ -1,0 +1,25 @@
+FROM resin/rpi-raspbian:stretch
+
+LABEL maintainer="fguiet@gmail.com"
+
+ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
+
+#update stretch and install wget
+RUN apt-get update && apt-get install -y wget
+
+RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -
+RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list
+RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
+
+RUN adduser --system --disabled-password --disabled-login mosquitto
+
+#COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
+#donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
+COPY conf /mqtt/config
+VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
+
+#exporte port
+EXPOSE 1883 9001
+
+#launch mosquitoo
+CMD /usr/sbin/mosquitto -c /mqtt/config/mosquitto.conf
