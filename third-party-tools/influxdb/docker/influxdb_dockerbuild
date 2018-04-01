@@ -1,0 +1,2 @@
+docker build -t guiet/influxdb:1.5.1 -f influxdb_dockerfile /home/fred/git/AutomationServer/third-party-tools/influxdb
+

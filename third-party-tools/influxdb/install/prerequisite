@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#add influxb group
+sudo groupadd influxdb --gid 9003
+#add influxdb user
+sudo useradd -r -s /sbin/nologin influxdb --uid 9003 -g influxdb
+
+#create volume bind with docker container
+sudo mkdir -p /home/fred/applications/influxdb/logs
+sudo mkdir -p /home/fred/applications/influxdb/conf
+
+#add conf file
+sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/influxdb/conf /home/fred/applications/influxdb 
+#delete logs
+sudo rm -Rf /home/fred/applications/influxdb/logs/*.log
+
+#change influxdb folders owner
+sudo chown -R influxdb:influxdb /home/fred/applications/influxdb

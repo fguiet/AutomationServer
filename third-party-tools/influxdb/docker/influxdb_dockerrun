@@ -1,0 +1,9 @@
+docker run \
+        --name influxdb \
+        -v /home/fred/applications/influxdb/logs:/influxdb/logs \
+        -v /home/fred/applications/influxdb/conf:/influxdb/conf \
+        -d \
+        --restart=always \
+        -p 3000:8086 \
+        guiet/influxdb:1.5.1
+
