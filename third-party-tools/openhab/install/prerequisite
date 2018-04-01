@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#add openhab group
+sudo groupadd openhab --gid 9001
+#add openhab user
+sudo useradd -r -s /sbin/nologin openhab --uid 9001 -g openhab
+
+#create volume bind with docker container
+sudo mkdir -p /home/fred/applications/openhab/conf
+sudo mkdir -p /home/fred/applications/openhab/addons
+sudo mkdir -p /home/fred/applications/openhab/userdata
+
+#add conf file
+sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/openhab/conf /home/fred/applications/openhab
+
+#change openhab folders owner
+sudo chown -R openhab:openhab /home/fred/applications/openhab
