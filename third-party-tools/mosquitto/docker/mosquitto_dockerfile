@@ -7,19 +7,26 @@ ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
 #update stretch and install wget
 RUN apt-get update && apt-get install -y wget
 
+RUN groupadd --gid 9002 mosquitto
+RUN adduser --system --disabled-password --disabled-login --uid 9002 mosquitto --gid 9002
+
 RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -
 RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list
 RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
 
-RUN adduser --system --disabled-password --disabled-login mosquitto
+RUN mkdir -p /mqtt/config /mqtt/data /mqtt/log
 
 #COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
 #donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
 COPY conf /mqtt/config
+
+RUN chown -R mosquitto:mosquitto /mqtt
+
 VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
 
-#exporte port
-EXPOSE 1883 9001
+#this image expose port 1883 and 9001 ports
+#il faut quand meme lancer docker avec -p pour exposer le port à l'host
+EXPOSE 1883
 
 #launch mosquitoo
-CMD /usr/sbin/mosquitto -c /mqtt/config/mosquitto.conf
+CMD ["/usr/sbin/mosquitto", "-c", "/mqtt/config/mosquitto.conf"]
