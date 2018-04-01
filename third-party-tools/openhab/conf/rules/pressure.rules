@@ -1,0 +1,11 @@
+import org.openhab.core.library.types.*
+
+rule "Handle Normalised Pressure"
+when
+    Item Pressure received update
+then
+   val DecimalType pressure = Pressure.state as DecimalType
+   val normalized_pressure = (pressure + (122 / 8.3))
+   Pressure_Normalized.postUpdate(new DecimalType(normalized_pressure))
+end
+

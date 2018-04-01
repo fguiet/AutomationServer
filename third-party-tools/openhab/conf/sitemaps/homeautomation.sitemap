@@ -1,0 +1,176 @@
+sitemap homeautomation label="Home Sweet Home" {
+
+	Frame label="Date du jour" {
+		Text item=DateHeure
+	}
+
+	Frame label="Cave" icon="cellar" {
+		Group item=Cave_Temp label="Cave" {
+			Text item=Cave_Temp
+			Text item=Cave_Humidity
+			Text item=Cave_Extractor
+
+			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/temphumicave?from=now-24h&to=now&panelId=1&height=230" height=7
+		}
+	}
+
+	Frame label="Extérieur" icon="garage" {
+		Group item=Outside_Temp label="Extérieur" {
+			Text item=Outside_Temp
+			Text item=Garage_Temp
+			Text item=Pressure
+			Text item=Pressure_Normalized
+	                Text item=Raingauge_Vcc
+		        Text item=Raingauge_LastUpdate
+
+			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/capteursexterieurs?from=now-24h&to=now&panelId=1&height=230" height=7
+                        Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/pluviometrie?from=now-1w&to=now&panelId=1&height=230" height=7
+		}
+	}
+
+	Frame label="Rez de chaussée" icon="groundfloor" {
+
+                Group item=Salon_Current_Temp label="Salon"  {
+                        Text item=Salon_Current_Temp
+                        Text item=Salon_Programmed_Temp
+                        Text item=Salon_Derog visibility=[Salon_Derog_Visibility!="ON"]
+                        Text item=Salon_Humidity
+                        Text item=Salon_Heater_State valuecolor=[HEATERON="red"]
+                        Text item=Salon_Sensor_State valuecolor=[SENSOROK="green", SENSORKO="red"]
+			Text item=Salon_Sensor_LastInfo
+                        Text item=Salon_Heater_NextChange
+                        Switch item=Salon_Derog_Visibility visibility=[Salon_Derog_Visibility=="Uninitialized"]
+			Switch item=Salon_HUE_Motion
+			Switch item=WestRollerShutter
+			Switch item=NorthRollerShutter
+			Text item=WestRollerShutter_State valuecolor=[OPENED="green", CLOSED="red", UNDETERMINED="black", UNREACHABLE="red"]
+			Text item=NorthRollerShutter_State valuecolor=[OPENED="green", CLOSED="red", UNDETERMINED="black", UNREACHABLE="red"]
+
+                        Group item=Salon_Wanted_Temp  label="Définir une dérogation" icon="heating" {
+                                Setpoint item=Salon_Wanted_Temp minValue=15 maxValue=25 step=0.5
+                        }
+
+			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/temperaturesalon?panelId=1&tab=general&from=now-24h&to=now&height=230" height=7
+                }
+
+                Group item=Bureau_Current_Temp label="Bureau"  {
+                        Text item=Bureau_Current_Temp
+                        Text item=Bureau_Programmed_Temp
+                        Text item=Bureau_Derog visibility=[Bureau_Derog_Visibility!="ON"]
+                        Text item=Bureau_Humidity
+                        Text item=Bureau_Heater_State valuecolor=[HEATERON="red"]
+                        Text item=Bureau_Sensor_State valuecolor=[SENSOROK="green", SENSORKO="red"]
+			Text item=Bureau_Sensor_LastInfo
+                        Text item=Bureau_Heater_NextChange
+                        Switch item=Bureau_Derog_Visibility visibility=[Bureau_Derog_Visibility=="Uninitialized"]
+			
+                        Group item=Bureau_Wanted_Temp label="Définir une dérogation" icon="heating" {
+                                Setpoint item=Bureau_Wanted_Temp minValue=15 maxValue=25 step=0.5
+                        }
+                }
+        }
+	
+	Frame label="Etage" icon="firstfloor" {
+
+		Group item=Parents_Current_Temp label="Chambre Parents"  {
+                	Text item=Parents_Current_Temp
+			Text item=Parents_Programmed_Temp
+			Text item=Parents_Derog visibility=[Parents_Derog_Visibility!="ON"]
+                	Text item=Parents_Humidity
+	        	Text item=Parents_Heater_State valuecolor=[HEATERON="red"]
+			Text item=Parents_Sensor_State valuecolor=[SENSOROK="green", SENSORKO="red"]
+			Text item=Parents_Sensor_LastInfo
+			Text item=Parents_Heater_NextChange
+			Switch item=Parents_Derog_Visibility visibility=[Parents_Derog_Visibility=="Uninitialized"]			
+
+			Group item=Parents_Wanted_Temp label="Définir une dérogation" icon="heating" {
+				Setpoint item=Parents_Wanted_Temp minValue=15 maxValue=25 step=0.5
+			}
+		}
+
+		Group item=Manon_Current_Temp label="Chambre Manon"  {
+                	Text item=Manon_Current_Temp
+                	Text item=Manon_Programmed_Temp
+                        Text item=Manon_Derog visibility=[Manon_Derog_Visibility!="ON"]
+                	Text item=Manon_Humidity
+                	Text item=Manon_Heater_State valuecolor=[HEATERON="red"]
+                	Text item=Manon_Sensor_State valuecolor=[SENSOROK="green", SENSORKO="red"]
+			Text item=Manon_Sensor_LastInfo
+                	Text item=Manon_Heater_NextChange 
+			Switch item=Manon_Derog_Visibility visibility=[Manon_Derog_Visibility=="Uninitialized"]
+			
+               	 	Group item=Manon_Wanted_Temp label="Définir une dérogation" icon="heating" {
+				Setpoint item=Manon_Wanted_Temp minValue=15 maxValue=25 step=0.5
+			}
+        	}
+
+		Group item=Nohe_Current_Temp label="Chambre Nohé"  {
+                	Text item=Nohe_Current_Temp
+                	Text item=Nohe_Programmed_Temp
+			Text item=Nohe_Derog visibility=[Nohe_Derog_Visibility!="ON"]
+                	Text item=Nohe_Humidity
+                	Text item=Nohe_Heater_State valuecolor=[HEATERON="red"]
+                	Text item=Nohe_Sensor_State valuecolor=[SENSOROK="green", SENSORKO="red"]
+			Text item=Nohe_Sensor_LastInfo
+                	Text item=Nohe_Heater_NextChange
+			Switch item=Nohe_Derog_Visibility visibility=[Nohe_Derog_Visibility=="Uninitialized"]
+
+                	Group item=Nohe_Wanted_Temp label="Définir une dérogation" icon="heating" {
+				Setpoint item=Nohe_Wanted_Temp minValue=15 maxValue=25 step=0.5
+			}
+        		
+		}
+	}
+
+	Frame label="Electricité" icon="energy" {
+		Group item=NextBill label="Electricité" {
+			Text item=HeurePleine
+			Text item=HeureCreuse
+			Text item=ConsoInst
+			Text item=NextBill
+
+			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/consoinst?panelId=1&tab=axes&from=now-24h&to=now&height=230" height=7
+		}
+	}
+
+	Frame label="Météo" icon="wind" {
+		Group item=Sunrise_Time label="Météo" {
+			Text item=Sunrise_Time
+			Text item=Sunset_Time
+			Text item=Elevation
+			Text item=Azimuth
+			Text item=MoonPhase
+			Text item=Season
+			Webview url="http://192.168.1.25:8080/weather?locationId=artenay&layout=example&iconset=colorful"
+		}
+	}
+
+	Frame label="Boîte aux lettres" {
+		Group item=Mailbox_LastUpdate label="Boîte aux lettres" {
+			Text item=Mailbox_Vcc
+			Text item=Mailbox_LastUpdate
+		}
+	}
+	
+	Frame label="Gestion absences/mode auto" icon="vacation" {		
+		Group item=Away_Mode label="Gestion absences/mode auto" {
+			Switch item=Away_Mode mappings=[ON="Activé", OFF="Désactivé"]
+			Selection item=AutoMgt_Mode mappings=[0="Désactivé",1="Maison", 2="Travail"]		
+		}
+	}
+
+	Frame label="Gestion volets roulants" icon="rollershutter" {
+		Group item=RollershutterMgt label="Gestion volets roulants" {
+			Switch item=RollershutterMgt mappings=[ON="Activé", OFF="Désactivé"]
+			Text item=NextRSOpen
+			Text item=NextRSClose			
+		}
+	}
+
+	Frame label="Gestion de l'alarme" {
+		Group item=Alarm_Mode label="Alarme" {
+	 		Switch item=Alarm_Mode mappings=[ON="Marche", OFF="Arrêt"]
+			Switch item=AlarmMgt mappings=[ON="Activé", OFF="Désactivé"]
+		}
+	}
+}

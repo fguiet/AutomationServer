@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle RainGauge Notification"
+when
+    Item Raingauge_Vcc received update
+then
+   Raingauge_LastUpdate.postUpdate(new DateTimeType())
+end
+

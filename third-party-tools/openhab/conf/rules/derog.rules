@@ -1,0 +1,75 @@
+rule "Handle Manon Derog"
+when
+    Item Manon_Wanted_Temp received update
+then        
+    if (Manon_Wanted_Temp.state != Manon_Programmed_Temp.state) { 
+       Manon_Derog_Visibility.sendCommand(OFF)
+    }
+    else { 
+       Manon_Derog_Visibility.sendCommand(ON)
+    }
+
+   Manon_Derog.postUpdate(Manon_Wanted_Temp.state)    
+end
+
+rule "Handle Parents Derog"
+when
+    Item Parents_Wanted_Temp received update
+then
+    if (Parents_Wanted_Temp.state != Parents_Programmed_Temp.state) {
+       Parents_Derog_Visibility.sendCommand(OFF)
+    }
+    else {
+       Parents_Derog_Visibility.sendCommand(ON)
+    }
+
+   Parents_Derog.postUpdate(Parents_Wanted_Temp.state)
+end
+
+rule "Handle Salon Derog"
+when
+    Item Salon_Wanted_Temp received update
+then
+    if (Salon_Wanted_Temp.state != Salon_Programmed_Temp.state) {
+       Salon_Derog_Visibility.sendCommand(OFF)
+    }
+    else {
+       Salon_Derog_Visibility.sendCommand(ON)
+    }
+
+   Salon_Derog.postUpdate(Salon_Wanted_Temp.state)
+end
+
+rule "Handle Bureau Derog"
+when
+    Item Bureau_Wanted_Temp received update
+then
+    if (Bureau_Wanted_Temp.state != Bureau_Programmed_Temp.state) {
+       Bureau_Derog_Visibility.sendCommand(OFF)
+    }
+    else {
+       Bureau_Derog_Visibility.sendCommand(ON)
+    }
+
+   Bureau_Derog.postUpdate(Bureau_Wanted_Temp.state)
+end
+
+rule "Handle Nohe Derog"
+when
+    Item Nohe_Wanted_Temp received update
+then
+    if (Nohe_Wanted_Temp.state != Nohe_Programmed_Temp.state) {
+       Nohe_Derog_Visibility.sendCommand(OFF)
+    }
+    else {
+       Nohe_Derog_Visibility.sendCommand(ON)
+    }
+
+   Nohe_Derog.postUpdate(Nohe_Wanted_Temp.state)
+
+end
+
+
+
+
+
