@@ -77,6 +77,7 @@ public class MqttClientMgt implements MqttCallback {
 
 			
 			_client.disconnect();
+			
 		} catch (MqttException me) {
 			_logger.error("Error sending message to mqtt broker", me);			
 		} catch (UnsupportedEncodingException e) {

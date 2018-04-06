@@ -190,9 +190,10 @@ public class RainGaugeService implements Runnable {
 					switch (action) {
 					   	case "SETRAINGAUGEINFO":
 							float vcc = Float.parseFloat(messageContent[1]);
-							String flipflop = messageContent[2];
-					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);
+							String flipflop = messageContent[2];					   	
 					   		_mqttClient.SendMsg(_pub_topic, dataSZ);
+					   		
+					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);
 					}
 				}				
 			}

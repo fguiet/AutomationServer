@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import org.apache.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
-import org.postgresql.ds.PGPoolingDataSource;
 
 import java.util.concurrent.TimeUnit;
 import fr.guiet.automationserver.dto.*;
@@ -62,7 +61,7 @@ public class DbManager {
 		
 	private InfluxDB _influxDB = null;
 	
-	private Connection getPGConnection() throws SQLException {
+	/*private Connection getPGConnection() throws SQLException {
 		PGPoolingDataSource connectionPool = new PGPoolingDataSource();
 
 	    //connectionPool.setApplicationName(CONFIG.DB_SERVER_NAME);
@@ -74,7 +73,7 @@ public class DbManager {
 	    connectionPool.setMaxConnections(10);
 	    
 		return connectionPool.getConnection();		
-	}
+	}*/
 
 	/**
 	 * Constructor
@@ -460,7 +459,8 @@ public class DbManager {
 
 		try {
 			
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);			
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 			
 			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from automation.room_heater a, automation.heater b "
 					+ "where a.id_heater = b.id_heater and a.id_room=?";
@@ -526,7 +526,8 @@ public class DbManager {
 		SensorDto dto = null;
 
 		try {
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
@@ -580,7 +581,8 @@ public class DbManager {
 
 		try {
 
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String query = "select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -628,7 +630,8 @@ public class DbManager {
 
 		try {
 
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String query = "select priority from automation.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -683,7 +686,8 @@ public class DbManager {
 		ResultSet rs = null;
 
 		try {
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic, a.influxdb_measurement FROM automation.room a ";
 
@@ -743,7 +747,8 @@ public class DbManager {
 		TempScheduleDto ts = null;
 
 		try {
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			if (dayOfWeek == dow) {
 
@@ -960,7 +965,8 @@ public class DbManager {
 				return dtoList;
 			}
 
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			// String query = "select json_agg(f.*) " + "from " + "(select
 			// id_room::text as resource, id_temp_schedule as id, temp::text as
@@ -1050,7 +1056,8 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = getPGConnection();  //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String stm = "DELETE FROM automation.temp_schedule where id_temp_schedule=?";
 
@@ -1090,7 +1097,8 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return null;
 
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String stm = "INSERT INTO automation.temp_schedule(temp,id_room,day_of_week,hour_begin,hour_end) values (?,?,?,?,?)";
 
@@ -1158,7 +1166,8 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = getPGConnection(); //DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
+		            .getConnection();
 
 			String stm = "UPDATE automation.temp_schedule set temp=?, id_room=?, day_of_week=?, hour_begin=?, hour_end=? where id_temp_schedule=?";
 
