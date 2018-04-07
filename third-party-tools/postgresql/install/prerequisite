@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#add postgresql group
+sudo groupadd postgres --gid 9004
+#add postgresql user
+sudo useradd -r -s /bin/bash postgres --uid 9004 -g postgres
+
+#create volume bind with docker container
+sudo mkdir -p /home/fred/applications/postgresql/logs
+sudo mkdir -p /home/fred/applications/postgresql/data
+sudo mkdir -p /home/fred/applications/postgresql/conf
+
+#add conf file
+#sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/mosquitto/conf /home/fred/applications/mosquitto
+
+#change mosquitto folders owner
+sudo chown -R postgres:postgres /home/fred/applications/postgresql

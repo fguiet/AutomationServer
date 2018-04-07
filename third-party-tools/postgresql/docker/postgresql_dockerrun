@@ -1,0 +1,17 @@
+#docker run -it \
+#        --name postgresql \
+#        -v /home/fred/applications/postgresql/logs:/postgresql/logs \
+#        -v /home/fred/applications/postgresql/data:/postgresql/data \
+#        -v /home/fred/applications/postgresql/conf:/postgresql/conf \
+#        -p 5432:5432 \
+#        guiet/postgresql:9.6 bash
+
+docker run \
+        --name postgresql \
+        -v /home/fred/applications/postgresql/logs:/postgresql/logs \
+        -v /home/fred/applications/postgresql/data:/postgresql/data \
+        -v /home/fred/applications/postgresql/conf:/postgresql/conf \
+        -p 5432:5432 \
+	-d \
+        guiet/postgresql:9.6
+
