@@ -13,6 +13,8 @@ const int SENSOR_PIN = A0;
 //volatile int bucketFlipFlopCounter = 0;  // Bucket flip flop counter
 volatile bool wakeUpByFliFlop = false;
 
+const unsigned long debouncingTime = 200; //200ms
+
 void setup() {
   pinMode(LED_PIN, OUTPUT);    // initialize pin 13 as an output pin for LED or relay etc.
   pinMode(M0_PIN, OUTPUT);    
@@ -73,7 +75,13 @@ void blinkLed(){
 }
 
 void wakeUpNow(){                  // Interrupt service routine or ISR  
-  wakeUpByFliFlop = true;
+
+  static unsigned long lastFlipFlip= 0;
+  
+  unsigned long date = millis();
+  if ((date - lastFlipFlip) > dureeAntiRebond) {
+    wakeUpByFliFlop = true;
+  }
 }
 
 float ReadVoltage() {
@@ -100,8 +108,9 @@ void Hibernate()         // here arduino is put to sleep/hibernation
 
  //60*60 / 8 = 450 = publication toutes les heures!
  for (int i=1; i<=450;i++) {
+  
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
-
+    
     if (wakeUpByFliFlop) {
        wakeUpByFliFlop = false;
        sendMessage(true);
