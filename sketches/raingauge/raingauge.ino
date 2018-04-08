@@ -24,13 +24,17 @@ void setup() {
   pinMode(REED_SWITCH_PIN, INPUT_PULLUP);        // define interrupt pin D2 as input to read interrupt received by Reed Switch
   digitalWrite(REED_SWITCH_PIN, HIGH); //necessary ? maybe not but just in case
 
+  attachInterrupt(REED_SWITCH_INTERRUPT,wakeUpNow, FALLING);   // Attach interrupt at pin D2  (int 0 is at pin D2  for nano, UNO)
+
   Serial.begin(9600);     // initialize serial communication only for debugging purpose   
 }
 
 void loop() {
+  Hibernate();   // go to sleep - calling sleeping function
+}
+
+void sendMessage(bool bWakeUpByFlipFlop) {
   
-  //interrupts();    // enable interrupts for Due and Nano V3
- 
   blinkLed();
  
   digitalWrite(M0_PIN, LOW); //
@@ -43,8 +47,8 @@ void loop() {
   float vin = ReadVoltage();
   String message = "SETRAINGAUGEINFO;" + String(vin,2) + ";";
   
-  if (wakeUpByFliFlop) {
-    wakeUpByFliFlop = false;
+  if (bWakeUpByFlipFlop) {
+    //wakeUpByFliFlop = false;
     message = message + "1";
   }
   else {
@@ -57,10 +61,6 @@ void loop() {
   delay(30);
   Serial.begin(9600);
   delay(70); //The rest of requested delay. So 100 - 30 = 70
-
-  delay(50);
-  
-  Hibernate();   // go to sleep - calling sleeping function
 }
 
 void blinkLed(){
@@ -98,17 +98,22 @@ void Hibernate()         // here arduino is put to sleep/hibernation
  digitalWrite(M0_PIN, HIGH); //
  digitalWrite(M1_PIN, HIGH); //high, high sleep mode
 
- attachInterrupt(REED_SWITCH_INTERRUPT,wakeUpNow, FALLING);   // Attach interrupt at pin D2  (int 0 is at pin D2  for nano, UNO)
-
  //60*60 / 8 = 450 = publication toutes les heures!
  for (int i=1; i<=450;i++) {
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
 
-    if (wakeUpByFliFlop) break;
+    if (wakeUpByFliFlop) {
+       wakeUpByFliFlop = false;
+       sendMessage(true);
+    }
  }
+
+ //One hour has passed send only Voltage info
+ sendMessage(false);
+ 
  //LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 
- detachInterrupt(REED_SWITCH_INTERRUPT);   // we detach interrupt from pin D2, to avoid further interrupts until our ISR is finished
+ //detachInterrupt(REED_SWITCH_INTERRUPT);   // we detach interrupt from pin D2, to avoid further interrupts until our ISR is finished
 
  //delay(50);
  
