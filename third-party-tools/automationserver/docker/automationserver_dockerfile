@@ -1,0 +1,63 @@
+FROM resin/rpi-raspbian:stretch
+LABEL maintainer="fguiet@gmail.com"
+
+#Update stretch distribution
+RUN apt-get update
+
+#Install git
+RUN apt-get install -y git
+
+#Install Oracle Java 8
+RUN apt-get install -y oracle-java8-jdk
+
+#Install wget
+RUN apt-get install -y wget
+
+#Install jsvc
+RUN apt-get install -y jsvc
+
+#Install Gammu
+RUN apt-get install -y gammu
+
+#Create application source folder
+RUN mkdir -p /applications/java/src 
+
+#Set workdir
+WORKDIR /applications/java/src
+#Get Java Ssource
+RUN git clone https://github.com/fguiet/AutomationServer.git
+
+#Create application folder
+RUN mkdir -p /applications/automationserver/config /applications/automationserver/logs
+
+#Create maven folder
+RUN mkdir -p /applications/maven/
+
+WORKDIR /applications/maven
+
+#Get Maven (http://maven.apache.org/download.cgi)
+RUN wget http://mirrors.ircam.fr/pub/apache/maven/maven-3/3.5.3/binaries/apache-maven-3.5.3-bin.tar.gz
+RUN tar -xzvf apache-maven-3.5.3-bin.tar.gz
+
+#Set ENV
+ENV M2_HOME=/applications/maven/apache-maven-3.5.3
+ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
+ENV PATH=$PATH:$PGHOME/bin:$M2_HOME/bin:$JAVA_HOME/bin
+
+#Build Source
+WORKDIR /applications/java/src/AutomationServer/automationserver/ASParent
+RUN mvn clean package
+
+#Copy Binaries
+RUN rm -R -f /applications/automationserver/*.jar
+RUN cp /applications/java/src/AutomationServer/automationserver/ASMain/dist/automationserver-main-bin/lib/*.jar /applications/automationserver
+RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /applications/automationserver
+
+#Copy conf file
+COPY * /applications/automationserver/config/
+
+#Image Entry point
+CMD ["/bin/bash"]
+
+
+
