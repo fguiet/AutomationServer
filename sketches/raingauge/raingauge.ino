@@ -76,12 +76,13 @@ void blinkLed(){
 
 void wakeUpNow(){                  // Interrupt service routine or ISR  
 
-  static unsigned long lastFlipFlip= 0;
+  static unsigned long lastFlipFlop= 0;
   
   unsigned long date = millis();
-  if ((date - lastFlipFlip) > dureeAntiRebond) {
+  if ((date - lastFlipFlop) > debouncingTime) {    
     wakeUpByFliFlop = true;
-  }
+    lastFlipFlop = date;
+  }  
 }
 
 float ReadVoltage() {
