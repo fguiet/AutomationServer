@@ -8,7 +8,7 @@ ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
 RUN apt-get update && apt-get install -y wget
 
 RUN groupadd --gid 9002 mosquitto
-RUN adduser --system --disabled-password --disabled-login --uid 9002 mosquitto --gid 9002
+RUN adduser --uid 9002 mosquitto --gid 9002
 
 RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -
 RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list

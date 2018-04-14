@@ -4,13 +4,20 @@
 #echo $@
 
 postgresql_server () {
-   rm -Rf /postgresql/data/* 
-   /usr/lib/postgresql/9.6/bin/initdb -D /postgresql/data 
+
+   if [ ! "$(ls -A $DIR)" ]; then
+      rm -Rf /postgresql/data/* 
+       /usr/lib/postgresql/9.6/bin/initdb --locale=en_GB.UTF-8  -D /postgresql/data
+      echo "host all  all    0.0.0.0/0  md5" >> /postgresql/data/pg_hba.conf
+      echo "listen_addresses='*'" >> /postgresql/data/postgresql.conf
+   fi
+
    /usr/lib/postgresql/9.6/bin/postgres -D /postgresql/data > /postgresql/logs/postgresql.log 2>&1   
 }
 
 echo "Starting PostgreSQL 9.6 server..."
 postgresql_server
+
 #exec "$@"
 
 ##!/usr/bin/env bash
