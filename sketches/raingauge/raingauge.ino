@@ -11,7 +11,7 @@ const int LED_PIN = 13;            // external LED or relay connected to pin 13
 const int SENSOR_PIN = A0;
 
 volatile bool wakeUpByFliFlop = false;
-long debouncing_time = 15; //Debouncing Time in Milliseconds
+long debouncing_time = 150; //Debouncing Time in Milliseconds
 volatile unsigned long last_micros;
 
 void setup() {
@@ -123,9 +123,9 @@ void Hibernate()         // here arduino is put to sleep/hibernation
   
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     
-    if (wakeUpByFliFlop) {
-       wakeUpByFliFlop = false;
+    if (wakeUpByFliFlop) {       
        sendMessage(true);
+       wakeUpByFliFlop = false;
     }
  }
 
