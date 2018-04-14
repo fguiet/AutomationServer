@@ -2,18 +2,20 @@ FROM resin/rpi-raspbian:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
-ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/postgresql/conf
-ENV PGDATA=/postgresql/data
-ENV PGHOME=/usr/lib/postgresql/9.6
-ENV LANG=en_GB.utf8
-ENV PATH=$PATH:$PGHOME/bin
-ENV PGTZ=Europe/Paris
-
 RUN groupadd --gid 9004 postgres
 RUN useradd  --uid 9004 --gid 9004 postgres
-#RUN echo -e "postgresql\npostgresql\n" | sudo passwd postgres
 
-RUN apt-get update && apt-get install -y postgresql-9.6
+#RUN apt-get update && apt-get install -y locales
+
+# Uncomment en_US.UTF-8 for inclusion in generation
+#RUN sed -i 's/^# *\(en_GB.UTF-8\)/\1/' /etc/locale.gen
+
+# Generate locale
+#RUN locale-gen
+
+RUN apt-get update && apt-get install -y locales && localedef -i en_GB -c -f UTF-8 -A /etc/locale.alias en_GB.UTF-8
+
+RUN apt-get install -y postgresql-9.6
 
 RUN mkdir -p /postgresql/data
 RUN mkdir -p /postgresql/conf
@@ -28,30 +30,19 @@ VOLUME ["/postgresql"]
 
 EXPOSE 5432
 
-#USER root
-#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/10/main/pg_hba.conf
-#RUN echo "listen_addresses='*'" >> /etc/postgresql/10/main/postgresql.conf
-
 COPY docker-entry-point.sh /usr/local/bin/
 RUN chmod 777 /usr/local/bin/docker-entry-point.sh
 ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 
 #user used in RUN, CMD, ENTRYPOINT
 USER postgres
-#ENV PGDATA=/postgres/data
 
-#launch postgresql
-#CMD ["/usr/bin/pg_dropcluster", "--stop", "9.6", "main"]
-#RUN /usr/lib/postgresql/9.6/bin/initdb -D /postgresql/data
+ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/postgresql/conf
+ENV PGDATA=/postgresql/data
+ENV PGHOME=/usr/lib/postgresql/9.6
+ENV LANG=en_GB.utf8
+ENV PATH=$PATH:$PGHOME/bin
+ENV PGTZ=Europe/Paris
 
-#RUN echo "host all  all    0.0.0.0/0  md5" >> /postgresql/data/pg_hba.conf
-#RUN echo "listen_addresses='*'" >> /postgresql/data/postgresql.conf
-
-#CMD /usr/lib/postgresql/9.6/bin/pg_ctl stop
-
-# is an image build step, the state of the container after a RUN command will be committed to the docker image
-#RUN exec "/usr/lib/postgresql/9.6/bin/pg_ctl -D /postgresql/data -l /postgresql/logs/postgresql.log -w start"
-
-#CMD is the command the container executes by default when you launch the built image
-CMD ["test"]
+CMD ["/bin/bash"]
 

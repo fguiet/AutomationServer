@@ -56,6 +56,13 @@ RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /appl
 #Copy conf file
 COPY * /applications/automationserver/config/
 
+RUN mkdir /applications/automationserver/cmd
+RUN mv /applications/automationserver/config/start.sh /applications/automationserver/cmd
+RUN chmod u+x /applications/automationserver/cmd/start.sh
+
+#Install nano
+RUN apt-get install -y nano
+
 #Image Entry point
 CMD ["/bin/bash"]
 
