@@ -1,4 +1,5 @@
 FROM resin/rpi-raspbian:stretch
+
 LABEL maintainer="fguiet@gmail.com"
 
 #Update stretch distribution
@@ -19,19 +20,26 @@ RUN apt-get install -y jsvc
 #Install Gammu
 RUN apt-get install -y gammu
 
+RUN groupadd --gid 1001 fred
+RUN useradd  --uid 1001 --gid 1001 fred
+
 #Create application source folder
 RUN mkdir -p /applications/java/src 
 
 #Set workdir
 WORKDIR /applications/java/src
-#Get Java Ssource
+
+#Get Java Source
 RUN git clone https://github.com/fguiet/AutomationServer.git
 
 #Create application folder
 RUN mkdir -p /applications/automationserver/config /applications/automationserver/logs
 
+#Create gammu folder
+RUN mkdir -p /applications/gammu
+
 #Create maven folder
-RUN mkdir -p /applications/maven/
+RUN mkdir -p /applications/maven
 
 WORKDIR /applications/maven
 
@@ -53,18 +61,28 @@ RUN rm -R -f /applications/automationserver/*.jar
 RUN cp /applications/java/src/AutomationServer/automationserver/ASMain/dist/automationserver-main-bin/lib/*.jar /applications/automationserver
 RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /applications/automationserver
 
-#Copy conf file
-COPY * /applications/automationserver/config/
-
 RUN mkdir /applications/automationserver/cmd
-RUN mv /applications/automationserver/config/start.sh /applications/automationserver/cmd
-RUN chmod u+x /applications/automationserver/cmd/start.sh
+RUN mkdir /applications/automationserver/config
+RUN mkdir /applications/automationserver/logs
+
+#RUN mv /applications/automationserver/config/start.sh /applications/automationserver/cmd
+#RUN chmod u+x /applications/automationserver/cmd/start.sh
 
 #Install nano
 RUN apt-get install -y nano
 
+RUN chown -R fred:fred /applications
+
+VOLUME ["/applications/automationserver"]
+
+COPY docker-entry-point.sh /usr/local/bin/
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
+ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
+USER fred
+
 #Image Entry point
-CMD ["/bin/bash"]
+CMD [""]
 
 
 

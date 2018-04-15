@@ -1,2 +1,2 @@
-docker build -t guiet/automationserver:1.0 -f automationserver_dockerfile /home/fred/applications/automationserver/conf
+docker build -t guiet/automationserver:1.0 -f automationserver_dockerfile /home/fred/applications/automationserver/docker
 
