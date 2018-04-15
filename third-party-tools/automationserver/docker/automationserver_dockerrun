@@ -1,0 +1,18 @@
+docker run -it \
+        --privileged \
+        --name automationserver \
+        -h docker-automationserver \
+        --network automationserver-network \
+        guiet/automationserver:1.0 bash
+
+#docker run \
+#        --name postgresql \
+#        --network automationserver-network \
+#        -h docker-postgresql \
+#        -v /home/fred/applications/postgresql/logs:/postgresql/logs \
+#        -v /home/fred/applications/postgresql/data:/postgresql/data \
+#        -v /home/fred/applications/postgresql/conf:/postgresql/conf \
+#        -p 5432:5432 \
+#	-d \
+#        guiet/postgresql:9.6
+

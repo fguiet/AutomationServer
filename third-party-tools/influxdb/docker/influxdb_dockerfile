@@ -31,8 +31,12 @@ VOLUME ["/influxdb"]
 
 EXPOSE 8086
 
+COPY docker-entry-point.sh /usr/local/bin/
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
+ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
 #User used in RUN, CMD, ENTRYPOINT
 USER influxdb
 
 #Launch influxdb daemon
-CMD ["/usr/bin/influxd", "-config", "/influxdb/conf/influxdb.conf", "2>&1 > /influxdb/logs/influxdb.log"]
+CMD [""]
