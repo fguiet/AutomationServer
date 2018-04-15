@@ -1,37 +1,23 @@
 #!/usr/bin/env bash
-#set -e
+set -e
 
-#echo $@
+PG_DATA_DIR=/postgresql/data
+PG_LOG_DIR=/postgresql/logs
+PG_BIN_DIR=/usr/lib/postgresql/9.6/bin
 
-postgresql_server () {
-
-   if [ ! "$(ls -A $DIR)" ]; then
-      rm -Rf /postgresql/data/* 
-       /usr/lib/postgresql/9.6/bin/initdb --locale=en_GB.UTF-8  -D /postgresql/data
-      echo "host all  all    0.0.0.0/0  md5" >> /postgresql/data/pg_hba.conf
-      echo "listen_addresses='*'" >> /postgresql/data/postgresql.conf
-   fi
-
-   /usr/lib/postgresql/9.6/bin/postgres -D /postgresql/data > /postgresql/logs/postgresql.log 2>&1   
-}
+echo "Checking for PostgreSQL cluster creation"
+if [ -z "$(ls -A ${PG_DATA_DIR})" ]; then
+  echo "PG Data folder empty...creating new PostgreSQL cluster"
+  ${PG_BIN_DIR}/initdb --locale=en_GB.UTF-8 -D ${PG_DATA_DIR}
+  
+  echo "Configuring pg_hba.conf..."
+  echo "host all  all    0.0.0.0/0  md5" >> ${PG_DATA_DIR}/pg_hba.conf
+  echo "Configuring postgresql.conf..."
+  echo "listen_addresses='*'" >> /${PG_DATA_DIR}/postgresql.conf
+else
+  echo "PG Data not empty...will start PG now"	
+fi
 
 echo "Starting PostgreSQL 9.6 server..."
-postgresql_server
-
-#exec "$@"
-
-##!/usr/bin/env bash
-#set -e
-
-#if [ "$1" = 'postgres' ]; then
-#    chown -R postgres "$PGDATA"
-
-#    if [ -z "$(ls -A "$PGDATA")" ]; then
-#        gosu postgres initdb
-#    fi
-
-#    exec gosu postgres "$@"
-#fi
-#
-#exec "$@"
+${PG_BIN_DIR}/postgres -D ${PG_DATA_DIR} > ${PG_LOG_DIR}/postgresql.log 2>&1   
 

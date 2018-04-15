@@ -5,14 +5,6 @@ LABEL maintainer="fguiet@gmail.com"
 RUN groupadd --gid 9004 postgres
 RUN useradd  --uid 9004 --gid 9004 postgres
 
-#RUN apt-get update && apt-get install -y locales
-
-# Uncomment en_US.UTF-8 for inclusion in generation
-#RUN sed -i 's/^# *\(en_GB.UTF-8\)/\1/' /etc/locale.gen
-
-# Generate locale
-#RUN locale-gen
-
 RUN apt-get update && apt-get install -y locales && localedef -i en_GB -c -f UTF-8 -A /etc/locale.alias en_GB.UTF-8
 
 RUN apt-get install -y postgresql-9.6
@@ -24,7 +16,7 @@ RUN mkdir -p /postgresql/logs
 RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql
 RUN chown -R postgres:postgres /postgresql
 RUN chmod 700 /postgresql/data
-RUN chmod 777 /var/run/postgresql
+RUN chmod 555 /var/run/postgresql
 
 VOLUME ["/postgresql"]
 
@@ -37,12 +29,12 @@ ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 #user used in RUN, CMD, ENTRYPOINT
 USER postgres
 
-ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/postgresql/conf
+#ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/postgresql/conf
 ENV PGDATA=/postgresql/data
 ENV PGHOME=/usr/lib/postgresql/9.6
 ENV LANG=en_GB.utf8
 ENV PATH=$PATH:$PGHOME/bin
 ENV PGTZ=Europe/Paris
 
-CMD ["/bin/bash"]
+CMD [""]
 
