@@ -1,0 +1,65 @@
+FROM resin/rpi-raspbian:stretch
+
+LABEL maintainer="fguiet@gmail.com"
+
+#Update stretch distribution
+RUN apt-get update
+
+#Install Oracle Java 8
+RUN apt-get install -y oracle-java8-jdk
+
+#Install wget
+RUN apt-get install -y wget
+
+RUN groupadd --gid 1001 fred
+RUN useradd  --uid 1001 --gid 1001 fred
+
+#Create application source folder
+RUN mkdir -p /tomcat
+
+#Create application folder
+RUN mkdir -p /applications/automationserver/config 
+RUN mkdir -p /tomcat
+RUN mkdir -p /tomcat/logs
+RUN mkdir -p /tomcat/firmwares
+RUN mkdir -p /tomcat/deploy
+
+WORKDIR /tomcat
+
+#Get Tomcat bin
+RUN wget http://www.us.apache.org/dist/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz
+RUN tar -xzvf apache-tomcat-9.0.7.tar.gz
+
+#Update tomcat configuration
+
+#Change listening port from 8080 to 8510
+sed -i 's/<Connector port="8080" redirectPort="8443" connectionTimeout="20000" protocol="HTTP\/1.1"\/>/<Connector port="8510" redirectPort="8443" connectionTimeout="20000" protocol="HTTP\/1.1"\/>/g' /tomcat/apache-tomcat-9.0.7/conf/server.xml
+
+#Set ENV
+ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
+ENV CATALINA_HOME=/tomcat/apache-tomcat-9.0.7
+ENV JAVA_HOME=/usr/java/jdk1.8.0_111
+ENV JRE_HOME=/usr/java/jdk1.8.0_111/jre
+ENV CATALINA_OPTS="$CATALINA_OPTS -Dautomationserver.config.path=/applications/automationserver/config/automationserver.properties -Dlog4j.configuration=file:/applications/automationserver/config/log4j.xml"
+
+RUN usermod -a -G sudo fred
+RUN chown -R fred:fred /applications
+RUN chown -R fred:fred /tomcat
+RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
+
+VOLUME ["/applications/automationserver"]
+VOLUME ["/tomcat"]
+
+EXPOSE 8510
+
+COPY docker-entry-point.sh /usr/local/bin/
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
+ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
+USER fred
+
+#Image Entry point
+CMD ["catalina.sh", "run"]
+
+
+

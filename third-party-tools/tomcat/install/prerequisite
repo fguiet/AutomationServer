@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#add fred group
+sudo groupadd fred --gid 1001
+#add fred user
+sudo useradd -r -s /sbin/nologin fred --uid 1001 -g fred
+
+#create volume bind with docker container
+sudo mkdir -p /home/fred/applications/tomcat
+sudo mkdir -p /home/fred/applications/tomcat/logs
+sudo mkdir -p /home/fred/applications/tomcat/firmwares
+sudo mkdir -p /home/fred/applications/tomcat/deploy
+
+#change applications/automationserver folders owner
+sudo chown -R fred:fred /home/fred/applications/tomcat

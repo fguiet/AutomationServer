@@ -1,0 +1,2 @@
+docker build -t guiet/tomcat:9.0.7 -f tomcat_dockerfile /home/fred/git/AutomationServer/third-party-tools/tomcat/docker
+
