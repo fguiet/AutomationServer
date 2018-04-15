@@ -2,31 +2,38 @@ FROM resin/rpi-raspbian:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
-ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
+#ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
 
 #update stretch and install wget
 RUN apt-get update && apt-get install -y wget
 
 RUN groupadd --gid 9002 mosquitto
-RUN adduser --uid 9002 mosquitto --gid 9002
+RUN useradd  --uid 9002 --gid 9002 mosquitto
 
 RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -
 RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list
 RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
 
-RUN mkdir -p /mqtt/config /mqtt/data /mqtt/log
+RUN mkdir -p /mosquitto/config /mosquitto/data /mosquitto/log
 
 #COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
 #donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
-COPY conf /mqtt/config
+#COPY conf /mqtt/config
 
-RUN chown -R mosquitto:mosquitto /mqtt
+RUN chown -R mosquitto:mosquitto /mosquitto
 
-VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
+VOLUME ["/mosquitto"]
 
 #this image expose port 1883 and 9001 ports
 #il faut quand meme lancer docker avec -p pour exposer le port à l'host
 EXPOSE 1883
 
-#launch mosquitoo
-CMD ["/usr/sbin/mosquitto", "-c", "/mqtt/config/mosquitto.conf"]
+COPY docker-entry-point.sh /usr/local/bin/
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
+ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
+#User used in RUN, CMD, ENTRYPOINT
+USER mosquitto
+
+#launch mosquitto
+CMD [""]
