@@ -19,35 +19,31 @@ RUN mkdir -p /tomcat
 
 #Create application folder
 RUN mkdir -p /applications/automationserver/config 
-RUN mkdir -p /tomcat
-RUN mkdir -p /tomcat/logs
-RUN mkdir -p /tomcat/firmwares
-RUN mkdir -p /tomcat/deploy
+RUN mkdir -p /tomcat 
+RUN mkdir -p /tomcat/logs 
+RUN mkdir -p /tomcat/firmwares 
+RUN mkdir -p /tomcat/deploy 
 
-WORKDIR /tomcat
+RUN mkdir -p /applications
+
+WORKDIR /applications
 
 #Get Tomcat bin
 RUN wget http://www.us.apache.org/dist/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz
 RUN tar -xzvf apache-tomcat-9.0.7.tar.gz
+RUN rm apache-tomcat-9.0.7.tar.gz
 
 #Update tomcat configuration
-
 #Change listening port from 8080 to 8510
-sed -i 's/<Connector port="8080" redirectPort="8443" connectionTimeout="20000" protocol="HTTP\/1.1"\/>/<Connector port="8510" redirectPort="8443" connectionTimeout="20000" protocol="HTTP\/1.1"\/>/g' /tomcat/apache-tomcat-9.0.7/conf/server.xml
-
-#Set ENV
-ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
-ENV CATALINA_HOME=/tomcat/apache-tomcat-9.0.7
-ENV JAVA_HOME=/usr/java/jdk1.8.0_111
-ENV JRE_HOME=/usr/java/jdk1.8.0_111/jre
-ENV CATALINA_OPTS="$CATALINA_OPTS -Dautomationserver.config.path=/applications/automationserver/config/automationserver.properties -Dlog4j.configuration=file:/applications/automationserver/config/log4j.xml"
+RUN sed -i 's/<Connector port="8080" protocol="HTTP\/1.1"/<Connector port="8510" protocol="HTTP\/1.1"/g' /applications/apache-tomcat-9.0.7/conf/server.xml
+RUN sed -i 's/${catalina.base}\/logs/\/tomcat\/logs/g' /applications/apache-tomcat-9.0.7/conf/logging.properties
 
 RUN usermod -a -G sudo fred
 RUN chown -R fred:fred /applications
 RUN chown -R fred:fred /tomcat
 RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
-VOLUME ["/applications/automationserver"]
+VOLUME ["/applications/automationserver/config"]
 VOLUME ["/tomcat"]
 
 EXPOSE 8510
@@ -58,8 +54,16 @@ ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 
 USER fred
 
+#Set ENV
+ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
+ENV CATALINA_HOME=/applications/apache-tomcat-9.0.7
+ENV JRE_HOME=${JAVA_HOME}/jre
+ENV CATALINA_OPTS="$CATALINA_OPTS -Dautomationserver.config.path=/applications/automationserver/config/automationserver.properties -Dlog4j.configuration=file:/applications/automationserver/config/log4j.xml"
+ENV PATH=$PATH:$CATALINA_HOME/bin:$JAVA_HOME/bin
+
 #Image Entry point
-CMD ["catalina.sh", "run"]
+CMD ["catalina.sh","run"]
+#CMD ["/bin/bash"]
 
 
 
