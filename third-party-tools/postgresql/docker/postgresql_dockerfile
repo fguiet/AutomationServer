@@ -31,7 +31,7 @@ VOLUME ["/postgresql"]
 EXPOSE 5432
 
 COPY docker-entry-point.sh /usr/local/bin/
-RUN chmod 777 /usr/local/bin/docker-entry-point.sh
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
 ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 
 #user used in RUN, CMD, ENTRYPOINT
