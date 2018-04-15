@@ -1,10 +1,12 @@
 docker run -it \
-        --privileged \
-        --name automationserver \
-        -h docker-automationserver \
-        --network automationserver-network \
-		-v /etc/localtime:/etc/localtime:ro \
-        -v /etc/timezone:/etc/timezone:ro \
-		-v /home/fred/applications/automationserver:/applications/automationserver \		
-		--restart=always \
-        guiet/automationserver:1.0 bash
+           --device=/dev/ttyUSB2 \
+           --device=/dev/ttyUSB3 \
+           --privileged \
+           --name automationserver \
+           -h docker-automationserver \
+           --network automationserver-network \
+           -v /etc/localtime:/etc/localtime:ro \
+           -v /etc/timezone:/etc/timezone:ro \
+           -v /home/fred/applications/automationserver:/applications/automationserver \
+           --restart=always \
+           guiet/automationserver:1.0 bash

@@ -12,7 +12,10 @@ sudo mkdir -p  /home/fred/applications/automationserver/logs
 sudo mkdir -p  /home/fred/applications/automationserver/cmd
 
 #add conf file
-sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/automationserver/conf /home/fred/applications/automationserver/config 
+sudo cp  /home/fred/git/AutomationServer/third-party-tools/automationserver/conf/*.properties /home/fred/applications/automationserver/config 
+sudo cp /home/fred/git/AutomationServer/third-party-tools/automationserver/conf/*.xml /home/fred/applications/automationserver/config
+sudo cp /home/fred/git/AutomationServer/third-party-tools/automationserver/conf/gammu-config /home/fred/applications/automationserver/config
+sudo cp /home/fred/git/AutomationServer/third-party-tools/automationserver/conf/start.sh /home/fred/applications/automationserver/cmd/
 
 #change applications/automationserver folders owner
 sudo chown -R fred:fred /home/fred/applications/automationserver

@@ -35,9 +35,6 @@ RUN git clone https://github.com/fguiet/AutomationServer.git
 #Create application folder
 RUN mkdir -p /applications/automationserver/config /applications/automationserver/logs
 
-#Create gammu folder
-RUN mkdir -p /applications/gammu
-
 #Create maven folder
 RUN mkdir -p /applications/maven
 
@@ -62,8 +59,6 @@ RUN cp /applications/java/src/AutomationServer/automationserver/ASMain/dist/auto
 RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /applications/automationserver
 
 RUN mkdir /applications/automationserver/cmd
-RUN mkdir /applications/automationserver/config
-RUN mkdir /applications/automationserver/logs
 
 #RUN mv /applications/automationserver/config/start.sh /applications/automationserver/cmd
 #RUN chmod u+x /applications/automationserver/cmd/start.sh
@@ -71,7 +66,10 @@ RUN mkdir /applications/automationserver/logs
 #Install nano
 RUN apt-get install -y nano
 
+RUN usermod -a -G sudo fred
+RUN usermod -a -G dialout fred
 RUN chown -R fred:fred /applications
+RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
 VOLUME ["/applications/automationserver"]
 
@@ -82,7 +80,7 @@ ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 USER fred
 
 #Image Entry point
-CMD [""]
+CMD ["/bin/bash"]
 
 
 
