@@ -1,12 +1,11 @@
 docker run \
         --name postgresql \
-		-v /etc/localtime:/etc/localtime:ro \
+        -v /etc/localtime:/etc/localtime:ro \
         -v /etc/timezone:/etc/timezone:ro \
         --network automationserver-network \
         -h docker-postgresql \
-        -v /home/fred/applications/postgresql:/postgresql \        
-		--restart=always \
+        -v /home/fred/applications/postgresql:/postgresql \
+        --restart=always \
         -p 5432:5432 \
-		-d \
+        -d \
         guiet/postgresql:9.6
-

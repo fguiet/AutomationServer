@@ -12,11 +12,12 @@ RUN apt-get install -y postgresql-9.6
 RUN mkdir -p /postgresql/data
 RUN mkdir -p /postgresql/conf
 RUN mkdir -p /postgresql/logs
+RUN mkdir -p /postgresql/restore
 
 RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql
 RUN chown -R postgres:postgres /postgresql
 RUN chmod 700 /postgresql/data
-RUN chmod 555 /var/run/postgresql
+RUN chmod 755 /var/run/postgresql
 
 VOLUME ["/postgresql"]
 
