@@ -1,8 +1,11 @@
 #-p 2000:1883 bind du port 1883 du container sur le port 200 de l'host
 docker run \
+        -v /etc/localtime:/etc/localtime:ro \
+        -v /etc/timezone:/etc/timezone:ro \
         --name mosquitto \
-        -v /home/fred/applications/mosquitto/logs:/mqtt/log \
-        -v /home/fred/applications/mosquitto/conf:/mqtt/config \
+		--network automationserver-network \
+        -h docker-mosquitto \
+        -v /home/fred/applications/mosquitto:/mosquitto/log \        
         -d \
         --restart=always \
         -p 1883:1883 \
