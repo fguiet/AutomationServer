@@ -136,7 +136,12 @@ public class DbManager {
 			return false;
 		}
 		else {
-			con.close();
+			try {
+			 con.close();
+			}
+			catch(Exception e) {
+				_logger.error("Error while closing PG connection",e);
+			}
 			return true;
 		}
 		

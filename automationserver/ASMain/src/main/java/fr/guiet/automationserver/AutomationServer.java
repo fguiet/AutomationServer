@@ -5,6 +5,7 @@ import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
 
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Date;
 import java.util.Locale;
 import org.apache.log4j.Logger;
@@ -269,7 +270,8 @@ public class AutomationServer implements Daemon {
 		
 		try {
 			//TODO : change hard coded url
-			HttpURLConnection conn = (HttpURLConnection) new URL("http://192.168.1.25:8510/automation-webapp/api/firmware/getversion/1");
+			URL obj = new URL("http://192.168.1.25:8510/automation-webapp/api/firmware/getversion/1");
+			HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(5000);
 			
