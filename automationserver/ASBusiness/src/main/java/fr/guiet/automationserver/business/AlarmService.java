@@ -2,6 +2,7 @@ package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
 
+import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
 import fr.guiet.automationserver.dto.SMSDto;
@@ -124,12 +125,12 @@ public class AlarmService {
 		try {
 			String logMessage = "Turning house alarm ON";
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.HIGH,
-					PIN_ALARM_NAME, logMessage);
+					PIN_ALARM_NAME, logMessage, PinState.LOW);
 			
 			Thread.sleep(1000);
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_06, fr.guiet.automationserver.business.PinState.LOW,
-					PIN_ALARM_NAME, null);
+					PIN_ALARM_NAME, null,PinState.LOW);
 			
 			//Close all rollers shutters if not allready closed
 			_rollerShutterService.CloseAllRollerShutters();				
@@ -158,12 +159,12 @@ public class AlarmService {
 		try {
 			String logMessage = "Turning house alarm OFF";
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.HIGH,
-					PIN_ALARM_NAME, logMessage);
+					PIN_ALARM_NAME, logMessage, PinState.LOW);
 			
 			Thread.sleep(1000);
 			
 			GpioHelper.provisionGpioPin(RaspiPin.GPIO_25, fr.guiet.automationserver.business.PinState.LOW,
-					PIN_ALARM_NAME, null);			
+					PIN_ALARM_NAME, null, PinState.LOW);			
 		}
 		catch(Exception e) {			
 			_logger.error("Error occured setting alarm off", e);

@@ -124,6 +124,46 @@ public class DbManager {
 					e);
 		}
 	}
+	
+	/*
+	 * Check whether Postgresql is up and running !
+	 */
+	public boolean IsPostgreSQLAvailable() {
+		
+		Connection con = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
+		
+		if (con == null) {
+			return false;
+		}
+		else {
+			con.close();
+			return true;
+		}
+		
+	}
+	
+	public boolean IsInfluxDbAvailable() {
+				
+		boolean isInfluxDbStarted = false;
+		
+		try {
+			InfluxDB influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			
+			Pong response;
+			
+			response = influxDB.ping();
+			
+			if (response.isGood()) {
+				influxDB.close();
+				isInfluxDbStarted = true;
+			}
+		}
+		catch(Exception e) {
+			_logger.error("Could not connect to InfluxDb...Instance is gone?", e);
+		}
+		
+		return isInfluxDbStarted;		
+	}
 
 	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
 
