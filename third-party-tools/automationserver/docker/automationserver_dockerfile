@@ -3,10 +3,15 @@ FROM resin/rpi-raspbian:stretch
 LABEL maintainer="fguiet@gmail.com"
 
 #Update stretch distribution
+RUN apt-get clean
 RUN apt-get update
+RUN apt-get upgrade
 
 #Install git
 RUN apt-get install -y git
+
+#Install nano
+RUN apt-get install -y nano
 
 #Install Oracle Java 8
 RUN apt-get install -y oracle-java8-jdk
@@ -20,8 +25,8 @@ RUN apt-get install -y jsvc
 #Install Gammu
 RUN apt-get install -y gammu
 
-RUN groupadd --gid 1001 fred
-RUN useradd  --uid 1001 --gid 1001 fred
+#RUN groupadd --gid 1001 fred
+#RUN useradd  --uid 1001 --gid 1001 fred
 
 #Create application source folder
 RUN mkdir -p /applications/java/src 
@@ -33,7 +38,7 @@ WORKDIR /applications/java/src
 RUN git clone https://github.com/fguiet/AutomationServer.git
 
 #Create application folder
-RUN mkdir -p /applications/automationserver/config /applications/automationserver/logs
+RUN mkdir -p /applications/automationserver/config /applications/automationserver/logs /applications/automationserver/bin
 
 #Create maven folder
 RUN mkdir -p /applications/maven
@@ -54,30 +59,27 @@ WORKDIR /applications/java/src/AutomationServer/automationserver/ASParent
 RUN mvn clean package
 
 #Copy Binaries
-RUN rm -R -f /applications/automationserver/*.jar
-RUN cp /applications/java/src/AutomationServer/automationserver/ASMain/dist/automationserver-main-bin/lib/*.jar /applications/automationserver
-RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /applications/automationserver
+RUN rm -R -f /applications/automationserver/bin/*.jar
+RUN cp /applications/java/src/AutomationServer/automationserver/ASMain/dist/automationserver-main-bin/lib/*.jar /applications/automationserver/bin/
+RUN cp /applications/java/src/AutomationServer/third-party-lib/native/*.so /applications/automationserver/bin/
 
 RUN mkdir /applications/automationserver/cmd
 
 #RUN mv /applications/automationserver/config/start.sh /applications/automationserver/cmd
 #RUN chmod u+x /applications/automationserver/cmd/start.sh
 
-#Install nano
-RUN apt-get install -y nano
+#RUN usermod -a -G sudo fred
+#RUN usermod -a -G dialout fred
+#RUN chown -R fred:fred /applications
+#RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
-RUN usermod -a -G sudo fred
-RUN usermod -a -G dialout fred
-RUN chown -R fred:fred /applications
-RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-
-VOLUME ["/applications/automationserver"]
+VOLUME ["/applications/automationserver/config","/applications/automationserver/bin","/applications/automationserver/logs","/applications/automationserver/cmd"]
 
 COPY docker-entry-point.sh /usr/local/bin/
 RUN chmod 555 /usr/local/bin/docker-entry-point.sh
 ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 
-USER fred
+#USER fred
 
 #Image Entry point
 CMD ["/bin/bash"]

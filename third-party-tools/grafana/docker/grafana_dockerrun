@@ -1,0 +1,6 @@
+docker run \
+  -d \
+  -p 3000:3000 \
+  --name grafana \
+  -v /home/fred/applications/grafana/database:/var/lib/grafana \
+  fg2it/grafana-armhf:v5.0.4

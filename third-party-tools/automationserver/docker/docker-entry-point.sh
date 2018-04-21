@@ -2,4 +2,6 @@
 set -e
 
 echo "Now starting AutomationServer..."
-exec $@
+/applications/automationserver/cmd/start.sh
+
+#exec $@

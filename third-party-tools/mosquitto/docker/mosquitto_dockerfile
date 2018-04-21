@@ -14,7 +14,7 @@ RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-k
 RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list
 RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
 
-RUN mkdir -p /mosquitto/conf /mosquitto/data /mosquitto/log
+RUN mkdir -p /mosquitto/conf /mosquitto/data /mosquitto/log /mosquitto/data
 
 #COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
 #donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
