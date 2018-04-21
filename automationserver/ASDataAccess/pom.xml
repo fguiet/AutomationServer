@@ -64,14 +64,14 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.4.1212.jre7</version>
+			<version>${postgresql.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.mchange/c3p0 -->
-	<dependency>
-    	<groupId>com.mchange</groupId>
-    	<artifactId>c3p0</artifactId>
-    	<version>0.9.5.2</version>
-	</dependency>
+<dependency>
+    <groupId>com.mchange</groupId>
+    <artifactId>c3p0</artifactId>
+    <version>${c3p0.version}</version>
+</dependency>
 				
 	</dependencies>
 

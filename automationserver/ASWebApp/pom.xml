@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
+			<version>4.0.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -47,21 +47,21 @@
 		<dependency>
     		<groupId>org.ow2.asm</groupId>
     		<artifactId>asm</artifactId>
-    		<version>6.1.1</version>
+    		<version>${asm.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.sun.jersey/jersey-bundle -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-bundle</artifactId>
-			<version>1.19.4</version>
+			<version>${jersey-bundle.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180130</version>
+			<version>${json.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-server -->
