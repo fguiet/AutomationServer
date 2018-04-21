@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business;
 
 import com.pi4j.io.gpio.Pin;
+import com.pi4j.io.gpio.PinState;
 
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
@@ -14,7 +15,7 @@ import fr.guiet.automationserver.dataaccess.DbManager;
  * 
  * @author guiet
  * 
- * TODO : Creer une classe GpioHelper
+ *         TODO : Creer une classe GpioHelper
  *
  */
 public class Heater implements Comparable<Heater> {
@@ -28,13 +29,13 @@ public class Heater implements Comparable<Heater> {
 	private Room _room = null;
 	private Pin _pin;
 	private boolean _isOffForced = false;
-	//private TeleInfoService _teleInfoService = null;
+	// private TeleInfoService _teleInfoService = null;
 	private static Logger _logger = Logger.getLogger(Heater.class);
-	//private boolean _waitForOn = false;
-	//private boolean _waitForOff = false;
-	private final String PIN_CHAUFFAGE_NAME ="PIN_CHAUFFAGE";
+	// private boolean _waitForOn = false;
+	// private boolean _waitForOff = false;
+	private final String PIN_CHAUFFAGE_NAME = "PIN_CHAUFFAGE";
 	private DbManager _dbManager = null;
-	private SMSGammuService _smsGammuService = null; 
+	private SMSGammuService _smsGammuService = null;
 
 	/**
 	 * @return Returns Heater name (value stored in PostgreSQL database)
@@ -94,8 +95,8 @@ public class Heater implements Comparable<Heater> {
 		_raspberryPin = dto.raspberryPin;
 		_name = dto.name;
 		_dbManager = new DbManager();
-		//_teleInfoService = teleInfoService;
-		//_teleInfoService.addListener(this);
+		// _teleInfoService = teleInfoService;
+		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
 
 		switch (_raspberryPin) {
@@ -186,12 +187,10 @@ public class Heater implements Comparable<Heater> {
 		case 29:
 			_pin = RaspiPin.GPIO_29;
 			break;
-		/*case 30:
-			_pin = RaspiPin.GPIO_30;
-			break;
-		case 31:
-			_pin = RaspiPin.GPIO_31;
-			break;*/
+		/*
+		 * case 30: _pin = RaspiPin.GPIO_30; break; case 31: _pin =
+		 * RaspiPin.GPIO_31; break;
+		 */
 
 		default:
 			// TODO : utiliser un throw ici!
@@ -222,22 +221,21 @@ public class Heater implements Comparable<Heater> {
 	 * @return Returns heater priority value regarding current datetime
 	 */
 	public Integer GetCurrentPriority() {
-		
+
 		Integer priority = null;
-		
+
 		try {
 			priority = _dbManager.GetCurrentPriorityByHeaterId(_heaterId);
-		}
-		catch(Exception e) {
-			_logger.error("Erreur lors de la récupération de la priorité du radiateur : "+_heaterId,e);
+		} catch (Exception e) {
+			_logger.error("Erreur lors de la récupération de la priorité du radiateur : " + _heaterId, e);
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Error occured in heater class, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}
-		
+
 		return priority;
 	}
-	
+
 	public long getId() {
 		return _heaterId;
 	}
@@ -302,45 +300,53 @@ public class Heater implements Comparable<Heater> {
 
 		_isOn = true;
 		String logMessage = "";
-		
+
 		if (_room != null)
 			logMessage = String.format("Turning ON heater %s from room %s", _name, _room.getName());
-		
-		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW, PIN_CHAUFFAGE_NAME + _heaterId, logMessage);
+
+		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW,
+				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);
 
 		// create gpio controller
-		/*final GpioController gpio = GpioFactory.getInstance();
+		/*
+		 * final GpioController gpio = GpioFactory.getInstance();
+		 * 
+		 * // provision gpio pin #01 as an output pin and turn on final
+		 * GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin,
+		 * "PIN_CHAUFFAGE_ID" + _heaterId);
+		 * 
+		 * // set shutdown state for this pin pin.setShutdownOptions(true,
+		 * PinState.LOW);
+		 * 
+		 * // turn on gpio pin #01 pin.low();
+		 * 
+		 * gpio.unprovisionPin(pin);
+		 * 
+		 * gpio.shutdown();
+		 */
 
-		// provision gpio pin #01 as an output pin and turn on
-		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin, "PIN_CHAUFFAGE_ID" + _heaterId);
-
-		// set shutdown state for this pin
-		pin.setShutdownOptions(true, PinState.LOW);
-
-		// turn on gpio pin #01
-		pin.low();
-
-		gpio.unprovisionPin(pin);
-
-		gpio.shutdown();*/
-
-		/*if (_room != null)
-			_logger.info(String.format("Turning ON heater %s from room %s", _name, _room.getName()));*/
+		/*
+		 * if (_room != null)
+		 * _logger.info(String.format("Turning ON heater %s from room %s",
+		 * _name, _room.getName()));
+		 */
 	}
 
-	/*private void StartTeleInfoService() {
-		_teleInfoService.StartCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
-	}*/
+	/*
+	 * private void StartTeleInfoService() {
+	 * _teleInfoService.StartCollectingTeleinfo(String.
+	 * format("heater %s from room %s", _name, _room.getName())); }
+	 */
 
-	//private void StopTeleInfoService() {
-		//_teleInfoService.StopCollectingTeleinfo(String.format("heater %s from room %s", _name, _room.getName()));
-		/*
-		 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
-		 * Thread.sleep(500); } catch (InterruptedException e) {
-		 * _logger.error("Error in Heater::StopTeleInfoService method"); break;
-		 * } }
-		 */
-	//}
+	// private void StopTeleInfoService() {
+	// _teleInfoService.StopCollectingTeleinfo(String.format("heater %s from
+	// room %s", _name, _room.getName()));
+	/*
+	 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
+	 * Thread.sleep(500); } catch (InterruptedException e) {
+	 * _logger.error("Error in Heater::StopTeleInfoService method"); break; } }
+	 */
+	// }
 
 	/**
 	 * Sets heater OFF
@@ -352,28 +358,32 @@ public class Heater implements Comparable<Heater> {
 
 		if (_room != null)
 			logMessage = String.format("Turning OFF heater %s from room %s", _name, _room.getName());
-		
-		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH, PIN_CHAUFFAGE_NAME + _heaterId, logMessage);
+
+		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH,
+				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);
 		// TODO : Faire une classe pour ,le gpio control!!!!
 
 		// create gpio controller
-		/*final GpioController gpio = GpioFactory.getInstance();
-
-		// provision gpio pin #01 as an output pin and turn on
-		final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin, "PIN_CHAUFFAGE_ID" + _heaterId);
-
-		// set shutdown state for this pin
-		pin.setShutdownOptions(true, PinState.LOW);
-
-		// turn on gpio pin #01
-		pin.high();
-
-		gpio.unprovisionPin(pin);
-
-		gpio.shutdown();
-
-		if (_room != null)
-			_logger.info(String.format("Turning OFF heater %s from room %s", _name, _room.getName()));*/
+		/*
+		 * final GpioController gpio = GpioFactory.getInstance();
+		 * 
+		 * // provision gpio pin #01 as an output pin and turn on final
+		 * GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin,
+		 * "PIN_CHAUFFAGE_ID" + _heaterId);
+		 * 
+		 * // set shutdown state for this pin pin.setShutdownOptions(true,
+		 * PinState.LOW);
+		 * 
+		 * // turn on gpio pin #01 pin.high();
+		 * 
+		 * gpio.unprovisionPin(pin);
+		 * 
+		 * gpio.shutdown();
+		 * 
+		 * if (_room != null)
+		 * _logger.info(String.format("Turning OFF heater %s from room %s",
+		 * _name, _room.getName()));
+		 */
 	}
 
 	/**

@@ -21,8 +21,8 @@ void setup() {
   pinMode(M0_PIN, OUTPUT);    
   pinMode(M1_PIN, OUTPUT);    
 
-  digitalWrite(M0_PIN, LOW); //
-  digitalWrite(M1_PIN, LOW); //low, low = normal mode
+  digitalWrite(M0_PIN, HIGH); //
+  digitalWrite(M1_PIN, HIGH); //High = Sleep mode
   
   pinMode(REED_SWITCH_PIN, INPUT_PULLUP);        // define interrupt pin D2 as input to read interrupt received by Reed Switch
   digitalWrite(REED_SWITCH_PIN, HIGH); //necessary ? maybe not but just in case
@@ -32,12 +32,11 @@ void setup() {
 
   Serial.begin(9600);     // initialize serial communication only for debugging purpose   
 
-  blinkLedStartup();
-  //Serial.println("Ready...");
+  blinkLedStartup();  
 }
 
 void loop() {  
-  Hibernate();   // go to sleep - calling sleeping function
+  Hibernate();   // go to sleep - calling sleeping function  
 }
 
 void sendMessage(bool bWakeUpByFlipFlop) {
@@ -103,15 +102,25 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 float ReadVoltage() {
 
   float sensorValue = 0.0f;
-  float R1 = 32450.0;
-  float R2 = 7560.0;
+  //float R1 = 32450.0;
+  //float R2 = 7560.0;
   float vin = 0.0;
-  float vout = 0.0;
- 
-  sensorValue = analogRead(SENSOR_PIN);
-  vout = (sensorValue * 3.3) / 1024.0;
-  vin = vout / (R2 / (R1 + R2));
+  //float vout = 0.0;
 
+  //Calcul empirique...
+  //3.6v = 247
+  //4.1v = 237
+  //4.5v = 234     
+  sensorValue = analogRead(SENSOR_PIN);
+  vin = (((247 - sensorValue) / 2) * 0.1) + 3.6;
+  
+  return vin;
+  //Serial.println("sensorValue : " +String(sensorValue,2)); 
+  
+  //vout = (sensorValue * 4.2) / 1024.0;
+  //vin = vout / (R2 / (R1 + R2));
+
+  //vin = sensorValue;
   return vin;
 }
 

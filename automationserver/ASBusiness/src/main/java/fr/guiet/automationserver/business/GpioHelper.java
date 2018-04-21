@@ -10,8 +10,23 @@ import com.pi4j.io.gpio.Pin;
 public class GpioHelper {
 
 	private static Logger _logger = Logger.getLogger(GpioHelper.class);
+	
+	/*
+	 * Try to set pin state on shutdown
+	 */
+	public static void shutdown() {
+		
+		try {
+			_logger.info("Setting down Gpio controller...");
+			final GpioController gpio = GpioFactory.getInstance();
+			gpio.shutdown();
+		}
+		catch(Exception e) {
+			_logger.error("Error when shutting down gpio controller...",e);
+		}
+	}
 
-	public static void provisionGpioPin(Pin gpioPinNumber, PinState state, String pinName, String logMessage) {
+	public static void provisionGpioPin(Pin gpioPinNumber, PinState state, String pinName, String logMessage, com.pi4j.io.gpio.PinState pinStateOnShutdown) {
 
 		try {
 
@@ -21,7 +36,7 @@ public class GpioHelper {
 			final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(gpioPinNumber, pinName);
 
 			// set shutdown state for this pin
-			pin.setShutdownOptions(true, com.pi4j.io.gpio.PinState.LOW);
+			pin.setShutdownOptions(true, pinStateOnShutdown);
 
 			if (state == PinState.HIGH) {
 				pin.high();
@@ -29,9 +44,7 @@ public class GpioHelper {
 				pin.low();
 			}
 
-			gpio.unprovisionPin(pin);
-
-			//gpio.shutdown();
+			gpio.unprovisionPin(pin);			
 
 			if (logMessage != null) {
 				_logger.info(logMessage);

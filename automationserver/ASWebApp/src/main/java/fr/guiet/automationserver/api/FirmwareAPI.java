@@ -1,6 +1,11 @@
 package fr.guiet.automationserver.api;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -61,7 +66,7 @@ public class FirmwareAPI {
 		_logger.info("Sensor ID : "+sensorid+" upgrading to firmware version : "+version);
 		
 		String fileName = "firmware_sensorid_"+sensorid+"_version_"+version+".bin";
-		File file = new File ("/home/fred/automationserver/firmwares/" + fileName);
+		File file = new File (GetFirmwareFolder() + fileName);
 		
 		ResponseBuilder response = Response.ok((Object) file); 
 		response.header("Content-Disposition", "attachment; filename="
@@ -71,5 +76,26 @@ public class FirmwareAPI {
 				
 	}
 
+	private String GetFirmwareFolder() {
+		InputStream is = null;
+		String firmwareFolder = "";
+		try {
+
+			String configPath = System.getProperty("automationserver.config.path");
+			is = new FileInputStream(configPath);
+
+			Properties prop = new Properties();
+			prop.load(is);
+
+			firmwareFolder = prop.getProperty("firmwares.folder");			
+
+		} catch (FileNotFoundException e) {
+			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
+		} catch (IOException e) {
+			_logger.error("Error in reading configuration file classpath_folder/config/automationserver.properties", e);
+		}
+		
+		return firmwareFolder;
+	}
 
 }
