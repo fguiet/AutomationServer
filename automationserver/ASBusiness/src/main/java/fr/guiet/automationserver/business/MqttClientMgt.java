@@ -64,6 +64,26 @@ public class MqttClientMgt implements MqttCallback {
 		
 	}
 	
+	public boolean IsMqttServerAvailable() {
+		
+		boolean isMqttStarted = false;
+		try {
+			MqttClient client = new MqttClient(_uri, _clientId);
+			
+			client.connect();
+			
+			if (client.isConnected()) {
+				isMqttStarted = true;
+				client.disconnect();
+			}			
+		}
+		catch(Exception e) {
+			_logger.error("Mqtt instance not ready...", e);
+		}
+		
+		return isMqttStarted;
+	}
+	
 	public void SendMsg(String topic, String message) {
 		
 		try {

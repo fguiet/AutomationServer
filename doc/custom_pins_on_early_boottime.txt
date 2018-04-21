@@ -1,0 +1,26 @@
+Create custom device tree blob to configure Raspberry Pi pins on early boot time
+--------------------------------------------------------------------------------
+
+I need that GPIO pins 2,3,4,5,6,7,8 be set to OUTPUT and HIGH and ACTIVATED at boot time
+
+To do so:
+
+Follow this tutorial : https://www.raspberrypi.org/documentation/configuration/pin-configuration.md
+
+1. Get dt-blob.dts here : https://github.com/raspberrypi/firmware/edit/master/extra/dt-blob.dts
+2. Add custom pins options to your raspberrypi model, mine is : pins_3b2 { // Pi 3 Model B rev 1.2
+
+pin@p2 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin2
+pin@p3 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin3
+pin@p4 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin4
+pin@p5 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin5
+pin@p6 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin6
+pin@p7 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin7
+pin@p8 { function = "output";  termination = "no_pulling"; drive_strength_mA = < 8 >; startup_state = "active";}; // pin8		
+
+3. Compile dt-blob.dts and reboot raspberrypi (may be install compiler with command : sudo apt-get install device-tree-compiler)
+
+sudo dtc -I dts -O dtb -o /boot/dt-blob.bin dt-blob.dts
+
+
+

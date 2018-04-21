@@ -8,8 +8,10 @@ sudo useradd -r -s /sbin/nologin mosquitto --uid 9002 -g mosquitto
 #create volume bind with docker container
 sudo mkdir -p /home/fred/applications/mosquitto/logs
 sudo mkdir -p /home/fred/applications/mosquitto/conf
+sudo mkdir -p /home/fred/applications/mosquitto/data
 
 #add conf file
+#sudo rm -R /home/fred/applications/mosquitto/conf/*
 sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/mosquitto/conf /home/fred/applications/mosquitto
 
 #change mosquitto folders owner

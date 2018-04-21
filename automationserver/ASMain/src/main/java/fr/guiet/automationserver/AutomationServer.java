@@ -4,11 +4,15 @@ import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Date;
 import java.util.Locale;
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.*;
+import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
+import okhttp3.HttpUrl;
 
 /**
  * Main class : in charge of home IoT management
@@ -40,7 +44,7 @@ public class AutomationServer implements Daemon {
 	private boolean _alertSent5 = false; // Réinitialisation
 	private boolean _alertSent10 = false; // Réinitialisation
 	private boolean _alertSentMore = false; // Réinitialisation
-
+	
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);	
 	
@@ -76,10 +80,10 @@ public class AutomationServer implements Daemon {
 					// Wait a little before starting...
 					//Sometimes while rebooting database connection are not ready and may cause some errorsq
 					
-					_logger.info("Automation is starting...waiting one minute so Raspberry can initialized itselft smoothly (serial port, system service, etc)");
+					//_logger.info("Automation is starting...waiting one minute so Raspberry can initialized itselft smoothly (serial port, system service, etc)");
 					
 					//Wait one minute
-					Thread.sleep(60000);
+					//Thread.sleep(60000);
 					//while (!_isStopped) {						
 
 						/*Date currentDate = new Date();
@@ -91,8 +95,11 @@ public class AutomationServer implements Daemon {
 							break;
 						}*/
 					//}
-
+												
 					_logger.info("Starting automation server...");
+					
+					//Starts system sanity checks
+					DoSystemSanityChecks();					
 					
 					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
@@ -164,6 +171,116 @@ public class AutomationServer implements Daemon {
 				}
 			}
 		};
+	}
+	
+	private void DoSystemSanityChecks() {
+		
+		DbManager dbManager = new DbManager();
+		MqttClientMgt mqttClient = new MqttClientMgt("SanityCheck");
+		
+		_logger.info("Starting system sanity check...");
+		
+		/*
+		 * PostgreSQL
+		 */
+		_logger.info("Check for PostgreSQL Server availability...");
+		
+		int checkCounter = 0;
+		while(!dbManager.IsPostgreSQLAvailable()) {
+			checkCounter++;
+			_logger.info("Attempt : "+checkCounter+" - PostgreSQL not available...will check again in 10s...");
+			
+			try {
+				Thread.sleep(10000); //Wait for 10s
+			}
+			catch(Exception e) {
+				
+			}
+		}
+		
+		_logger.info("PostgreSQL instance : OK");
+		
+		/*
+		 * InfluxDB
+		 */
+		_logger.info("Check for InfluxDB Server availability...");
+		
+		checkCounter = 0;
+		while(!dbManager.IsInfluxDbAvailable()) {
+			checkCounter++;
+			_logger.info("Attempt : "+checkCounter+" - InfluxDB not available...will check again in 10s...");
+			
+			try {
+				Thread.sleep(10000); //Wait for 10s
+			}
+			catch(Exception e) {
+				
+			}
+		}
+		
+		_logger.info("InfluxDB instance : OK");
+		
+		/*
+		 * Mosquitto
+		 */
+		_logger.info("Check for Mosquitto instance availability...");
+				
+		checkCounter = 0;
+		while(!mqttClient.IsMqttServerAvailable()) {
+			checkCounter++;
+			_logger.info("Attempt : "+checkCounter+" - Mqtt instance not available...will check again in 10s...");
+			
+			try {
+				Thread.sleep(10000); //Wait for 10s
+			}
+			catch(Exception e) {
+				
+			}
+		}
+		
+		_logger.info("Mosquitto instance : OK");
+		
+		/*
+		 * Tomcat
+		 */
+		_logger.info("Check for Tomcat instance availability...");
+		
+		checkCounter = 0;
+		while(IsTomcatAvailable()) {
+			checkCounter++;
+			_logger.info("Attempt : "+checkCounter+" - Tomcat instance not available...will check again in 10s...");
+			
+			try {
+				Thread.sleep(10000); //Wait for 10s
+			}
+			catch(Exception e) {
+				
+			}
+		}
+		_logger.info("Tomcat instance : OK");
+		
+		
+		dbManager = null;		
+		mqttClient = null;
+		
+		_logger.info("System sanity check done...let's roll!");
+	}
+	
+	private boolean IsTomcatAvailable() {
+		
+		try {
+			//TODO : change hard coded url
+			URL obj = new URL("http://192.168.1.25:8510/automation-webapp/api/firmware/getversion/1");
+			HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setConnectTimeout(5000);
+			
+			return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
+		}		
+		catch(Exception e) {
+			_logger.error("Tomcat instance not ready...", e);
+			return false;
+		}
 	}
 	
 	private void CheckMessagesReception() {
@@ -245,6 +362,7 @@ public class AutomationServer implements Daemon {
 		try {
 			_logger.info("Stopping automation server...");
 			
+			GpioHelper.shutdown();
 			// Stopping all services
 			_rainGaugeService.StopService();
 			_alarmService.StopService();
@@ -253,7 +371,7 @@ public class AutomationServer implements Daemon {
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
-			_mqttHelper.disconnect();
+			_mqttHelper.disconnect();			
 			
 			SMSDto sms = new SMSDto();
 			sms.setMessage("Automation server has stopped...");

@@ -188,7 +188,7 @@ public class WaterHeater implements Runnable {
 
 		String logMessage = "Turning ON water heater";
 		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.HIGH,
-				PIN_WATER_HEATER_NAME, logMessage);
+				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);
 
 		// TODO : réecriture les méthodes java sans majuscule au debut
 
@@ -217,7 +217,7 @@ public class WaterHeater implements Runnable {
 
 		String logMessage = "Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes";
 		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.LOW,
-				PIN_WATER_HEATER_NAME, logMessage);
+				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);
 		
 		_isOn = false;
 	}

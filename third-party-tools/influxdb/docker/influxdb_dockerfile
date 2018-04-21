@@ -2,13 +2,13 @@ FROM resin/rpi-raspbian:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
-ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/influxdb/conf
+#ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/influxdb/conf
 
 #update stretch and install wget
 RUN apt-get update
 
 RUN groupadd --gid 9003 influxdb
-RUN adduser --system --disabled-password --disabled-login --uid 9003 influxdb --gid 9003
+RUN useradd  --uid 9003 --gid 9003 influxdb
 
 #add influxdb stretch repository
 RUN curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
@@ -17,24 +17,26 @@ RUN echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /et
 RUN apt-get install -y apt-transport-https
 RUN apt-get update && apt-get install -y influxdb
 
+#Folder that can contain backup to restore
+RUN mkdir -p /influxdb/restore
 RUN mkdir -p /influxdb/conf 
 RUN mkdir -p /influxdb/wal
 RUN mkdir -p /influxdb/logs
 RUN mkdir -p /influxdb/meta
 RUN mkdir -p /influxdb/data
 
-#COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
-#donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
-#COPY conf /influxdb/config
-
 RUN chown -R influxdb:influxdb /influxdb
 
-VOLUME ["/influxdb/conf", "/influxdb/logs"]
+VOLUME ["/influxdb"]
 
 EXPOSE 8086
 
-#user used in RUN, CMD, ENTRYPOINT
+COPY docker-entry-point.sh /usr/local/bin/
+RUN chmod 555 /usr/local/bin/docker-entry-point.sh
+ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
+#User used in RUN, CMD, ENTRYPOINT
 USER influxdb
 
-#launch influxdb
-CMD ["/usr/bin/influxd", "-config", "/influxdb/conf/influxdb.conf", "2>/influxdb/logs/influxdb.log"]
+#Launch influxdb daemon
+CMD [""]

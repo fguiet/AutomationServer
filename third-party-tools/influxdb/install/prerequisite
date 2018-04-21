@@ -6,8 +6,13 @@ sudo groupadd influxdb --gid 9003
 sudo useradd -r -s /sbin/nologin influxdb --uid 9003 -g influxdb
 
 #create volume bind with docker container
-sudo mkdir -p /home/fred/applications/influxdb/logs
+sudo mkdir -p /home/fred/applications/influxdb
 sudo mkdir -p /home/fred/applications/influxdb/conf
+sudo mkdir -p  /home/fred/applications/influxdb/restore
+sudo mkdir -p  /home/fred/applications/influxdb/wal
+sudo mkdir -p  /home/fred/applications/influxdb/logs
+sudo mkdir -p  /home/fred/applications/influxdb/meta
+sudo mkdir -p  /home/fred/applications/influxdb/data
 
 #add conf file
 sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/influxdb/conf /home/fred/applications/influxdb 

@@ -1,9 +1,12 @@
 docker run \
+        -v /etc/localtime:/etc/localtime:ro \
+        -v /etc/timezone:/etc/timezone:ro \
         --name influxdb \
-        -v /home/fred/applications/influxdb/logs:/influxdb/logs \
-        -v /home/fred/applications/influxdb/conf:/influxdb/conf \
+        --network automationserver-network \
+        -h docker-influxdb \
+        -v /home/fred/applications/influxdb:/influxdb \
         -d \
         --restart=always \
-        -p 3000:8086 \
+        -p 8086:8086 \
         guiet/influxdb:1.5.1
 

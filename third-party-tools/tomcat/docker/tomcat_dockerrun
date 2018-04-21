@@ -1,0 +1,13 @@
+docker run \
+        -v /etc/localtime:/etc/localtime:ro \
+        -v /etc/timezone:/etc/timezone:ro \
+        --name tomcat \
+        --network automationserver-network \
+        -h docker-tomcat \
+        -v /home/fred/applications/tomcat:/tomcat \
+        -v /home/fred/applications/automationserver/config:/applications/automationserver/config \
+        -d \
+        --restart=always \
+        -p 8510:8510 \
+        guiet/tomcat:9.0.7
+              

@@ -10,29 +10,33 @@ const int REED_SWITCH_PIN = 2; //pin 32 at arduino nano pin D2
 const int LED_PIN = 13;            // external LED or relay connected to pin 13
 const int SENSOR_PIN = A0;
 
-//volatile int bucketFlipFlopCounter = 0;  // Bucket flip flop counter
 volatile bool wakeUpByFliFlop = false;
-
-const unsigned long debouncingTime = 200; //200ms
+long debouncing_time = 150; //Debouncing Time in Milliseconds
+volatile unsigned long last_micros;
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);    // initialize pin 13 as an output pin for LED or relay etc.
+  digitalWrite(LED_PIN, LOW); //necessary ? maybe not but just in case
+  
   pinMode(M0_PIN, OUTPUT);    
   pinMode(M1_PIN, OUTPUT);    
 
-  digitalWrite(M0_PIN, LOW); //
-  digitalWrite(M1_PIN, LOW); //low, low = normal mode
+  digitalWrite(M0_PIN, HIGH); //
+  digitalWrite(M1_PIN, HIGH); //High = Sleep mode
   
   pinMode(REED_SWITCH_PIN, INPUT_PULLUP);        // define interrupt pin D2 as input to read interrupt received by Reed Switch
   digitalWrite(REED_SWITCH_PIN, HIGH); //necessary ? maybe not but just in case
-
+  
+  //Serial.println("Attaching interrupt...");
   attachInterrupt(REED_SWITCH_INTERRUPT,wakeUpNow, FALLING);   // Attach interrupt at pin D2  (int 0 is at pin D2  for nano, UNO)
 
   Serial.begin(9600);     // initialize serial communication only for debugging purpose   
+
+  blinkLedStartup();  
 }
 
-void loop() {
-  Hibernate();   // go to sleep - calling sleeping function
+void loop() {  
+  Hibernate();   // go to sleep - calling sleeping function  
 }
 
 void sendMessage(bool bWakeUpByFlipFlop) {
@@ -63,6 +67,19 @@ void sendMessage(bool bWakeUpByFlipFlop) {
   delay(30);
   Serial.begin(9600);
   delay(70); //The rest of requested delay. So 100 - 30 = 70
+
+  //LoRa in Sleep mode
+  digitalWrite(M0_PIN, HIGH); //
+  digitalWrite(M1_PIN, HIGH); //high, high sleep mode
+}
+
+void blinkLedStartup(){
+  for (int i=1; i <= 5;i++) {
+    digitalWrite(LED_PIN, HIGH); 
+    delay(500);         
+    digitalWrite(LED_PIN, LOW); 
+    delay(500); 
+  }
 }
 
 void blinkLed(){
@@ -76,54 +93,59 @@ void blinkLed(){
 
 void wakeUpNow(){                  // Interrupt service routine or ISR  
 
-  static unsigned long lastFlipFlop= 0;
-  
-  unsigned long date = millis();
-  if ((date - lastFlipFlop) > debouncingTime) {    
+  if((long)(micros() - last_micros) >= debouncing_time * 1000) {
     wakeUpByFliFlop = true;
-    lastFlipFlop = date;
+    last_micros = micros();
   }  
 }
 
 float ReadVoltage() {
 
   float sensorValue = 0.0f;
-  float R1 = 32450.0;
-  float R2 = 7560.0;
+  //float R1 = 32450.0;
+  //float R2 = 7560.0;
   float vin = 0.0;
-  float vout = 0.0;
- 
-  sensorValue = analogRead(SENSOR_PIN);
-  vout = (sensorValue * 3.3) / 1024.0;
-  vin = vout / (R2 / (R1 + R2));
+  //float vout = 0.0;
 
+  //Calcul empirique...
+  //3.6v = 247
+  //4.1v = 237
+  //4.5v = 234     
+  sensorValue = analogRead(SENSOR_PIN);
+  vin = (((247 - sensorValue) / 2) * 0.1) + 3.6;
+  
+  return vin;
+  //Serial.println("sensorValue : " +String(sensorValue,2)); 
+  
+  //vout = (sensorValue * 4.2) / 1024.0;
+  //vin = vout / (R2 / (R1 + R2));
+
+  //vin = sensorValue;
   return vin;
 }
 
 void Hibernate()         // here arduino is put to sleep/hibernation
 {
 
- //LoRa in Sleep mode
- digitalWrite(M0_PIN, HIGH); //
- digitalWrite(M1_PIN, HIGH); //high, high sleep mode
-
  //60*60 / 8 = 450 = publication toutes les heures!
  for (int i=1; i<=450;i++) {
   
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     
-    if (wakeUpByFliFlop) {
-       wakeUpByFliFlop = false;
+    if (wakeUpByFliFlop) {       
        sendMessage(true);
+       wakeUpByFliFlop = false;
     }
  }
 
+ //detachInterrupt(REED_SWITCH_INTERRUPT);   // we detach interrupt from pin D2, to avoid further interrupts until our ISR is finished
+ 
  //One hour has passed send only Voltage info
  sendMessage(false);
  
  //LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 
- //detachInterrupt(REED_SWITCH_INTERRUPT);   // we detach interrupt from pin D2, to avoid further interrupts until our ISR is finished
+ 
 
  //delay(50);
  
