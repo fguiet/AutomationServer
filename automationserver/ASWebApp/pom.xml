@@ -43,33 +43,34 @@
 			<artifactId>automationserver-dataaccess</artifactId>
 			<version>${automationserver-dataaccess.version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/asm/asm -->
+		<!-- https://mvnrepository.com/artifact/org.ow2.asm/asm -->
 		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-			<version>3.3.1</version>
+    		<groupId>org.ow2.asm</groupId>
+    		<artifactId>asm</artifactId>
+    		<version>6.1.1</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.sun.jersey/jersey-bundle -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-bundle</artifactId>
-			<version>1.19.2</version>
+			<version>1.19.4</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20160810</version>
+			<version>20180130</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.sun.jersey/jersey-server -->
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-server -->
 		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>1.19.2</version>
+    		<groupId>org.glassfish.jersey.core</groupId>
+    		<artifactId>jersey-server</artifactId>
+    		<version>2.27</version>
 		</dependency>
+
 
 		<!-- https://mvnrepository.com/artifact/com.sun.jersey/jersey-core -->
 		<dependency>
