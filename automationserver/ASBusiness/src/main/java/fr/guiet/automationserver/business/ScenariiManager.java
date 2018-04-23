@@ -968,7 +968,7 @@ public class ScenariiManager {
 		//sun already rose up
 		if (sunrise.before(opendate)) {
 			_logger.info("Sunrise : "+sunrise.getTime()+" is before : "+opendate.getTime()+ ". Gonna open rollershutters at :"+opendate.getTime());			
-			newCron = openHour + " " + openMinute + " * * "+dayOfWeek;		
+			newCron = openMinute + " " + openHour + " * * "+dayOfWeek;		
 		}		
 		else {
 			
