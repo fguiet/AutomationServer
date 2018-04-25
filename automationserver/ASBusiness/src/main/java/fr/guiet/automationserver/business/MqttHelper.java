@@ -323,6 +323,8 @@ public class MqttHelper implements MqttCallback {
 					break;
 				case "CLOSED":
 					_rollerShutterService.setState(rsId, RollerShutterState.CLOSED);
+				case "ERROR":
+					_rollerShutterService.setState(rsId, RollerShutterState.ERROR);
 					break;	
 				}
 				

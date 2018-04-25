@@ -148,7 +148,8 @@ public class RollerShutter {
 			if (_previousState == RollerShutterState.CLOSED && (_state == RollerShutterState.UNREACHABLE ||
 																_state == RollerShutterState.OPENED ||
 															   _state == RollerShutterState.VOID ||
-																	   _state == RollerShutterState.UNDETERMINED)) {
+																	   _state == RollerShutterState.UNDETERMINED ||
+																	   _state == RollerShutterState.ERROR)) {
 				SMSDto sms = new SMSDto();
 				sms.setMessage("Le volet roulant "+_name+" est passé de l'état : "+_previousState.name()+ " à l'état : "+_state.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
 				_smsGammuService.sendMessage(sms, true);
