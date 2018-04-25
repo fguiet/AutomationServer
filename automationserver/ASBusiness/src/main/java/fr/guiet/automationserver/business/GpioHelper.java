@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPin;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.Pin;
 
@@ -17,7 +16,7 @@ public class GpioHelper {
 	/*
 	 * Try to set pin state on shutdown
 	 */
-	public static void shutdown() {
+	public static synchronized void shutdown() {
 		
 		try {
 			_logger.info("Setting down Gpio controller...");
@@ -30,7 +29,7 @@ public class GpioHelper {
 		}
 	}
 	
-	public static void changeGpioPinState(Pin gpioPinNumber, PinState state, String logMessage, SMSGammuService smsService) {
+	public static synchronized void changeGpioPinState(Pin gpioPinNumber, PinState state, String logMessage, SMSGammuService smsService) {
 		
 		try {
 			final GpioController gpio = GpioFactory.getInstance();
@@ -57,7 +56,7 @@ public class GpioHelper {
 		}
 	}
 
-	public static void provisionGpioPin(Pin gpioPinNumber, String logMessage,
+	public static synchronized void provisionGpioPin(Pin gpioPinNumber, String logMessage,
 			com.pi4j.io.gpio.PinState pinStateOnShutdown, SMSGammuService smsService) {
 
 		try {
