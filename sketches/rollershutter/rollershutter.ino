@@ -3,9 +3,9 @@
  * 
  * F. Guiet 
  * Creation           : 20170910
- * Last modification  : 20171001
+ * Last modification  : 20180425
  * 
- * Version            : 17
+ * Version            : 18
  * 
  * History            : 1.0 - Initial version
  *                      1.1 - Set Wifi to STA mode only (no AP)
@@ -14,7 +14,9 @@
  *                      1.4 - Correct bug in getValue function and sendState function
  *                      1.5 - Correct bugs
  *                      1.6 - Change static json buffer to dynamic json buffer, handle false up reedswitch detection
- *                      1.7 -  handle better up reedswitch detection
+ *                      1.7 - Handle better up reedswitch detection
+ *                      1.8 - 20180425 - Add error state, when reedswitch state is bad and isClosed ans isOpened are both true
+ *                             which is impossible !                     
  * 
  * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
  *                      https://github.com/esp8266/Arduino/issues/1782                     
@@ -42,10 +44,10 @@ Bounce debouncer = Bounce();
 #define DOWN_LED D0
 #define MAX_RETRY 50
 
-//String SENSORID= "7";   //west
-String SENSORID= "8";   //north
-//IPAddress ip_wemos(192, 168, 1, 40); //west
-IPAddress ip_wemos(192, 168, 1, 41); //north
+String SENSORID= "7";   //west
+//String SENSORID= "8";   //north
+IPAddress ip_wemos(192, 168, 1, 40); //west
+//IPAddress ip_wemos(192, 168, 1, 41); //north
 IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
 IPAddress subnet_mask(255, 255, 255,   0);
 const char* ssid = "DUMBLEDORE";
@@ -56,7 +58,7 @@ const char* password = "frederic";
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-const int CURRENT_FIRMWARE_VERSION = 17;
+const int CURRENT_FIRMWARE_VERSION = 18;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 String MQTT_CLIENT_ID = "RollerShutterSensor" + SENSORID;
@@ -176,6 +178,14 @@ void sendState() {
 
   if (isClosed) {
     mess = "SETRSSTATE;"+String(SENSORID)+";CLOSED" + ";" + String(CURRENT_FIRMWARE_VERSION);
+  }
+ 
+  //v18 - Something reedswith say rollershutter is closed but it is not the case...
+  if (isOpened && isClosed) {
+     //Reset state so user can close or open rollershutter
+     isClosed=false;
+     isOpened=false;
+     mess = "SETRSSTATE;"+String(SENSORID)+";ERROR" + ";" + String(CURRENT_FIRMWARE_VERSION);
   }
 
   client.publish(pub_topic,mess.c_str()); 
