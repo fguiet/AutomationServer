@@ -1,5 +1,6 @@
 package fr.guiet.automationserver.business;
 
+import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.RaspiPin;
 
 import fr.guiet.automationserver.dto.SMSDto;
@@ -18,22 +19,10 @@ public class WaterHeater implements Runnable {
 	private int _retryStart = 0;
 	private TeleInfoService _teleInfoService = null;
 	private boolean _isStopped = false; // Service arrete?
-	private SMSGammuService _smsGammuService = null;
-	// private boolean _waitForOn = false;
-	// private boolean _waitForOff = false;
-	private final String PIN_WATER_HEATER_NAME = "PIN_CHAUFFE_EAU";
+	private SMSGammuService _smsGammuService = null;	
+	private final Pin _pinWaterHeater = RaspiPin.GPIO_00;
 	private boolean _awayModeStatus = false;
-
-	/*
-	 * @Override public void OnCollectInfoStopped() {
-	 * 
-	 * //_logger.info("Hello from water heater");
-	 * 
-	 * if (_waitForOn) { _waitForOn = false; TurnOn(); StartTeleInfoService(); }
-	 * 
-	 * if (_waitForOff) { //_logger.info("Extinction water heater"); _waitForOff
-	 * = false; TurnOff(); StartTeleInfoService(); } }
-	 */
+	
 
 	/**
 	 * @return Returns whether heater is on or off
@@ -73,6 +62,9 @@ public class WaterHeater implements Runnable {
 
 		_logger.info("Starting water heater management...");
 
+		GpioHelper.provisionGpioPin(_pinWaterHeater,
+				 "Provisioning Pin address : "+_pinWaterHeater.getAddress()+" for water heater", com.pi4j.io.gpio.PinState.LOW, _smsGammuService);
+		
 		// By Default set off
 		SetOff();
 
@@ -187,8 +179,11 @@ public class WaterHeater implements Runnable {
 		_isCheckedOk = false;
 
 		String logMessage = "Turning ON water heater";
-		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.HIGH,
-				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);
+		
+		GpioHelper.changeGpioPinState(_pinWaterHeater,fr.guiet.automationserver.business.PinState.HIGH, logMessage, _smsGammuService);
+		
+		/*GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.HIGH,
+				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);*/
 
 		// TODO : réecriture les méthodes java sans majuscule au debut
 
@@ -216,8 +211,11 @@ public class WaterHeater implements Runnable {
 		}
 
 		String logMessage = "Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes";
-		GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.LOW,
-				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);
+		
+		GpioHelper.changeGpioPinState(_pinWaterHeater,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);
+		
+		/*GpioHelper.provisionGpioPin(RaspiPin.GPIO_00, fr.guiet.automationserver.business.PinState.LOW,
+				PIN_WATER_HEATER_NAME, logMessage, com.pi4j.io.gpio.PinState.LOW);*/
 		
 		_isOn = false;
 	}

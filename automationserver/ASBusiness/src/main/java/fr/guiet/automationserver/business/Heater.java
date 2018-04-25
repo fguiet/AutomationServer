@@ -197,6 +197,9 @@ public class Heater implements Comparable<Heater> {
 			_logger.error(String.format("Pin %d not managed !", _raspberryPin));
 			break;
 		}
+		
+		GpioHelper.provisionGpioPin(_pin,
+				 "Provisioning Pin address : "+_pin.getAddress()+" for heater : " + _name, com.pi4j.io.gpio.PinState.HIGH, _smsGammuService);
 
 		// Set Heater off by default
 		SetOff();
@@ -304,32 +307,10 @@ public class Heater implements Comparable<Heater> {
 		if (_room != null)
 			logMessage = String.format("Turning ON heater %s from room %s", _name, _room.getName());
 
-		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW,
-				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);
+		/*GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW,
+				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);*/
 
-		// create gpio controller
-		/*
-		 * final GpioController gpio = GpioFactory.getInstance();
-		 * 
-		 * // provision gpio pin #01 as an output pin and turn on final
-		 * GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin,
-		 * "PIN_CHAUFFAGE_ID" + _heaterId);
-		 * 
-		 * // set shutdown state for this pin pin.setShutdownOptions(true,
-		 * PinState.LOW);
-		 * 
-		 * // turn on gpio pin #01 pin.low();
-		 * 
-		 * gpio.unprovisionPin(pin);
-		 * 
-		 * gpio.shutdown();
-		 */
-
-		/*
-		 * if (_room != null)
-		 * _logger.info(String.format("Turning ON heater %s from room %s",
-		 * _name, _room.getName()));
-		 */
+		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);
 	}
 
 	/*
@@ -359,31 +340,10 @@ public class Heater implements Comparable<Heater> {
 		if (_room != null)
 			logMessage = String.format("Turning OFF heater %s from room %s", _name, _room.getName());
 
-		GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH,
-				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);
-		// TODO : Faire une classe pour ,le gpio control!!!!
-
-		// create gpio controller
-		/*
-		 * final GpioController gpio = GpioFactory.getInstance();
-		 * 
-		 * // provision gpio pin #01 as an output pin and turn on final
-		 * GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(_pin,
-		 * "PIN_CHAUFFAGE_ID" + _heaterId);
-		 * 
-		 * // set shutdown state for this pin pin.setShutdownOptions(true,
-		 * PinState.LOW);
-		 * 
-		 * // turn on gpio pin #01 pin.high();
-		 * 
-		 * gpio.unprovisionPin(pin);
-		 * 
-		 * gpio.shutdown();
-		 * 
-		 * if (_room != null)
-		 * _logger.info(String.format("Turning OFF heater %s from room %s",
-		 * _name, _room.getName()));
-		 */
+		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.PinState.HIGH, logMessage, _smsGammuService);
+		
+		//GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH,
+		//		PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);		
 	}
 
 	/**
