@@ -181,54 +181,5 @@ public class RollerShutter {
 	
 	public RollerShutterState getState() {
 		return _state;
-	}
-	
-	
-	/*private JSONObject sendGetRequest(String url) {
-		
-		try {	
-			URL obj = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-			con.setConnectTimeout(3000);
-			
-			// optional default is GET
-			con.setRequestMethod("GET");
-	
-			//add request header
-			//con.setRequestProperty("User-Agent", USER_AGENT);
-	
-			int responseCode = con.getResponseCode();
-			//System.out.println("\nSending 'GET' request to URL : " + url);
-			//System.out.println("Response Code : " + responseCode);
-			
-			if (responseCode == 200) {
-			
-			BufferedReader in = new BufferedReader(
-			        new InputStreamReader(con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-	
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-						
-			JSONObject json = new JSONObject(response.toString());
-			
-		    return json;
-			}
-			else {
-				_logger.info("Le capteur du volet roulant avec l'id : "+_id+" a répondu mais avec un code retour : "+responseCode);   
-				return null;
-			}
-						
-		}
-		catch (java.net.SocketTimeoutException ste) {
-			_logger.info("Timeout! - Impossible de contacter le capteur du volet roulant avec l'id : "+_id);   
-			return null;
-		} catch (java.io.IOException e) {
-			_logger.info("Erreur lors de la tentative de contact avec le capteur du volet roulant avec l'id : "+_id,e);
-			return null;
-		}
-		 
-	}*/
+	}	
 }

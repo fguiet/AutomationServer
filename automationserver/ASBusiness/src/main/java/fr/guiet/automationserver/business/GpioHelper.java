@@ -66,15 +66,7 @@ public class GpioHelper {
 			final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(gpioPinNumber);
 
 			// set shutdown state for this pin
-			pin.setShutdownOptions(true, pinStateOnShutdown);
-
-			/*if (state == PinState.HIGH) {
-				pin.high();
-			} else {
-				pin.low();
-			}
-
-			gpio.unprovisionPin(pin);*/			
+			pin.setShutdownOptions(true, pinStateOnShutdown);		
 
 			if (logMessage != null) {
 				_logger.info(logMessage);
