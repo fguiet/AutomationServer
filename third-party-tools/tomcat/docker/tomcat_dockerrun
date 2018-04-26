@@ -6,6 +6,7 @@ docker run \
         -h docker-tomcat \
         -v /home/fred/applications/tomcat:/tomcat \
         -v /home/fred/applications/automationserver/config:/applications/automationserver/config \
+        -v /home/fred/applications/automationserver/logs:/applications/automationserver/logs \
         -d \
         --restart=always \
         -p 8510:8510 \

@@ -19,6 +19,7 @@ RUN mkdir -p /tomcat
 
 #Create application folder
 RUN mkdir -p /applications/automationserver/config 
+RUN mkdir -p /applications/automationserver/logs
 RUN mkdir -p /tomcat 
 RUN mkdir -p /tomcat/logs 
 RUN mkdir -p /tomcat/firmwares 
@@ -44,6 +45,7 @@ RUN chown -R fred:fred /tomcat
 RUN echo "fred ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
 VOLUME ["/applications/automationserver/config"]
+VOLUME ["/applications/automationserver/logs"]
 VOLUME ["/tomcat"]
 
 EXPOSE 8510
