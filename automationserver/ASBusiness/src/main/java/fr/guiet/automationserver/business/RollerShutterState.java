@@ -5,5 +5,6 @@ public enum RollerShutterState {
     OPENED,
     CLOSED,
     UNDETERMINED,
-    UNREACHABLE
+    UNREACHABLE,
+    ERROR
 }

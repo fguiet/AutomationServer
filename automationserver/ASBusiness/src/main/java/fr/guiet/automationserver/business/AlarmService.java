@@ -30,7 +30,7 @@ public class AlarmService {
 				 "Provisioning Pin for AlarmService, Pin address : "+RaspiPin.GPIO_06.getAddress(), com.pi4j.io.gpio.PinState.LOW, _smsGammuService);
 		
 		GpioHelper.provisionGpioPin(RaspiPin.GPIO_25,
-				 "Provisioning Pin for AlarmService, Pin address : "+RaspiPin.GPIO_06.getAddress(), com.pi4j.io.gpio.PinState.LOW, _smsGammuService);
+				 "Provisioning Pin for AlarmService, Pin address : "+RaspiPin.GPIO_25.getAddress(), com.pi4j.io.gpio.PinState.LOW, _smsGammuService);
 		
 	}
 	
