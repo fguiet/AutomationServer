@@ -58,22 +58,6 @@ public class DbManager {
 	private static Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
 	private static Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
 	private static List<RoomDto> _roomDtoList = new ArrayList<RoomDto>();
-		
-	private InfluxDB _influxDB = null;
-	
-	/*private Connection getPGConnection() throws SQLException {
-		PGPoolingDataSource connectionPool = new PGPoolingDataSource();
-
-	    //connectionPool.setApplicationName(CONFIG.DB_SERVER_NAME);
-	    connectionPool.setServerName(_hostPG);
-	    connectionPool.setPortNumber(Integer.parseInt(_portPG));
-	    connectionPool.setDatabaseName(_databasePG);
-	    connectionPool.setUser(_userName);
-	    connectionPool.setPassword(_password);
-	    connectionPool.setMaxConnections(10);
-	    
-		return connectionPool.getConnection();		
-	}*/
 
 	/**
 	 * Constructor
@@ -137,29 +121,29 @@ public class DbManager {
 		}
 		else {
 			try {
-			 con.close();
+				//Connection is not actually closed, just returned to the pool
+				con.close();
 			}
 			catch(Exception e) {
 				_logger.error("Error while closing PG connection",e);
 			}
 			return true;
-		}
-		
+		}		
 	}
 	
 	public boolean IsInfluxDbAvailable() {
 				
 		boolean isInfluxDbStarted = false;
 		
-		try {
-			InfluxDB influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+		try {			
+			InfluxDB influxDb = GetInfluxDbConnection();
 			
 			Pong response;
 			
-			response = influxDB.ping();
+			response = influxDb.ping();
 			
 			if (response.isGood()) {
-				influxDB.close();
+				influxDb.close();
 				isInfluxDbStarted = true;
 			}
 		}
@@ -172,6 +156,8 @@ public class DbManager {
 
 	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
 
+		InfluxDB influxDb = null;
+		
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
@@ -182,11 +168,9 @@ public class DbManager {
 			String ds = df.format(date);
 
 			_logger.info("Saving electricity cost for day : " + ds);
-
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
-
+		
+			influxDb = GetInfluxDbConnection();
+				
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
@@ -198,26 +182,50 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
 	}
 
+	private synchronized InfluxDB GetInfluxDbConnection() {
+		InfluxDB influxDb = null;
+		
+		 _logger.info("InfluxDB connecting..");
+		 
+		 influxDb = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+		
+		_logger.info("InfluxDB Connected");
+		
+		return influxDb;
+	}
+	
 	public void SaveRainGaugeInfo(float vcc, String flipflop) {
+		
+		InfluxDB influxDb = null;
+		
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
 			_logger.info("Saving RainGauge info to InfluxDB");
-
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			
+			influxDb = GetInfluxDbConnection(); 			
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -229,26 +237,38 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
 	}
 	
 	public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
+		
+		InfluxDB influxDb = null;
+				
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
 			_logger.info("Saving outside info to InfluxDB");
 
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			influxDb = GetInfluxDbConnection(); 
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -261,27 +281,39 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
 		}
 
 	}
 
 	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
+		
+		InfluxDB influxDb = null;
+		
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
 			_logger.info("Saving mailbox info to InfluxDB");
 
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			influxDb = GetInfluxDbConnection();
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -293,13 +325,24 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
 		}
 	}
 
@@ -313,15 +356,15 @@ public class DbManager {
 	 */
 	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity) {
 
+		InfluxDB influxDb = null;
+		
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
-			//_logger.info("Saving sensor info to InfluxDB");
-
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			//_logger.info("Saving sensor info from room " + roomName + " to InfluxDB");
+			
+			influxDb = GetInfluxDbConnection();
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -334,27 +377,38 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
 		}
 	}
 
 	public void SaveCaveInfoToInfluxDb(Float temp, Float humidity, String extractorState) {
 
+		InfluxDB influxDb = null;
+		
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
 
 			//_logger.info("Saving cave info to InfluxDB");
 
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			influxDb = GetInfluxDbConnection();
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -367,13 +421,24 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
 		}
 	}
 
@@ -384,14 +449,14 @@ public class DbManager {
 	 */	
 	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
 
+		InfluxDB influxDb = null;
+		
 		try {
 
 			if (!_influxdbEnable.equals("true"))
 				return;
 
-			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-			// _logger.info("InfluxDB Connected");
+			influxDb = GetInfluxDbConnection();
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -410,15 +475,25 @@ public class DbManager {
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
-			_influxDB.write(batchPoints);
+			influxDb.write(batchPoints);
 
-			_influxDB.close();
+			influxDb.close();
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
 		}
+		finally {
 
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
 	}
 
 	/**
@@ -873,14 +948,17 @@ public class DbManager {
 	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) throws Exception {
 
 		HashMap<String, Integer> results = null;
+		InfluxDB influxDb = null;
 
 		try {
 			results = new HashMap<>();
 
 			// _logger.info("InfluxDB connecting..");
-			_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			//_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
+			influxDb = GetInfluxDbConnection();
+			
 			// Convert Date in UTC
 			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");
 			Date toDate1 = convertDate(toDate, "Europe/Paris", "UTC");
@@ -892,7 +970,7 @@ public class DbManager {
 			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '" + dfd
 					+ "' and time < '" + td + "'";
 			Query query = new Query(sql, "automation");
-			QueryResult queryResult = _influxDB.query(query);
+			QueryResult queryResult = influxDb.query(query);
 
 			List<QueryResult.Result> result = queryResult.getResults();
 
@@ -916,12 +994,23 @@ public class DbManager {
 			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
 			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
 
-			_influxDB.close();
+			influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
 
 			throw e;
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
 		}
 
 		return results;

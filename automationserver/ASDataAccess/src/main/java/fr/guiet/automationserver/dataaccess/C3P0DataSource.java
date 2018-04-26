@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+//TODO : To replace by DBCP Component
 public class C3P0DataSource {
 	
    private static C3P0DataSource _dataSource;
@@ -30,7 +31,7 @@ public class C3P0DataSource {
       	}      
    }
 
-   public static C3P0DataSource getInstance(String jdbcUrl, String user, String password) {
+   public static synchronized C3P0DataSource getInstance(String jdbcUrl, String user, String password) {
       if (_dataSource == null)
          _dataSource = new C3P0DataSource(jdbcUrl, user, password);
       return _dataSource;
