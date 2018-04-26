@@ -165,11 +165,11 @@ public class DbManager {
 			long ms = date.getTime();
 
 			DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-			String ds = df.format(date);
-
-			_logger.info("Saving electricity cost for day : " + ds);
+			String ds = df.format(date);			
 		
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving electricity cost for day : " + ds);
 				
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -206,11 +206,11 @@ public class DbManager {
 	private synchronized InfluxDB GetInfluxDbConnection() {
 		InfluxDB influxDb = null;
 		
-		 _logger.info("InfluxDB connecting..");
+		 _logger.info("InfluxDB connecting...");
 		 
 		 influxDb = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 		
-		_logger.info("InfluxDB Connected");
+		_logger.info("InfluxDB connected...");
 		
 		return influxDb;
 	}
@@ -221,11 +221,11 @@ public class DbManager {
 		
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;
-
-			_logger.info("Saving RainGauge info to InfluxDB");
+				return;			
 			
-			influxDb = GetInfluxDbConnection(); 			
+			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving RainGauge info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -264,11 +264,11 @@ public class DbManager {
 				
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;
+				return;			
 
+			influxDb = GetInfluxDbConnection();
+			
 			_logger.info("Saving outside info to InfluxDB");
-
-			influxDb = GetInfluxDbConnection(); 
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -309,11 +309,11 @@ public class DbManager {
 		
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;
-
-			_logger.info("Saving mailbox info to InfluxDB");
+				return;			
 
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving mailbox info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -361,10 +361,10 @@ public class DbManager {
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-
-			//_logger.info("Saving sensor info from room " + roomName + " to InfluxDB");
-			
+						
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving sensor info from room " + roomName + " to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -404,11 +404,11 @@ public class DbManager {
 		
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;
-
-			//_logger.info("Saving cave info to InfluxDB");
+				return;			
 
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving cave info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -457,6 +457,8 @@ public class DbManager {
 				return;
 
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving TeleInfo info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -958,6 +960,8 @@ public class DbManager {
 			// _logger.info("InfluxDB Connected");
 
 			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Getting Electricity consumption info from InfluxDB");
 			
 			// Convert Date in UTC
 			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");

@@ -44,10 +44,12 @@ Bounce debouncer = Bounce();
 #define DOWN_LED D0
 #define MAX_RETRY 50
 
-String SENSORID= "7";   //west
-//String SENSORID= "8";   //north
-IPAddress ip_wemos(192, 168, 1, 40); //west
-//IPAddress ip_wemos(192, 168, 1, 41); //north
+//String SENSORID= "7";   //west
+String SENSORID= "8";   //north
+//IPAddress ip_wemos(192, 168, 1, 40); //west
+IPAddress ip_wemos(192, 168, 1, 41); //north
+const int CURRENT_FIRMWARE_VERSION = 18;
+
 IPAddress gateway_ip(192, 168, 1, 1); // set gateway to match your network
 IPAddress subnet_mask(255, 255, 255,   0);
 const char* ssid = "DUMBLEDORE";
@@ -58,7 +60,6 @@ const char* password = "frederic";
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-const int CURRENT_FIRMWARE_VERSION = 18;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 String MQTT_CLIENT_ID = "RollerShutterSensor" + SENSORID;

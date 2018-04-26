@@ -87,7 +87,9 @@ public class FirmwareAPI {
 			Properties prop = new Properties();
 			prop.load(is);
 
-			firmwareFolder = prop.getProperty("firmwares.folder");			
+			firmwareFolder = prop.getProperty("firmwares.folder");	
+			
+			_logger.info("Using folder : "+firmwareFolder+" to download sensor firmware");
 
 		} catch (FileNotFoundException e) {
 			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
