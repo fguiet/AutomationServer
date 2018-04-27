@@ -12,4 +12,4 @@ docker run --device=/dev/ttyUSB2 \
            -v /home/fred/applications/automationserver/bin:/applications/automationserver/bin \
            --restart=always \
            -d \
-           guiet/automationserver:1.1
+           guiet/automationserver:1.0

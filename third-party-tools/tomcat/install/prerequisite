@@ -10,6 +10,9 @@ sudo mkdir -p /home/fred/applications/tomcat
 sudo mkdir -p /home/fred/applications/tomcat/logs
 sudo mkdir -p /home/fred/applications/tomcat/firmwares
 sudo mkdir -p /home/fred/applications/tomcat/deploy
+sudo mkdir -p /home/fred/applications/tomcat/cmd
+
+cp /home/fred//git/AutomationServer/third-party-tools/tomcat/cmd/deploy.sh /home/fred/applications/tomcat/cmd/
 
 #change applications/automationserver folders owner
 sudo chown -R fred:fred /home/fred/applications/tomcat
