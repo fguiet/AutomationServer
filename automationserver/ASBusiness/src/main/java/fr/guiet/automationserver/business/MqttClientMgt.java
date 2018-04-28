@@ -95,8 +95,11 @@ public class MqttClientMgt implements MqttCallback {
 			mqttMessage.setPayload(message.getBytes("UTF8"));
 			client.publish(topic, mqttMessage);
 
-			
-			client.disconnect();
+			//Issue :
+			//https://github.com/eclipse/paho.mqtt.java/issues/402
+			//client.disconnect();
+			client.disconnectForcibly();
+			client.close(true);
 			client = null;
 			
 		} catch (MqttException me) {
