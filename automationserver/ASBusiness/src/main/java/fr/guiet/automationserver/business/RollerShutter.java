@@ -37,7 +37,7 @@ public class RollerShutter {
 		_id = id;	
 		_name = name;
 					
-		_mqttClient = new MqttClientMgt(_mqttClientId);
+		_mqttClient = new MqttClientMgt(_mqttClientId + _id);
 		_smsGammuService = smsGammuService;
 	}
 	
