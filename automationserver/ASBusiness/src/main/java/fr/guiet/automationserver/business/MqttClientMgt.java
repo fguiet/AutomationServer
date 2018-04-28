@@ -17,7 +17,7 @@ public class MqttClientMgt implements MqttCallback {
 	
 	private static Logger _logger = Logger.getLogger(MqttClientMgt.class);
 	private String _uri = "tcp://%s:%s";
-	private MqttClient _client = null;
+	//private MqttClient _client = null;
 	private String _clientId = null;
 	//private final String CLIENT_ID = "Tomcat Mqtt Client";
 	
@@ -87,16 +87,17 @@ public class MqttClientMgt implements MqttCallback {
 	public void SendMsg(String topic, String message) {
 		
 		try {
-			_client = new MqttClient(_uri, _clientId);
-			_client.setCallback(this);
-			_client.connect();
+			MqttClient client = new MqttClient(_uri, _clientId);
+			//client.setCallback(this);
+			client.connect();
 			
 			MqttMessage mqttMessage = new MqttMessage();
 			mqttMessage.setPayload(message.getBytes("UTF8"));
-			_client.publish(topic, mqttMessage);
+			client.publish(topic, mqttMessage);
 
 			
-			_client.disconnect();
+			client.disconnect();
+			client = null;
 			
 		} catch (MqttException me) {
 			_logger.error("Error sending message to mqtt broker", me);			
