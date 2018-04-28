@@ -63,7 +63,7 @@ public class GpioHelper {
 			final GpioController gpio = GpioFactory.getInstance();
 
 			// provision gpio pin #01 as an output pin and turn on
-			final GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(gpioPinNumber);
+			GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(gpioPinNumber);
 
 			// set shutdown state for this pin
 			pin.setShutdownOptions(true, pinStateOnShutdown);		

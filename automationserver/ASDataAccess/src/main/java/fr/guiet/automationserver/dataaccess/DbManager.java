@@ -58,7 +58,7 @@ public class DbManager {
 	private static Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
 	private static Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
 	private static List<RoomDto> _roomDtoList = new ArrayList<RoomDto>();
-
+	
 	/**
 	 * Constructor
 	 */
@@ -144,6 +144,7 @@ public class DbManager {
 			
 			if (response.isGood()) {
 				influxDb.close();
+				influxDb = null;
 				isInfluxDbStarted = true;
 			}
 		}
@@ -185,7 +186,9 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
+			
+			
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -195,6 +198,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -203,7 +207,7 @@ public class DbManager {
 		}
 	}
 
-	private synchronized InfluxDB GetInfluxDbConnection() {
+	private InfluxDB GetInfluxDbConnection() {
 		InfluxDB influxDb = null;
 		
 		 _logger.info("InfluxDB connecting...");
@@ -240,7 +244,7 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -250,6 +254,8 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -284,7 +290,7 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -292,8 +298,9 @@ public class DbManager {
 		finally {
 
 			try {			
-				if (influxDb != null) {
+				if (influxDb != null) {					
 					influxDb.close();
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -328,7 +335,7 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -338,6 +345,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -380,7 +388,7 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -390,6 +398,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb= null;
 				}
 
 			} catch (Exception ex) {
@@ -424,7 +433,7 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
@@ -434,6 +443,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb =null;
 				}
 
 			} catch (Exception ex) {
@@ -479,7 +489,7 @@ public class DbManager {
 			// _logger.info("InfluxDB writing...");
 			influxDb.write(batchPoints);
 
-			influxDb.close();
+			//influxDb.close();
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
 		} catch (Exception e) {
@@ -490,6 +500,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb=null;
 				}
 
 			} catch (Exception ex) {
@@ -998,7 +1009,7 @@ public class DbManager {
 			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
 			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
 
-			influxDb.close();
+			//influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
@@ -1010,6 +1021,7 @@ public class DbManager {
 			try {			
 				if (influxDb != null) {
 					influxDb.close();
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
