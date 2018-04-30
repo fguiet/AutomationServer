@@ -210,11 +210,11 @@ public class DbManager {
 	private InfluxDB GetInfluxDbConnection() {
 		InfluxDB influxDb = null;
 		
-		 _logger.info("InfluxDB connecting...");
+		 //_logger.info("InfluxDB connecting...");
 		 
 		 influxDb = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
 		
-		_logger.info("InfluxDB connected...");
+		//_logger.info("InfluxDB connected...");
 		
 		return influxDb;
 	}
@@ -389,6 +389,46 @@ public class DbManager {
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
 			//influxDb.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+					influxDb= null;
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+	}
+	
+	public void SaveBoilerTemp(float temp) {
+
+		InfluxDB influxDb = null;
+		
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+						
+			influxDb = GetInfluxDbConnection();
+			
+			_logger.info("Saving boiler temp : "+temp+" to InfluxDB");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("boiler").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("temp", temp).build();
+
+			batchPoints.point(point1);
+			
+			influxDb.write(batchPoints);
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);

@@ -3,6 +3,7 @@ package fr.guiet.automationserver.business;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.RaspiPin;
 
+import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 
@@ -22,6 +23,7 @@ public class WaterHeater implements Runnable {
 	private SMSGammuService _smsGammuService = null;	
 	private final Pin _pinWaterHeater = RaspiPin.GPIO_00;
 	private boolean _awayModeStatus = false;
+	private DbManager _dbManager = null;
 	
 
 	/**
@@ -40,6 +42,8 @@ public class WaterHeater implements Runnable {
 		_teleInfoService = teleInfoService;
 		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
+		
+		_dbManager = new DbManager();
 	}
 	
 	public void SetAwayModeOn() {
@@ -97,6 +101,13 @@ public class WaterHeater implements Runnable {
 		_isStopped = true;
 	}
 
+	/*
+	 * Saving boiler temp in InfluxDb database
+	 */
+	public void SaveTemp(float temp){
+		_dbManager.SaveBoilerTemp(temp);
+	}
+	
 	/**
 	 * Water heater main management method
 	 */

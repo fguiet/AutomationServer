@@ -74,8 +74,13 @@ public class MqttClientMgt implements MqttCallback {
 			
 			if (client.isConnected()) {
 				isMqttStarted = true;
-				client.disconnect();
-			}			
+				//Issue :
+				//https://github.com/eclipse/paho.mqtt.java/issues/402
+				//client.disconnect();
+				client.disconnectForcibly();
+				client.close(true);
+				client=null;
+			}					
 		}
 		catch(Exception e) {
 			_logger.error("Mqtt instance not ready...", e);

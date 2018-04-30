@@ -330,6 +330,17 @@ public class MqttHelper implements MqttCallback {
 				}
 				
 				break;
+			case "SETBOILERINFO":
+				try {
+					long sensorId = Long.parseLong(messageContent[1]);
+					float temp = Float.parseFloat(messageContent[2]);
+					
+					_waterHeaterService.SaveTemp(temp);
+					
+				} catch (Exception e) {
+					_logger.error("Could not process message : " + message, e);
+				}				
+				break;
 			case "SETINSIDEINFO":
 				try {
 					long sensorId = Long.parseLong(messageContent[1]);
