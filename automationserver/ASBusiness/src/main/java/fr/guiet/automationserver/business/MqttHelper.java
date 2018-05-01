@@ -406,10 +406,21 @@ public class MqttHelper implements MqttCallback {
 		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
 		String homeModeStatus = _scenariiManager.GetHomeModeStatus();
 		
+		//Boiler Ino
+		// Last info received from sensor
+		String lastBoilerInfoReceveid = _waterHeaterService.LastInfoReceived();
+		String lastBoilerOnDuration = _waterHeaterService.LastOnDuration();
+		String boilerState = _waterHeaterService.getState();
+		
+		String actualBoilerTemp = "NA";
+		if (_waterHeaterService.getActualTemp() != null) {
+			actualBoilerTemp = String.format("%.2f", _waterHeaterService.getActualTemp());
+		}
+		
 		
 		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
 		message = message + ";" + _scenariiManager.getNextRSOpenDate() + ";" + _scenariiManager.getNextRSCloseDate();
-		message = message + ";" + northRSState + ";" + homeModeStatus;
+		message = message + ";" + northRSState + ";" + homeModeStatus + ";" + lastBoilerInfoReceveid + ";" + lastBoilerOnDuration + ";" + boilerState + ";" + actualBoilerTemp; 
 		
 		return message;
 	}

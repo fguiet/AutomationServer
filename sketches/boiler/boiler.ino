@@ -23,6 +23,7 @@
 #include <OneWire.h> //Librairie du bus OneWire
 #include <DallasTemperature.h> //Librairie du capteur 
 
+
 #include <PubSubClient.h>
 
 /**** VARIABLES ***/
@@ -39,13 +40,13 @@ DeviceAddress sensorDeviceAddress; //Vérifie la compatibilité des capteurs ave
 /**** END VARIABLES ***/
 
 /**** DEFINE ***/
-const int SLEEP_TIME_SECONDS = 300;
+const int SLEEP_TIME_SECONDS = 60;
 String SENSORID =  "11"; //Boiler
 #define MAX_RETRY 50
 #define MQTT_CLIENT_ID "BoilerSensor"
 #define MQTT_SERVER "192.168.1.25"
-#define MQTT_TOPIC "/guiet/boiler/tempr"
-const int CURRENT_FIRMWARE_VERSION = 1;
+#define MQTT_TOPIC "/guiet/boiler/temp"
+const int CURRENT_FIRMWARE_VERSION = 4;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 const char* ssid = "DUMBLEDORE";
@@ -56,6 +57,7 @@ IPAddress gateway_ip ( 192,168,1,1);
 IPAddress subnet_mask(255, 255, 255,0);
 
 /**** END DEFINE ***/ 
+
 
 void setup() {
   //Initialize Serial
@@ -78,29 +80,28 @@ void setup() {
 }
 
 void loop() {
-  
-   //Wait a little before beginning
+
+  ///Wait a little before beginning
   delay(2000);
 
   //Handle MQTT connection
   client.loop();   
   
   float t = getTemperature();
-
+  
   //Useful?
   //Read twice to get accurate result!!
   delay(2000);
 
   t = getTemperature();
 
-  Serial.println("Température lue : " + String(t,2));
-
   String mess = "SETBOILERINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(CURRENT_FIRMWARE_VERSION);
   mess.toCharArray(message_buff, mess.length()+1);
   client.publish(MQTT_TOPIC,message_buff);
 
   //Deep sleep...ZZzzzZZzzz
-  goDeepSleep();  
+  goDeepSleep(); 
+
 
 }
 
@@ -145,7 +146,7 @@ void connectToMqtt() {
   }
 
   if (retry >= MAX_RETRY) {
-    goDeepSleep();
+    ESP.restart();
   }
 }
 
@@ -192,7 +193,7 @@ void connectToWifi()
   }
 
   if (retry >= MAX_RETRY)
-    goDeepSleep();
+    ESP.restart();
   
   Serial.println ( "" );
   Serial.print ( "Connected to " );
