@@ -10,15 +10,17 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+//import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class MqttHelper implements MqttCallback {
+public class MqttHelper implements MqttCallbackExtended {
 
 	private static Logger _logger = Logger.getLogger(MqttClient.class);
 	private String _uri = "tcp://%s:%s";
@@ -77,26 +79,66 @@ public class MqttHelper implements MqttCallback {
 		}
 
 	}
-
-	public void connectAndSubscribe() {
-		try {
-			_client = new MqttClient(_uri, CLIENT_ID);
-			_client.setCallback(this);
-			_client.connect();
-			int subQoS = 0;
-
+	
+	@Override
+	public void connectComplete(boolean arg0, String arg1) {
+		//arg0 true if automatic reconnect occured
+		if (arg0) {
+			_logger.info("Automatic Mqtt reconnection occured !");
+			subscribe();
+		}
+		
+	}
+	
+	private void subscribe()  {
+				
+		int subQoS = 0;
+		
+		try {		
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
 					_logger.info("Subscribing to topic : " + topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
-
-		} catch (MqttException me) {
-			_logger.error("Error connecting to mqtt broker", me);
+		}
+		catch(Exception e) {
+			_logger.error("Error while subscribing to mqtt topic", e);
 
 			SMSDto sms = new SMSDto();
-			sms.setMessage("Error occured in mqtt helper, review error log for more details");
+			sms.setMessage("Error while subscribing to mqtt topic, review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		}
+	}
+
+	public void connectAndSubscribe() {
+		try {
+			_client = new MqttClient(_uri, CLIENT_ID);
+			
+			MqttConnectOptions options = new MqttConnectOptions();
+			options.setCleanSession(true);
+			options.setKeepAliveInterval(30);
+			options.setAutomaticReconnect(true);
+			
+			_client.setCallback(this);
+			_client.connect();
+			
+			subscribe();
+			
+			_logger.info("Connected to mqtt broker !");
+			
+
+		} catch (MqttException me) {
+			_logger.error("Error while connecting to mqtt broker", me);
+
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in mqtt helper (MqttException), review error log for more details");
+			_smsGammuService.sendMessage(sms, true);
+		} catch(Exception e) {
+			_logger.error("Error while connecting to mqtt broker", e);
+
+			SMSDto sms = new SMSDto();
+			sms.setMessage("Error occured in mqtt helper (Exception), review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}
 	}
@@ -148,8 +190,8 @@ public class MqttHelper implements MqttCallback {
 
 	@Override
 	public void connectionLost(Throwable arg0) {
-		_logger.warn("Mqtt connection lost...reconnecting...", arg0);
-		connectAndSubscribe();
+		_logger.warn("Mqtt connection lost...automatic reconnection is going to occur...", arg0);
+		//connectAndSubscribe();
 	}
 
 	@Override
@@ -163,7 +205,6 @@ public class MqttHelper implements MqttCallback {
 		_logger.info(String.format("Received topic : %s, Message : %s", arg0, new String(arg1.getPayload())));
 
 		ProcessMessageReceived(new String(arg1.getPayload()));
-
 	}
 
 	private void ProcessMessageReceived(String message) {
@@ -479,5 +520,4 @@ public class MqttHelper implements MqttCallback {
 		
 		return message;
 	}
-
 }
