@@ -35,7 +35,9 @@ void setup() {
   blinkLedStartup();  
 }
 
-void loop() {  
+void loop() {
+  //ReadVoltage();  
+  //delay(1000);
   Hibernate();   // go to sleep - calling sleeping function  
 }
 
@@ -102,6 +104,23 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 float ReadVoltage() {
 
   float sensorValue = 0.0f;
+  float R1 = 32450.0;
+  float R2 = 7560.0;
+  float vmes = 0.0f;
+  float vbat = 0.0f;
+
+  sensorValue = analogRead(SENSOR_PIN);
+  //Serial.println("sensorValue : " +String(sensorValue,2)); 
+
+  //3.3v is a little lower than expected...
+  vmes = (sensorValue * 3.4) / 1024;
+
+  vbat = (vmes * (R1 + R2)) / R2;
+
+  //Serial.println("vbat : " +String(vbat,2)); 
+  return vbat;
+
+  /*float sensorValue = 0.0f;
   //float R1 = 32450.0;
   //float R2 = 7560.0;
   float vin = 0.0;
@@ -121,7 +140,7 @@ float ReadVoltage() {
   //vin = vout / (R2 / (R1 + R2));
 
   //vin = sensorValue;
-  return vin;
+  return vin;*/
 }
 
 void Hibernate()         // here arduino is put to sleep/hibernation
