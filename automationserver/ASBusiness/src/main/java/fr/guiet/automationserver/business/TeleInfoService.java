@@ -2,22 +2,15 @@ package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
 
-//import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 import com.pi4j.io.serial.Baud;
 import com.pi4j.io.serial.DataBits;
 import com.pi4j.io.serial.FlowControl;
 import com.pi4j.io.serial.Parity;
-//import com.pi4j.io.serial.StopBits;
-//import com.pi4j.io.serial.Baud;
-//import com.pi4j.io.serial.DataBits;
-//import com.pi4j.io.serial.FlowControl;
-//import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialDataEventListener;
-//import com.pi4j.io.serial.SerialDataListener;
 import com.pi4j.io.serial.SerialDataEvent;
 import java.util.Date;
 import java.util.GregorianCalendar;

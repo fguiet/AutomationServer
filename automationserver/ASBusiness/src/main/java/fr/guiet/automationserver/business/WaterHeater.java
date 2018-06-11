@@ -3,6 +3,7 @@ package fr.guiet.automationserver.business;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.RaspiPin;
 
+import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 
@@ -22,6 +23,10 @@ public class WaterHeater implements Runnable {
 	private SMSGammuService _smsGammuService = null;	
 	private final Pin _pinWaterHeater = RaspiPin.GPIO_00;
 	private boolean _awayModeStatus = false;
+	private DbManager _dbManager = null;
+	private Date _lastInfoReceived = null;
+	private Long _lastOnDuration = null;
+	private Float _actualTemp = null;
 	
 
 	/**
@@ -30,6 +35,20 @@ public class WaterHeater implements Runnable {
 	public boolean isOn() {
 		return _isOn;
 	}
+	
+	public String getState() {
+		if (_isOn) {
+			return "ON";
+		}
+		else {
+			return "OFF";
+		}
+	}
+	
+	public Float getActualTemp() {
+		return _actualTemp;
+	}
+
 
 	/**
 	 * Constructor
@@ -40,6 +59,8 @@ public class WaterHeater implements Runnable {
 		_teleInfoService = teleInfoService;
 		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
+		
+		_dbManager = new DbManager();
 	}
 	
 	public void SetAwayModeOn() {
@@ -96,7 +117,38 @@ public class WaterHeater implements Runnable {
 
 		_isStopped = true;
 	}
+	
+	public String LastInfoReceived() {
+		
+		if (_lastInfoReceived != null) {
+			return DateUtils.getDateToString(_lastInfoReceived);
+		}
+		else {
+			return "NA";
+		}
+	}
+	
+	public String LastOnDuration() {
+		
+		if (_lastOnDuration != null) {
+			return _lastOnDuration.toString();
+		}
+		else {
+			return "NA";
+		}
+		
+	}
 
+	/*
+	 * Saving boiler temp in InfluxDb database
+	 */
+	public void SaveTemp(float temp){
+		_actualTemp = temp;
+		_lastInfoReceived = new Date();
+		
+		_dbManager.SaveBoilerTemp(temp);
+	}
+	
 	/**
 	 * Water heater main management method
 	 */
@@ -210,6 +262,8 @@ public class WaterHeater implements Runnable {
 			diffMinutes = diff / (60 * 1000);
 		}
 
+		_lastOnDuration = diffMinutes;
+		
 		String logMessage = "Turning OFF water heater. Water heater was ON during : " + diffMinutes + " minutes";
 		
 		GpioHelper.changeGpioPinState(_pinWaterHeater,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);

@@ -25,6 +25,9 @@ RUN apt-get install -y jsvc
 #Install Gammu
 RUN apt-get install -y gammu
 
+#Install WiringPi
+RUN apt-get install -y wiringpi
+
 #RUN groupadd --gid 1001 fred
 #RUN useradd  --uid 1001 --gid 1001 fred
 

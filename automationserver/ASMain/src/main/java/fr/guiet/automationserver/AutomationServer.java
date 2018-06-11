@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
-import okhttp3.HttpUrl;
 
 /**
  * Main class : in charge of home IoT management
