@@ -17,6 +17,8 @@
  *                      1.7 - Handle better up reedswitch detection
  *                      1.8 - 20180425 - Add error state, when reedswitch state is bad and isClosed ans isOpened are both true
  *                             which is impossible !                     
+ *                      1.9 - 20180528 - Improve open/close state detection
+ *                      2.0 - 20180528 - Improve open/close state detection
  * 
  * Note               : OTA only work correcly only and only if a hard reset is done AFTER serial port upload otherwise ESP will fail to start up on when OTA update occurs
  *                      https://github.com/esp8266/Arduino/issues/1782                     
@@ -32,14 +34,14 @@
 #include <ESP8266httpUpdate.h>
 #include <Bounce2.h>
 
-Bounce debouncer = Bounce();
+//Bounce debouncer = Bounce();
 
 #define UP_BUTTON_PIN_1 D3
 #define DOWN_BUTTON_PIN_2 D5
 #define RELAY_UP D1
 #define RELAY_DOWN D2
 #define UP_REED D6
-#define DOWN_REED D7
+#define DOWN_REED D4
 #define UP_LED D8
 #define DOWN_LED D0
 #define MAX_RETRY 50
@@ -58,7 +60,7 @@ const char* password = "frederic";
 //#define mqtt_user ""
 //#define mqtt_password ""
 
-const int CURRENT_FIRMWARE_VERSION = 18;
+const int CURRENT_FIRMWARE_VERSION = 23;
 String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
 String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 String MQTT_CLIENT_ID = "RollerShutterSensor" + SENSORID;
@@ -132,22 +134,38 @@ void setup() {
 
   // Setup the first button with an internal pull-up :
   pinMode(UP_BUTTON_PIN_1,INPUT_PULLUP);
+
+  //v1.9 - as said in documentation - https://playground.arduino.cc/Code/Bounce
+  //digitalWrite(UP_BUTTON_PIN_1 ,HIGH);
+  
   // After setting up the button, setup the Bounce instance :
   upButton.attach(UP_BUTTON_PIN_1);
   upButton.interval(5); // interval in ms
   
    // Setup the second button with an internal pull-up :
   pinMode(DOWN_BUTTON_PIN_2,INPUT_PULLUP);
+
+  //v1.9 - as said in documentation - https://playground.arduino.cc/Code/Bounce
+  //digitalWrite(DOWN_BUTTON_PIN_2 ,HIGH);
+  
   // After setting up the button, setup the Bounce instance :
   downButton.attach(DOWN_BUTTON_PIN_2);
   downButton.interval(5); // interval in ms
 
   pinMode(UP_REED,INPUT_PULLUP);
+
+  //v1.9 - as said in documentation - https://playground.arduino.cc/Code/Bounce
+  //digitalWrite(UP_REED ,HIGH);
+  
   // After setting up the button, setup the Bounce instance :
   upReed.attach(UP_REED);
   upReed.interval(5); // interval in ms
 
   pinMode(DOWN_REED,INPUT_PULLUP);
+
+  //v1.9 - as said in documentation - https://playground.arduino.cc/Code/Bounce
+  //digitalWrite(DOWN_REED ,LOW);
+  
   // After setting up the button, setup the Bounce instance :
   downReed.attach(DOWN_REED);
   downReed.interval(5); // interval in ms
@@ -188,6 +206,18 @@ void sendState() {
      mess = "SETRSSTATE;"+String(SENSORID)+";ERROR" + ";" + String(CURRENT_FIRMWARE_VERSION);
   }
 
+  String downReedState="HIGH";
+  if (downReed.read() == LOW) {
+    downReedState="LOW";
+  }
+
+  String upReedState="HIGH";
+  if (upReed.read() == LOW) {
+    upReedState="LOW";
+  }
+
+  mess = mess + ";DR=" + downReedState + ";UR=" + upReedState;
+  
   client.publish(pub_topic,mess.c_str()); 
 }
 
@@ -334,7 +364,7 @@ void handleButtons() {
   }
 
   //lastactionstate != down because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on descend le volet)
-  if (upReed.fell() && lastactionstate != action_down) {
+  if (upReed.read() == LOW && lastactionstate != action_down && !isOpened) {
     //Here rollershutter is up (reed switch connected
     Serial.println("Volet roulant en haut");        
     stopAsked = true;    
@@ -343,21 +373,21 @@ void handleButtons() {
   }
 
   //lastactionstate != up because sometimes upReed.feel is called 2 times (les aimants sont trop detectés quand on monte le volet) => provoque des changements d'états non désires
-  if (upReed.rose() && lastactionstate != action_up) {    
+  if (upReed.read() == HIGH && lastactionstate != action_up && isOpened) {    
     isOpened = false;
     manageUpDownLed();
   }
 
   //ReedSwitch connected, stop rollershutter after 3s so rollershutter is well closed
-  if (downReed.fell()) {
-    //Here rollershutter is up (reed switch connected)
+  if (downReed.read() == LOW && !isClosed) {
+    isClosed = true;
+    //Here rollershutter is down (reed switch connected)
     Serial.println("Volet roulant en bas");    
- 
     closeTimerId = closeTimer.setTimeout(completeDownMS, askToStopRelay);
   }
 
   //ReedSwitch not connected anymore
-  if (downReed.rose()) {  
+  if (downReed.read() == HIGH && isClosed) {  
 
     if (closeTimerId != -1)
       closeTimer.deleteTimer(closeTimerId);
@@ -370,7 +400,7 @@ void handleButtons() {
 void askToStopRelay() {
   Serial.println("Time up ! Stop relay asked now...");  
   stopAsked = true;    
-  isClosed = true;
+  //isClosed = true;
   manageUpDownLed();
 }
 
