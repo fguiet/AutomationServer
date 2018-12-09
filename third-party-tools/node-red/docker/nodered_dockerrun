@@ -1,0 +1,8 @@
+docker run -d \
+	-p 1880:1880 \
+        --name nodered \
+        -v /home/fred/applications/node-red/data:/data \
+        -e FLOWS=home_flows.json \
+        --restart=always \
+        nodered/node-red-docker:rpi-v8
+
