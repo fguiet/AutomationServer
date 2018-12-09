@@ -28,3 +28,13 @@ In item configure moon, sun item with correct id astro moon/sun thing
 Create /openhab/userdata/webapps folder
 Copy /openhab/conf/html/weather-data in /openhab/userdata/webapps
 
+Restarting Openhab due to memory leak
+-------------------------------------
+
+mkdir -p /home/fred/applications/crontab
+cp ~/git/AutomationServer/third-party-tools/openhab/install/restart_openhab /home/fred/applications/crontab/
+
+crontab -e
+0 0 * * 1,4 /home/fred/applications/crontab/restart_openhab
+
+
