@@ -1,0 +1,2 @@
+docker stop openhab
+docker start openhab
