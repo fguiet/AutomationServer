@@ -26,7 +26,16 @@ Add Local Time
 In item configure moon, sun item with correct id astro moon/sun thing
 
 Create /openhab/userdata/webapps folder
+
+cd ~/applications/openhab/userdata
+sudo mkdir webapps
+
 Copy /openhab/conf/html/weather-data in /openhab/userdata/webapps
+
+sudo cp -r ~/applications/openhab/conf/html/weather-data/ webapps/
+
+Change owner
+sudo chown -R openhab:openhab webapps/
 
 Restarting Openhab due to memory leak
 -------------------------------------
