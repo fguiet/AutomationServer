@@ -10,7 +10,7 @@ sitemap homeautomation label="Home Sweet Home" {
 			Text item=Cave_Humidity
 			Text item=Cave_Extractor
 
-			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/temphumicave?from=now-24h&to=now&panelId=1&height=230" height=7
+			Webview url="/static/caveChart.html" height=12
 		}
 	}
 
@@ -23,8 +23,8 @@ sitemap homeautomation label="Home Sweet Home" {
 	                Text item=Raingauge_Vcc
 		        Text item=Raingauge_LastUpdate
 
-			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/capteursexterieurs?from=now-24h&to=now&panelId=1&height=230" height=7
-                        Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/pluviometrie?from=now-1w&to=now&panelId=1&height=230" height=7
+			Webview url="/static/exterieurChart.html" height=12
+                        Webview url="/static/pluvioChart.html" height=12
 		}
 	}
 
@@ -49,8 +49,8 @@ sitemap homeautomation label="Home Sweet Home" {
                         Group item=Salon_Wanted_Temp  label="Définir une dérogation" icon="heating" {
                                 Setpoint item=Salon_Wanted_Temp minValue=15 maxValue=25 step=0.5
                         }
-
-			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/temperaturesalon?panelId=1&tab=general&from=now-24h&to=now&height=230" height=7
+                        
+                        Webview url="/static/salonChart.html" height=12
                 }
 
                 Group item=Bureau_Current_Temp label="Bureau"  {
@@ -68,6 +68,15 @@ sitemap homeautomation label="Home Sweet Home" {
                                 Setpoint item=Bureau_Wanted_Temp minValue=15 maxValue=25 step=0.5
                         }
                 }
+
+		Group item=Boiler_Temp label="Chauffe eau" {
+			Text item=Boiler_Temp
+			Text item=Boiler_State
+			Text item=Boiler_LastInfo
+			Text item=Boiler_LastOnDuration
+
+			Webview url="/static/boilerChart.html" height=12
+		}
         }
 	
 	Frame label="Etage" icon="firstfloor" {
@@ -128,8 +137,8 @@ sitemap homeautomation label="Home Sweet Home" {
 			Text item=HeureCreuse
 			Text item=ConsoInst
 			Text item=NextBill
-
-			Webview url="http://192.168.1.25:3000/render/dashboard-solo/db/consoinst?panelId=1&tab=axes&from=now-24h&to=now&height=230" height=7
+			
+			Webview url="/static/elecChart.html" height=12
 		}
 	}
 

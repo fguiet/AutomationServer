@@ -61,11 +61,11 @@ Number Bureau_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mq
 Number Bureau_Derog "Dérogation en cours à [%.1f °C]" <temperature>
 Switch Bureau_Derog_Visibility
 
-DateTime Sunrise_Time  "Levé du soleil à [%1$tH:%1$tM]" <sunrise>  { channel="astro:sun:local:rise#start" }
-DateTime Sunset_Time   "Couché du soleil à [%1$tH:%1$tM]" <sunset>   { channel="astro:sun:local:set#start" }
-Number   Azimuth       "Azimuth [%.1f °]"       { channel="astro:sun:local:position#azimuth" }
-Number   Elevation     "Elevation [%.1f °]"     { channel="astro:sun:local:position#elevation" }
-String   MoonPhase     "Phase de la lune [%s]" <moon>        { channel="astro:moon:local:phase#name" }
+DateTime Sunrise_Time  "Levé du soleil à [%1$tH:%1$tM]" <sunrise>  { channel="astro:sun:361ed714:rise#start" }
+DateTime Sunset_Time   "Couché du soleil à [%1$tH:%1$tM]" <sunset>   { channel="astro:sun:361ed714:set#start" }
+Number   Azimuth       "Azimuth [%.1f °]"       { channel="astro:sun:361ed714:position#azimuth" }
+Number   Elevation     "Elevation [%.1f °]"     { channel="astro:sun:361ed714:position#elevation" }
+String   MoonPhase     "Phase de la lune [%s]" <moon>        { channel="astro:moon:813bd26a:phase#name" }
 String   Season        "Saison [%s]"            {channel="astro:sun:local:season#name"}
 
 String HeurePleine "Heure pleine : [%s]" {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getHeurePleine.js)]"}
@@ -101,5 +101,8 @@ String NextRSClose "Ferm. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-br
 String Raingauge_Vcc "Voltage pluvio. [%s]" <energy>  {mqtt="<[mosquitto-broker:/guiet/automationserver/raingauge:state:JS(getRaingaugeVcc.js)]"}
 DateTime Raingauge_LastUpdate "Dernière réception tension pluvio. [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
 
-
+Number Boiler_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerTemp.js)]"}
+String Boiler_State "Etat capteur [MAP(boiler_state.map):%s]" <switch> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerState.js)]"}
+String Boiler_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerLastInfo.js)]"}
+String Boiler_LastOnDuration "Durée de la dernière chauffe [%s]"  <time-on> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerLastOnDuration.js)]"}
 
