@@ -4,5 +4,8 @@ docker run -d \
         -v /home/fred/applications/node-red/data:/data \
         -e FLOWS=home_flows.json \
         --restart=always \
+        -v /etc/localtime:/etc/localtime:ro \
+        -v /etc/timezone:/etc/timezone:ro \
+        -e TZ=Europe/Paris \
         nodered/node-red-docker:rpi-v8
 
