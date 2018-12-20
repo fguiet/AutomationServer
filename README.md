@@ -20,14 +20,17 @@ DESCRIPTION
     - SunriseSunsetCalculator
     - Ajax Daypilot Scheduling (great scheduling framework)
     - Tomcat 9
-    - Wemos ESP8266 Wifi module
+    - Wemos ESP8266 Wifi module (not anymore but it used to, replaced by nRF51822 BLE module)
+    - nRF51822 BLE Module
     - Arduino (not anymore, replaced by Wemos ESP8266)
     - DHT22 Sensor (temperature and humidity), not suitable with deep sleep (replaced by DS18B20)
     - XBee (not anymore but it used to, replaced by Wemos WiFi module)
-    - Raspberry Pi 3
+    - Raspberry Pi 3 (Hypriot OS)
+    - Docker
     - Grafana
     - OpenHab 2
     - InfluxDB 1.2.x
+    - Node-Red
     - Mqtt (mosquitto)
     - Gammu
     - Handmade electonic stuffs (to collect data from my electric provider, to control my heaters)
@@ -52,7 +55,7 @@ FEATURES
 
 INSTALLATION
 
-  TODO
+  TODO but everything runs under Docker (Raspberry Hypriot OS) 
 
 LICENSE
 
