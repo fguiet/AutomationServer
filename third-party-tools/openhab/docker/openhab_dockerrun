@@ -1,5 +1,5 @@
 docker run \
-        --name openhab-2.2.3 \
+        --name openhab-2.4.0 \
         --net=host \
         --tty \
         -v /etc/localtime:/etc/localtime:ro \
@@ -11,4 +11,4 @@ docker run \
         -e USER_ID=9001 \
         -e GROUP_ID=9001 \
         --restart=always \
-        openhab/openhab:2.3.0-armhf-debian
+        openhab/openhab:2.4.0-armhf-debian
