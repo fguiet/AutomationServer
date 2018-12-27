@@ -31,6 +31,7 @@ public class MqttHelper implements MqttCallbackExtended {
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
 	private WaterHeater _waterHeaterService = null;
+	private Print3DService _print3DService = null;
 	private AlarmService _alarmService = null;
 	private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
@@ -47,7 +48,7 @@ public class MqttHelper implements MqttCallbackExtended {
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, 
 			TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService,
-			RollerShutterService rollerShutterService, ScenariiManager scenariiManager) {
+			RollerShutterService rollerShutterService, ScenariiManager scenariiManager, Print3DService print3DService) {
 
 		InputStream is = null;
 		try {
@@ -70,6 +71,7 @@ public class MqttHelper implements MqttCallbackExtended {
 			_alarmService = alarmService;
 			_rollerShutterService = rollerShutterService;
 			_scenariiManager = scenariiManager;
+			_print3DService = print3DService;
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -204,11 +206,13 @@ public class MqttHelper implements MqttCallbackExtended {
 	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
 		_logger.info(String.format("Received topic : %s, Message : %s", arg0, new String(arg1.getPayload())));
 
-		ProcessMessageReceived(new String(arg1.getPayload()));
+		ProcessMessageReceived(arg0, new String(arg1.getPayload()));
 	}
 
-	private void ProcessMessageReceived(String message) {
-
+	private void ProcessMessageReceived(String topic, String message) {
+		
+		if (_print3DService.ProcessMqttMessage(topic, message)) return;
+		
 		String[] messageContent = message.split(";");
 
 		if (messageContent != null && messageContent.length > 0) {
@@ -373,7 +377,7 @@ public class MqttHelper implements MqttCallbackExtended {
 				break;
 			case "SETBOILERINFO":
 				try {
-					long sensorId = Long.parseLong(messageContent[1]);
+					//long sensorId = Long.parseLong(messageContent[1]);
 					float temp = Float.parseFloat(messageContent[2]);
 					
 					_waterHeaterService.SaveTemp(temp);

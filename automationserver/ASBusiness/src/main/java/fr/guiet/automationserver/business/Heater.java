@@ -1,12 +1,8 @@
 package fr.guiet.automationserver.business;
 
 import com.pi4j.io.gpio.Pin;
-import com.pi4j.io.gpio.PinState;
-
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
-//import com.pi4j.io.serial.SerialFactory;
-
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
@@ -33,7 +29,7 @@ public class Heater implements Comparable<Heater> {
 	private static Logger _logger = Logger.getLogger(Heater.class);
 	// private boolean _waitForOn = false;
 	// private boolean _waitForOff = false;
-	private final String PIN_CHAUFFAGE_NAME = "PIN_CHAUFFAGE";
+	//private final String PIN_CHAUFFAGE_NAME = "PIN_CHAUFFAGE";
 	private DbManager _dbManager = null;
 	private SMSGammuService _smsGammuService = null;
 

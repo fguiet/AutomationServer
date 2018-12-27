@@ -38,6 +38,7 @@ public class AutomationServer implements Daemon {
 	private Thread _rainGaugeServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
+	private Print3DService _print3DService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttHelper _mqttHelper = null;
 	private boolean _alertSent5 = false; // Réinitialisation
@@ -137,10 +138,13 @@ public class AutomationServer implements Daemon {
 					//Start scenarii service
 					_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
 					
+					//Start 3D Print service
+					_print3DService = new Print3DService(_smsGammuService);
+					
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService, _scenariiManager);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService, _scenariiManager, _print3DService);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();

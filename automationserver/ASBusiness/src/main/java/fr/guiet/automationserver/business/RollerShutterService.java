@@ -1,7 +1,7 @@
 package fr.guiet.automationserver.business;
 
 
-import java.util.TimeZone;
+//import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
 import fr.guiet.automationserver.dto.SMSDto;
@@ -73,7 +73,7 @@ public class RollerShutterService implements Runnable {
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)
 		
 		//Get Europe/Paris TimeZone
-		TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");		
+		//TimeZone timeZone = TimeZone.getTimeZone("Europe/Paris");		
 
 		while (!_isStopped) {
 

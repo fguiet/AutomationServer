@@ -376,8 +376,8 @@ public class ScenariiManager {
 			String[] RSConfDayClose = RSDaysClose[dayOfWeek].split(";");
 			String[] AlarmConfDayOpen = AlarmDaysOn[dayOfWeek].split(";");
 			String[] AlarmConfDayClose = AlarmDaysOff[dayOfWeek].split(";");
-			String [] XmasLightsConfDayOn = XmasLightsDaysOn[dayOfWeek].split(";");
-			String [] XmasLightsConfDayOff = XmasLightsDaysOff[dayOfWeek].split(";");
+			//String [] XmasLightsConfDayOn = XmasLightsDaysOn[dayOfWeek].split(";");
+			//String [] XmasLightsConfDayOff = XmasLightsDaysOff[dayOfWeek].split(";");
 						
 			CreateRSDayScheduler(RSConfDayOpen, scheduler, dayOfWeek, true);
 			CreateRSDayScheduler(RSConfDayClose, scheduler, dayOfWeek, false);

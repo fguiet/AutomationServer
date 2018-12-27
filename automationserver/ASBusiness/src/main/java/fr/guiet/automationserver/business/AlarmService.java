@@ -1,13 +1,8 @@
 package fr.guiet.automationserver.business;
 
 import org.apache.log4j.Logger;
-
-import com.pi4j.io.gpio.Pin;
-import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
-
 import fr.guiet.automationserver.dto.SMSDto;
-import it.sauronsoftware.cron4j.Scheduler;
 
 public class AlarmService {
 	
