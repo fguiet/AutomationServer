@@ -362,7 +362,7 @@ public class DbManager {
 	 * @param wantedTemp
 	 * @param humidity
 	 */
-	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity) {
+	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity, float battery) {
 
 		InfluxDB influxDb = null;
 		
@@ -379,8 +379,10 @@ public class DbManager {
 					.build();
 
 			Point point1 = Point.measurement(roomName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("actual_temp", actualTemp).addField("wanted_temp", wantedTemp)
-					.addField("humidity", humidity).build();
+					.addField("actual_temp", actualTemp)
+					.addField("wanted_temp", wantedTemp)
+					.addField("humidity", humidity)
+					.addField("battery", battery).build();
 
 			batchPoints.point(point1);
 

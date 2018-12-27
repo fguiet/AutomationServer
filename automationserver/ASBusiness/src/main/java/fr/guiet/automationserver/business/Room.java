@@ -59,6 +59,14 @@ public class Room {
 			return _sensor.getActualHumidity();
 		}
 	}
+	
+	public Float getBattery() {
+		if (_sensor.HasTimeoutOccured()) {
+			return null;	
+		} else {
+			return _sensor.getBattery();
+		}
+	}
 
 	/**
 	 * Calcul de l'heure du prochain changement de temperature

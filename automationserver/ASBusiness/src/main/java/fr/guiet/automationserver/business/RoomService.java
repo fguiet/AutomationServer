@@ -204,6 +204,15 @@ public class RoomService implements Runnable {
 		}
 	}
 
+	public Float GetBattery(long roomId) {
+		Room r = GetRoomById(roomId);
+		if (r != null) {
+			return r.getBattery();
+		} else {
+			return null;
+		}
+	}
+ 	
 	public Float GetActualTemp(long roomId) {
 		Room r = GetRoomById(roomId);
 		if (r != null) {
@@ -310,7 +319,7 @@ public class RoomService implements Runnable {
 
 						
 						_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
-								room.getWantedTemp(), room.getActualHumidity());
+								room.getWantedTemp(), room.getActualHumidity(), room.getBattery());
 					}
 				}
 			}

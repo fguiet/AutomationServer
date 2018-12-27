@@ -9,8 +9,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#define SENSORS_COUNT 2
-#define DEBUG 1
+#define SENSORS_COUNT 1
+#define DEBUG 0
 
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
@@ -52,12 +52,12 @@ void InitSensors() {
   //String SENSORID =  "5"; //Parents
   
   sensors[0].Address = "d2:48:c8:a5:35:4c";
-  sensors[0].SensorId = 1;
+  sensors[0].SensorId = 4;
   sensors[0].hasDataToPush = false;
 
-  sensors[1].Address = "c7:b9:43:94:24:3a";
-  sensors[1].SensorId = 2;
-  sensors[1].hasDataToPush = false;
+  //sensors[1].Address = "c7:b9:43:94:24:3a";
+  //sensors[1].SensorId = 2;
+  //sensors[1].hasDataToPush = false;
   
 }
 
@@ -203,7 +203,7 @@ void loop() {
   for (int i=0; i < SENSORS_COUNT;i++) {
     if (sensors[i].hasDataToPush) {
       sensors[i].hasDataToPush = false;
-      String mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity;
+      String mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity+";"+sensors[i].Battery;
 
       if (DEBUG) {
         Serial.println("Publishing : " + mess);

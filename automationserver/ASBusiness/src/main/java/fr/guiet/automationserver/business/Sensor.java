@@ -18,6 +18,7 @@ public class Sensor {
 											// info du capteur
 	private float _actualTemp;
 	private float _actualHumidity;
+	private float _battery; //Battery voltage
 	private Room _room = null;
 	private SMSGammuService _smsGammuService = null;
 	private boolean _alertSent5 = false;
@@ -40,9 +41,10 @@ public class Sensor {
 		
 	}
 
-	public void setReceivedValue(float actualTemp, float actualHumidity) {
+	public void setReceivedValue(float actualTemp, float actualHumidity, float battery) {
 		_actualHumidity = actualHumidity;		
 		_actualTemp = actualTemp;
+		_battery = battery;
 		
 		//DHT22 is inside a box and temp reading is incorrect (warn from ESP8266)
 		_actualTemp = _actualTemp + _tempshift;
@@ -50,6 +52,10 @@ public class Sensor {
 		_lastInfoReceived = new Date();
 	}
 
+	public float getBattery() {
+		return _battery;
+	}
+	
 	public float getActualHumidity() {
 		return _actualHumidity;
 	}
@@ -132,7 +138,7 @@ public class Sensor {
 	}
 
 	// Reception d'un message
-	public void processResponse(String message) {
+	/*public void processResponse(String message) {
 
 		try {
 
@@ -175,14 +181,14 @@ public class Sensor {
 				 * dbManager.SaveSensorInfoInfluxDB(_influxdbMeasurement,
 				 * _actualTemp, _room.getWantedTemp(), _actualHumidity);
 				 */
-			}
-		} catch (Exception e) {
-			_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()
-					+ ", message recu : " + message, e);
-			_lastInfoReceived = null;
-		}
+		//	}
+		//} catch (Exception e) {
+	//		_logger.error("Erreur lors du traitement du message reçu pour la piece : " + _room.getName()
+	//				+ ", message recu : " + message, e);
+	//		_lastInfoReceived = null;
+	//	}
 
-	}
+	//}
 
 	/*public String sensorAddress() {
 		return _sensorAddress.toString();
