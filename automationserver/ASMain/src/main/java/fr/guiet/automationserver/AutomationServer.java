@@ -151,7 +151,9 @@ public class AutomationServer implements Daemon {
 					// TODO : Replace this server by MQTT subscribe
 					//ServerSocket socket = new ServerSocket(4310);
 					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, _alarmService, _rollerShutterService, _scenariiManager, _print3DService);
+					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, 
+							_alarmService, _rollerShutterService, _scenariiManager, _print3DService,
+							_BLEHubService);
 					_mqttHelper.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto();
