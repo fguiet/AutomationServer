@@ -40,7 +40,7 @@ public class BLEHubService implements Runnable {
 				//Check upstairs hub alive
 				if (GetDuration(_lastAliveUpstairsHubReception) >= 2) {
 					
-					if (_hasUpstairsHubNotificationSent) {
+					if (!_hasUpstairsHubNotificationSent) {
 						_hasUpstairsHubNotificationSent = true;
 						
 						String message = "Warning! No news from upstairs hub...last alive message reception : " + DateUtils.getDateToString(_lastAliveUpstairsHubReception);
@@ -55,7 +55,7 @@ public class BLEHubService implements Runnable {
 				//Check downstairs hub alive
 				if (GetDuration(_lastAliveDownstairsHubReception) >= 2) {
 					
-					if (_hasDownstairsHubNotificationSent) {
+					if (!_hasDownstairsHubNotificationSent) {
 						_hasDownstairsHubNotificationSent = true;
 						
 						String message = "Warning! No news from downstairs hub...last alive message reception : " + DateUtils.getDateToString(_lastAliveUpstairsHubReception);
