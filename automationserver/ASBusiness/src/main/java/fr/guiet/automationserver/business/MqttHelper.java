@@ -35,6 +35,7 @@ public class MqttHelper implements MqttCallbackExtended {
 	private AlarmService _alarmService = null;
 	private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
+	private BLEHubService _BLEHubService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
@@ -48,7 +49,8 @@ public class MqttHelper implements MqttCallbackExtended {
 
 	public MqttHelper(SMSGammuService gammuService, RoomService roomService, 
 			TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService,
-			RollerShutterService rollerShutterService, ScenariiManager scenariiManager, Print3DService print3DService) {
+			RollerShutterService rollerShutterService, ScenariiManager scenariiManager, Print3DService print3DService,
+			BLEHubService BLEHubService) {
 
 		InputStream is = null;
 		try {
@@ -72,6 +74,7 @@ public class MqttHelper implements MqttCallbackExtended {
 			_rollerShutterService = rollerShutterService;
 			_scenariiManager = scenariiManager;
 			_print3DService = print3DService;
+			_BLEHubService = BLEHubService;
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -212,6 +215,7 @@ public class MqttHelper implements MqttCallbackExtended {
 	private void ProcessMessageReceived(String topic, String message) {
 		
 		if (_print3DService.ProcessMqttMessage(topic, message)) return;
+		if (_BLEHubService.ProcessMqttMessage(topic, message)) return;
 		
 		String[] messageContent = message.split(";");
 
