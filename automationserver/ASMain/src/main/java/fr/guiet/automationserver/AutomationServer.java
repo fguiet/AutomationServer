@@ -32,12 +32,14 @@ public class AutomationServer implements Daemon {
 	private WaterHeater _waterHeater = null; // service de gestion du
 												// chauffe-eau
 	private RollerShutterService _rollerShutterService = null;
+	private BLEHubService _BLEHubService = null;  
 	private boolean _isStopped = false;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
 	private Thread _rainGaugeServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
+	private Thread _BLEHubServiceThread = null;
 	private Print3DService _print3DService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttHelper _mqttHelper = null;
@@ -131,6 +133,11 @@ public class AutomationServer implements Daemon {
 					_rollerShutterService = new RollerShutterService(_smsGammuService);
 					_rollerShutterServiceThread = new Thread(_rollerShutterService);
 					_rollerShutterServiceThread.start();
+					
+					//Start BLE Hub Service
+					_BLEHubService = new BLEHubService(_smsGammuService);
+					_BLEHubServiceThread = new Thread(_BLEHubService);
+					_BLEHubServiceThread.start();
 					
 					//Start alarm service
 					_alarmService = new AlarmService(_rollerShutterService, _smsGammuService);
@@ -367,6 +374,7 @@ public class AutomationServer implements Daemon {
 			
 			GpioHelper.shutdown();
 			// Stopping all services
+			_BLEHubService.StopService();
 			_rainGaugeService.StopService();
 			_alarmService.StopService();
 			_scenariiManager.StopScenariiManager();

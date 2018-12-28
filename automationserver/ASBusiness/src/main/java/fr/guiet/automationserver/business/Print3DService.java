@@ -1,9 +1,7 @@
 package fr.guiet.automationserver.business;
 
 import java.util.Date;
-
 import org.apache.log4j.Logger;
-
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class Print3DService {

@@ -2,15 +2,23 @@
  * This program use a modified version of :
  *    https://github.com/nkolban/ESP32_BLE_Arduino
  *    
+ * Interesting links:   
+ * https://github.com/nkolban/esp32-snippets/issues/168
+ * https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLETests/SampleAsyncScan.cpp
+ * https://github.com/nkolban/esp32-snippets/issues/496
+ * https://github.com/nkolban/esp32-snippets/issues/651
+ *    
  * In fact, this library does not have getServiceNb() function and getServiceData(int i)  
  */
 
 #include "BLEDevice.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 #define SENSORS_COUNT 1
-#define DEBUG 0
+#define DEBUG 1
 
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
@@ -19,6 +27,7 @@ const char* password = "frederic";
 #define MQTT_CLIENT_ID "HubUpstairsMqttClient"
 #define MQTT_SERVER "192.168.1.25"
 #define MQTT_TOPIC "/guiet/inside/sensor"
+#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
 
 #define BLE_CLIENT_ID "HubUpstairsBleClient"
 BLEScan* pBLEScan;
@@ -93,7 +102,9 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
               
               char serviceData[10];
               for(int j=0;j<cpt;j++) {
-                Serial.println("Service n°" + String(j));
+
+                if (DEBUG)
+                   Serial.println("Service n°" + String(j));
                 std::string strServiceData = advertisedDevice.getServiceData(j);                
                 strServiceData.copy(serviceData, strServiceData.length(), 0);
 
@@ -166,8 +177,15 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 }; // MyAdvertisedDeviceCallbacks
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting Arduino BLE Client application...");
+
+  if (DEBUG)
+    Serial.begin(115200);
+    Serial.println("Starting Arduino BLE Client application...");
+
+  if (DEBUG) {
+     Serial.println("Disabling brown detector...");
+  }
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   BLEDevice::init(BLE_CLIENT_ID);
 
@@ -176,28 +194,46 @@ void setup() {
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(true);
+
+  InitSensors();
 }
 
 void loop() {
 
-  InitSensors();
-
- // Serial.println("Sensors : " + sizeof(sensors));
+  if (DEBUG) {
+    Serial.print("Free HeapSize: ");
+    Serial.println(esp_get_free_heap_size());
+  }
   
-  Serial.println();
-  Serial.println("BLE Scan restarted.....");
+ // Serial.println("Sensors : " + sizeof(sensors));
+
+  if (DEBUG) {
+    Serial.println();
+    Serial.println("BLE Scan restarted.....");
+  }
+  
   deviceFound = false;
   BLEScanResults scanResults = pBLEScan->start(20);
-  if (deviceFound) {
+  
+  if (deviceFound && DEBUG) {
     Serial.println("Found device");
   }
 
   pBLEScan->stop();
-  Serial.println("BLE Scan ended.....");
+
+  if (DEBUG) 
+    Serial.println("BLE Scan ended.....");
+  
+  delay(2000);
 
   connectToWifi();
 
   connectToMqtt();
+
+  //Publish alive topic
+  String mess1 = "UPSTAIRS_HUB_ALIVE";
+  mess1.toCharArray(message_buff, mess1.length()+1);
+  client.publish(MQTT_HUB_TOPIC,message_buff);
 
   //Publish result
   for (int i=0; i < SENSORS_COUNT;i++) {
@@ -211,6 +247,7 @@ void loop() {
           
       mess.toCharArray(message_buff, mess.length()+1);
       client.publish(MQTT_TOPIC,message_buff);
+    
     }
   }
 
@@ -222,15 +259,22 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     disconnectWifi();  
   }
+
+  if (DEBUG)
+    Serial.println("Restarting...");
+  //Memory leak...
+  ESP.restart();
 }
 
 void disconnectMqtt() {
-  Serial.println("Disconnecting from mqtt...");
+  if (DEBUG)
+    Serial.println("Disconnecting from mqtt...");
   client.disconnect();
 }
 
 void disconnectWifi() {
-  Serial.println("Disconnecting from wifi...");
+  if (DEBUG)
+    Serial.println("Disconnecting from wifi...");
   WiFi.disconnect();
 }
 
@@ -239,14 +283,19 @@ void connectToMqtt() {
   client.setServer(MQTT_SERVER, 1883); 
 
   int retry = 0;
-  Serial.print("Attempting MQTT connection...");
+
+  if (DEBUG)
+    Serial.print("Attempting MQTT connection...");
   while (!client.connected()) {   
     if (client.connect(MQTT_CLIENT_ID)) {
-      Serial.println("connected to MQTT Broker...");
+      if (DEBUG)
+        Serial.println("connected to MQTT Broker...");
     }
     else {
       delay(500);
-      Serial.print(".");
+
+      if (DEBUG)
+        Serial.print(".");
     }
 
     
@@ -262,7 +311,9 @@ void connectToWifi()
   byte mac[6];
 
   WiFi.disconnect();
-  Serial.println("Connecting to WiFi...");
+
+  if (DEBUG)
+    Serial.println("Connecting to WiFi...");
 //  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -270,30 +321,34 @@ void connectToWifi()
   int retry = 0;
   while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
     delay(500);
-    Serial.print(".");
+
+    if (DEBUG)
+       Serial.print(".");
     retry++;    
   }
 
   if (retry >= MAX_RETRY)
     ESP.restart();
-  
-  Serial.println ( "" );
-  Serial.print ( "Connected to " );
-  Serial.println ( ssid );
-  Serial.print ( "IP address: " );
-  Serial.println ( WiFi.localIP() );
-  
-  WiFi.macAddress(mac);
-  Serial.print("MAC: ");
-  Serial.print(mac[5],HEX);
-  Serial.print(":");
-  Serial.print(mac[4],HEX);
-  Serial.print(":");
-  Serial.print(mac[3],HEX);
-  Serial.print(":");
-  Serial.print(mac[2],HEX);
-  Serial.print(":");
-  Serial.print(mac[1],HEX);
-  Serial.print(":");
-  Serial.println(mac[0],HEX);
+
+  if (DEBUG) {
+    Serial.println ( "" );
+    Serial.print ( "Connected to " );
+    Serial.println ( ssid );
+    Serial.print ( "IP address: " );
+    Serial.println ( WiFi.localIP() );
+    
+    WiFi.macAddress(mac);
+    Serial.print("MAC: ");
+    Serial.print(mac[5],HEX);
+    Serial.print(":");
+    Serial.print(mac[4],HEX);
+    Serial.print(":");
+    Serial.print(mac[3],HEX);
+    Serial.print(":");
+    Serial.print(mac[2],HEX);
+    Serial.print(":");
+    Serial.print(mac[1],HEX);
+    Serial.print(":");
+    Serial.println(mac[0],HEX);
+  }
 }

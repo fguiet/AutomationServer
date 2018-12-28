@@ -268,7 +268,7 @@ public class TeleInfoService implements Runnable {
 					}
 				}
 
-				// Necessary otherwire, serial reader stop
+				// Necessary otherwise, serial reader stop
 				Thread.sleep(2000);
 
 			} catch (Exception e) {
