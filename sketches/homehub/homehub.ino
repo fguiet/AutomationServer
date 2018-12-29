@@ -17,7 +17,7 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
-#define SENSORS_COUNT 1
+#define SENSORS_COUNT 3
 #define DEBUG 1
 
 const char* ssid = "DUMBLEDORE";
@@ -28,6 +28,7 @@ const char* password = "frederic";
 #define MQTT_SERVER "192.168.1.25"
 #define MQTT_TOPIC "/guiet/inside/sensor"
 #define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
+//#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
 
 #define BLE_CLIENT_ID "HubUpstairsBleClient"
 BLEScan* pBLEScan;
@@ -43,11 +44,13 @@ char message_buff[100];
 
 struct Sensor {
     String Address;
+    String Name;
     int SensorId;
     String Temperature;
     String Humidity;
     String Battery;
     bool hasDataToPush;
+    int Rssi;
 };
 
 Sensor sensors[SENSORS_COUNT];
@@ -61,13 +64,19 @@ void InitSensors() {
   //String SENSORID =  "5"; //Parents
   
   sensors[0].Address = "d2:48:c8:a5:35:4c";
+  sensors[0].Name = "Manon";
   sensors[0].SensorId = 4;
   sensors[0].hasDataToPush = false;
 
-  //sensors[1].Address = "c7:b9:43:94:24:3a";
-  //sensors[1].SensorId = 2;
-  //sensors[1].hasDataToPush = false;
-  
+  sensors[1].Address = "c7:b9:43:94:24:3a";
+  sensors[1].Name = "Nohé";
+  sensors[1].SensorId = 3;
+  sensors[1].hasDataToPush = false;
+
+  sensors[2].Address = "e9:3d:63:97:39:5e";
+  sensors[2].Name = "Parents";
+  sensors[2].SensorId = 5;
+  sensors[2].hasDataToPush = false;
 }
 
 long StrToHex(char str[])
@@ -94,6 +103,19 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
           }
          
            if (advertisedDevice.haveServiceData()) {
+
+              //String name = "noname";
+
+              //if (advertisedDevice.haveName())
+              //  name = advertisedDevice.getName();
+
+              int rssi = 0;
+
+              if (advertisedDevice.haveRSSI())
+                rssi = advertisedDevice.getRSSI();
+
+              sensors[i].Rssi = rssi;
+                
               int cpt = advertisedDevice.getServiceDataCount();
 
               if (DEBUG) {
@@ -104,6 +126,8 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
               for(int j=0;j<cpt;j++) {
 
                 if (DEBUG)
+                   Serial.println("Sensor : " + sensors[i].Name);
+                   //Serial.println("Name : " + name);
                    Serial.println("Service n°" + String(j));
                 std::string strServiceData = advertisedDevice.getServiceData(j);                
                 strServiceData.copy(serviceData, strServiceData.length(), 0);
@@ -239,7 +263,7 @@ void loop() {
   for (int i=0; i < SENSORS_COUNT;i++) {
     if (sensors[i].hasDataToPush) {
       sensors[i].hasDataToPush = false;
-      String mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity+";"+sensors[i].Battery;
+      String mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity+";"+sensors[i].Battery+";"+String(sensors[i].Rssi);
 
       if (DEBUG) {
         Serial.println("Publishing : " + mess);
