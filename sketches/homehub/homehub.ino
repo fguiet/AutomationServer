@@ -7,6 +7,9 @@
  * https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLETests/SampleAsyncScan.cpp
  * https://github.com/nkolban/esp32-snippets/issues/496
  * https://github.com/nkolban/esp32-snippets/issues/651
+ * 
+ * Hex online converter
+ * https://www.scadacore.com/tools/programming-calculators/online-hex-converter/
  *    
  * In fact, this library does not have getServiceNb() function and getServiceData(int i)  
  */
@@ -14,11 +17,12 @@
 #include "BLEDevice.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <errno.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
 #define SENSORS_COUNT 3
-#define DEBUG 1
+#define DEBUG 0
 
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
@@ -38,8 +42,6 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 static BLEAddress *pServerAddress;
-
-bool deviceFound = false;
 char message_buff[100];
 
 struct Sensor {
@@ -77,9 +79,14 @@ void InitSensors() {
   sensors[2].Name = "Parents";
   sensors[2].SensorId = 5;
   sensors[2].hasDataToPush = false;
+
+  /*sensors[3].Address = "c5:f7:7b:9b:24:46";
+  sensors[3].Name = "Bureau";
+  sensors[3].SensorId = 1;
+  sensors[3].hasDataToPush = false;*/
 }
 
-long StrToHex(char str[])
+long HexToLong(char str[])
 {
   return strtol(str, 0, 16);
 }
@@ -95,19 +102,16 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
       for (int i = 0; i < SENSORS_COUNT; i++) {
         if (strcmp(pServerAddress->toString().c_str(), sensors[i].Address.c_str()) == 0) {
 
+          //Reset sensor data
           sensors[i].hasDataToPush = true;
-
+          
           if (DEBUG) {
-            Serial.printf("Device found with Mac Address : %s \r\n", pServerAddress->toString().c_str());
-            Serial.println("Getting service data...");
+            Serial.printf("Device found with Mac Address : %s \r\n", pServerAddress->toString().c_str());      
           }
+
+          debug_message("Getting service data...");
          
-           if (advertisedDevice.haveServiceData()) {
-
-              //String name = "noname";
-
-              //if (advertisedDevice.haveName())
-              //  name = advertisedDevice.getName();
+          if (advertisedDevice.haveServiceData()) {
 
               int rssi = 0;
 
@@ -118,57 +122,48 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
                 
               int cpt = advertisedDevice.getServiceDataCount();
 
-              if (DEBUG) {
-                Serial.println("Service data found : " + String(cpt));
-              }
+              debug_message("Service data found : " + String(cpt));
               
-              char serviceData[10];
               for(int j=0;j<cpt;j++) {
 
-                if (DEBUG)
-                   Serial.println("Sensor : " + sensors[i].Name);
-                   //Serial.println("Name : " + name);
-                   Serial.println("Service n°" + String(j));
-                std::string strServiceData = advertisedDevice.getServiceData(j);                
-                strServiceData.copy(serviceData, strServiceData.length(), 0);
-
-                /* Allocate twice the number of the bytes in the buf array because each byte would be 
-                 * converted to two hex characters, also add an extra space for the terminating null byte
-                 * [size] is the size of the buf array */
-                char output[(strServiceData.length() * 2) + 1];
-                /* pointer to the first item (0 index) of the output array */
-                char *ptr = &output[0];
+                debug_message("Sensor : " + sensors[i].Name);
+                debug_message("Service n°" + String(j));
                 
-                for (int i = 0; i < strServiceData.length(); i++) {
-                    /* sprintf converts each byte to 2 chars hex string and a null byte, for example
-                     * 10 => "0A\0".
-                     *
-                     * These three chars would be added to the output array starting from
-                     * the ptr location, for example if ptr is pointing at 0 index then the hex chars
-                     * "0A\0" would be written as output[0] = '0', output[1] = 'A' and output[2] = '\0'.
-                     *
-                     * sprintf returns the number of chars written execluding the null byte, in our case
-                     * this would be 2. Then we move the ptr location two steps ahead so that the next
-                     * hex char would be written just after this one and overriding this one's null byte.
-                     *
-                     * We don't need to add a terminating null byte because it's already added from 
-                     * the last hex string. */  
-                    ptr += sprintf (ptr, "%02X", serviceData[strServiceData.length()-i-1]);
+                std::string strServiceData = advertisedDevice.getServiceData(j); 
+
+                String serviceDataString = (String)BLEUtils::buildHexData(nullptr, (uint8_t *)advertisedDevice.getServiceData(j).data(), advertisedDevice.getServiceData(j).length());
+
+                //Handle length <> 2 or 4
+                //check data received
+                if (serviceDataString.length() != 4 && serviceDataString.length() != 2) {
+                  continue;
+                }
+                
+                //Reverse order big endian
+                if (serviceDataString.length() == 4) {
+                   serviceDataString = serviceDataString.substring(2,4) + serviceDataString.substring(0,2);
                 }
 
+                debug_message("Service Data String : " + serviceDataString);
+
+                char copy[10];
+                serviceDataString.toCharArray(copy,serviceDataString.length()+1);
+
+                /* reset errno to 0 before call */
+                errno = 0;
+
+                long serviceValue = HexToLong(copy);
+
+                if (errno != 0) continue;
                 
-                String t = "0x" + String(output);
-                if (DEBUG) {
-                  Serial.println("Hex String : " + t);
-                }               
-                long serviceValue = StrToHex(output);
                 float serviceValueFloat = String(serviceValue).toFloat();
 
                 if (DEBUG) {
                   printf ("Output (long) : %ld\n", serviceValue);
-                  Serial.println("Output (float) : " + String(serviceValueFloat,2));
                 }
-                  
+
+                debug_message("Output (float) : " + String(serviceValueFloat,2));
+                 
                 //Temperature
                 if (j == 0)
                   sensors[i].Temperature = String(serviceValueFloat/100,2);
@@ -184,37 +179,32 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
            }
         }
       }
-  
-
-     /* bool known = false;
-      
-      
-        if (known) {
-        Serial.print("Device found: ");
-        Serial.println(advertisedDevice.getRSSI());
-        if (advertisedDevice.getRSSI() > -80) deviceFound = true;
-        else deviceFound = false;
-        Serial.println(pServerAddress->toString().c_str());
-        advertisedDevice.getScan()->stop();
-      }*/
     }
 }; // MyAdvertisedDeviceCallbacks
 
+void debug_message(String message) {
+  if (DEBUG) {
+    Serial.println(message);
+  }
+}
+
 void setup() {
 
-  if (DEBUG)
-    Serial.begin(115200);
-    Serial.println("Starting Arduino BLE Client application...");
-
   if (DEBUG) {
-     Serial.println("Disabling brown detector...");
+    Serial.begin(115200);
   }
+
+  //Sanity delay
+  delay(1000);
+
+  debug_message("Starting Arduino BLE Client application...");
+  debug_message("Disabling brown detector...");
+  
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   BLEDevice::init(BLE_CLIENT_ID);
 
   pClient  = BLEDevice::createClient();
-  //Serial.println(" - Created client");
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(true);
@@ -224,29 +214,16 @@ void setup() {
 
 void loop() {
 
-  if (DEBUG) {
-    Serial.print("Free HeapSize: ");
-    Serial.println(esp_get_free_heap_size());
-  }
+  debug_message("Free HeapSize: ");
+  debug_message(String(esp_get_free_heap_size()));
   
- // Serial.println("Sensors : " + sizeof(sensors));
-
-  if (DEBUG) {
-    Serial.println();
-    Serial.println("BLE Scan restarted.....");
-  }
+  debug_message("BLE Scan restarted.....");
   
-  deviceFound = false;
-  BLEScanResults scanResults = pBLEScan->start(20);
+  BLEScanResults scanResults = pBLEScan->start(10);
   
-  if (deviceFound && DEBUG) {
-    Serial.println("Found device");
-  }
-
   pBLEScan->stop();
 
-  if (DEBUG) 
-    Serial.println("BLE Scan ended.....");
+  debug_message("BLE Scan ended.....");
   
   delay(2000);
 
@@ -255,23 +232,20 @@ void loop() {
   connectToMqtt();
 
   //Publish alive topic
-  String mess1 = "UPSTAIRS_HUB_ALIVE";
-  mess1.toCharArray(message_buff, mess1.length()+1);
+  String mess = "UPSTAIRS_HUB_ALIVE";
+  mess.toCharArray(message_buff, mess.length()+1);
   client.publish(MQTT_HUB_TOPIC,message_buff);
 
   //Publish result
   for (int i=0; i < SENSORS_COUNT;i++) {
     if (sensors[i].hasDataToPush) {
       sensors[i].hasDataToPush = false;
-      String mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity+";"+sensors[i].Battery+";"+String(sensors[i].Rssi);
+      mess = "SETINSIDEINFO;"+String(sensors[i].SensorId)+";"+sensors[i].Temperature+";"+sensors[i].Humidity+";"+sensors[i].Battery+";"+String(sensors[i].Rssi);
 
-      if (DEBUG) {
-        Serial.println("Publishing : " + mess);
-      }
-          
+      debug_message("Publishing : " + mess);
+                
       mess.toCharArray(message_buff, mess.length()+1);
       client.publish(MQTT_TOPIC,message_buff);
-    
     }
   }
 
@@ -284,21 +258,22 @@ void loop() {
     disconnectWifi();  
   }
 
-  if (DEBUG)
-    Serial.println("Restarting...");
+  delay(1000);
+  debug_message("Restarting...");
+  
   //Memory leak...
   ESP.restart();
+
+  delay(500); //Useful?
 }
 
 void disconnectMqtt() {
-  if (DEBUG)
-    Serial.println("Disconnecting from mqtt...");
+  debug_message("Disconnecting from mqtt...");
   client.disconnect();
 }
 
 void disconnectWifi() {
-  if (DEBUG)
-    Serial.println("Disconnecting from wifi...");
+  debug_message("Disconnecting from wifi...");
   WiFi.disconnect();
 }
 
@@ -308,21 +283,16 @@ void connectToMqtt() {
 
   int retry = 0;
 
-  if (DEBUG)
-    Serial.print("Attempting MQTT connection...");
+  debug_message("Attempting MQTT connection...");
   while (!client.connected()) {   
     if (client.connect(MQTT_CLIENT_ID)) {
-      if (DEBUG)
-        Serial.println("connected to MQTT Broker...");
+      debug_message("connected to MQTT Broker...");
     }
     else {
       delay(500);
 
-      if (DEBUG)
-        Serial.print(".");
+      debug_message(".");
     }
-
-    
   }
 
   if (retry >= MAX_RETRY) {
@@ -336,8 +306,7 @@ void connectToWifi()
 
   WiFi.disconnect();
 
-  if (DEBUG)
-    Serial.println("Connecting to WiFi...");
+  debug_message("Connecting to WiFi...");
 //  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -346,8 +315,7 @@ void connectToWifi()
   while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
     delay(500);
 
-    if (DEBUG)
-       Serial.print(".");
+    debug_message(".");
     retry++;    
   }
 
