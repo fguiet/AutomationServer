@@ -405,7 +405,7 @@ public class MqttHelper implements MqttCallbackExtended {
 					//Rssi 0 per default if power operated
 					float rssi = 0;
 					
-					if (messageContent.length >= 5)  {
+					if (messageContent.length > 5)  {
 										
 						if (messageContent[5] != null) 
 							rssi = Float.parseFloat(messageContent[5]);
