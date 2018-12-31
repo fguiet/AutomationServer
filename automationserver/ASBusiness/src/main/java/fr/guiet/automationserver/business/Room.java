@@ -67,6 +67,14 @@ public class Room {
 			return _sensor.getBattery();
 		}
 	}
+	
+	public Float getRssi() {
+		if (_sensor.HasTimeoutOccured()) {
+			return null;	
+		} else {
+			return _sensor.getRssi();
+		}
+	}
 
 	/**
 	 * Calcul de l'heure du prochain changement de temperature

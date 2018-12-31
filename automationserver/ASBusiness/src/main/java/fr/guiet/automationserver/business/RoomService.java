@@ -212,6 +212,15 @@ public class RoomService implements Runnable {
 			return null;
 		}
 	}
+	
+	public Float GetRssi(long roomId) {
+		Room r = GetRoomById(roomId);
+		if (r != null) {
+			return r.getRssi();
+		} else {
+			return null;
+		}
+	}
  	
 	public Float GetActualTemp(long roomId) {
 		Room r = GetRoomById(roomId);

@@ -402,9 +402,15 @@ public class MqttHelper implements MqttCallbackExtended {
 					if (messageContent[4] != null) 
 						battery = Float.parseFloat(messageContent[4]);
 
+					//Rssi 0 per default if power operated
+					float rssi = 0;
+					
+					if (messageContent[5] != null) 
+						rssi = Float.parseFloat(messageContent[5]);
+					
 					for (Room room : _roomService.GetRooms()) {
 						if (room.getSensor().getIdSendor() == sensorId) {
-							room.getSensor().setReceivedValue(temp, humidity, battery);
+							room.getSensor().setReceivedValue(temp, humidity, battery, rssi);
 							// _logger.info("Received WiFi sensor info => id: "
 							// + sensorId+ ", temp: "+temp+", hum: "+humidity);
 							break;
@@ -528,13 +534,19 @@ public class MqttHelper implements MqttCallbackExtended {
 		if (_roomService.GetBattery(roomId) != null) {
 			battery = String.format("%.2f", _roomService.GetBattery(roomId));
 		}
+		
+		// Rssi
+		String rssi = "NA";
+		if (_roomService.GetBattery(roomId) != null) {
+			rssi = String.format("%.2f", _roomService.GetRssi(roomId));
+		}
 
 		/*String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
 				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";"
 				+ awayModeStatus + ";" + lastInfoReceveid;*/
 		
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastInfoReceveid + ";" + battery;
+		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastInfoReceveid + ";" + battery + ";" + rssi;
  		
 		return message;
 	}

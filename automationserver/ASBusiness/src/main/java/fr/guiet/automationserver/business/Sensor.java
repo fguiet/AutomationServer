@@ -19,6 +19,7 @@ public class Sensor {
 	private float _actualTemp;
 	private float _actualHumidity;
 	private float _battery; //Battery voltage
+	private float _rssi;
 	private Room _room = null;
 	private SMSGammuService _smsGammuService = null;
 	private boolean _alertSent5 = false;
@@ -41,10 +42,11 @@ public class Sensor {
 		
 	}
 
-	public void setReceivedValue(float actualTemp, float actualHumidity, float battery) {
+	public void setReceivedValue(float actualTemp, float actualHumidity, float battery, float rssi) {
 		_actualHumidity = actualHumidity;		
 		_actualTemp = actualTemp;
 		_battery = battery;
+		_rssi = rssi;
 		
 		//DHT22 is inside a box and temp reading is incorrect (warn from ESP8266)
 		_actualTemp = _actualTemp + _tempshift;
@@ -54,6 +56,10 @@ public class Sensor {
 
 	public float getBattery() {
 		return _battery;
+	}
+	
+	public float getRssi() {
+		return _rssi;
 	}
 	
 	public float getActualHumidity() {
