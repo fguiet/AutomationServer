@@ -401,12 +401,15 @@ public class MqttHelper implements MqttCallbackExtended {
 					
 					if (messageContent[4] != null) 
 						battery = Float.parseFloat(messageContent[4]);
-
+					
 					//Rssi 0 per default if power operated
 					float rssi = 0;
 					
-					if (messageContent[5] != null) 
-						rssi = Float.parseFloat(messageContent[5]);
+					if (messageContent.length >= 5)  {
+										
+						if (messageContent[5] != null) 
+							rssi = Float.parseFloat(messageContent[5]);
+					}
 					
 					for (Room room : _roomService.GetRooms()) {
 						if (room.getSensor().getIdSendor() == sensorId) {
