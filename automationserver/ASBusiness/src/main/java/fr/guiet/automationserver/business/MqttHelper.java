@@ -405,17 +405,13 @@ public class MqttHelper implements MqttCallbackExtended {
 					//Rssi 0 per default if power operated
 					float rssi = 0;
 					
-					if (messageContent.length > 5)  {
-										
-						if (messageContent[5] != null) 
-							rssi = Float.parseFloat(messageContent[5]);
+					if (messageContent.length >= 5)  {																
+					   rssi = Float.parseFloat(messageContent[5]);
 					}
 					
 					for (Room room : _roomService.GetRooms()) {
 						if (room.getSensor().getIdSendor() == sensorId) {
-							room.getSensor().setReceivedValue(temp, humidity, battery, rssi);
-							// _logger.info("Received WiFi sensor info => id: "
-							// + sensorId+ ", temp: "+temp+", hum: "+humidity);
+							room.getSensor().setReceivedValue(temp, humidity, battery, rssi);					
 							break;
 						}
 					}
