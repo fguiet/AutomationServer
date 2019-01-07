@@ -10,7 +10,7 @@ const int REED_SWITCH_PIN = 2; //pin 32 at arduino nano pin D2
 const int LED_PIN = 13;            // external LED or relay connected to pin 13
 const int SENSOR_PIN = A0;
 
-volatile bool wakeUpByFliFlop = false;
+volatile bool wakeUpByFlipFlop = false;
 long debouncing_time = 150; //Debouncing Time in Milliseconds
 volatile unsigned long last_micros;
 
@@ -96,7 +96,7 @@ void blinkLed(){
 void wakeUpNow(){                  // Interrupt service routine or ISR  
 
   if((long)(micros() - last_micros) >= debouncing_time * 1000) {
-    wakeUpByFliFlop = true;
+    wakeUpByFlipFlop = true;
     last_micros = micros();
   }  
 }
@@ -160,9 +160,9 @@ void Hibernate()         // here arduino is put to sleep/hibernation
   
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     
-    if (wakeUpByFliFlop) {       
+    if (wakeUpByFlipFlop) {       
        sendMessage(true);
-       wakeUpByFliFlop = false;
+       wakeUpByFlipFlop = false;
     }
  }
 
