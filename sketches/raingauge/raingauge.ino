@@ -3,8 +3,8 @@
 //#include <avr/interrupt.h>        // Library to use interrupt
 //#include <avr/sleep.h>            // Library for putting our arduino into sleep modes
 
-const int M0_PIN = 3; //D3
-const int M1_PIN = 4; //D4
+const int M0_PIN = 11; //D11
+const int M1_PIN = 12; //D12
 const int REED_SWITCH_INTERRUPT = 0; //interrupt 0 at arduino nano pin D2
 const int REED_SWITCH_PIN = 2; //pin 32 at arduino nano pin D2
 const int LED_PIN = 13;            // external LED or relay connected to pin 13
@@ -103,7 +103,16 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 
 float ReadVoltage() {
 
-  float sensorValue = 0.0f;
+  float vmes = 0.0f;
+  //int sensorValue = analogRead(SENSOR_PIN);
+
+  //3.3v is a little lower than expected...
+  //vmes = (sensorValue * 3.3) / 1023;
+
+  //need a resolution!
+  vmes = 4.2;
+  return vmes;
+  /*float sensorValue = 0.0f;
   float R1 = 32450.0;
   float R2 = 7560.0;
   float vmes = 0.0f;
@@ -118,7 +127,7 @@ float ReadVoltage() {
   vbat = (vmes * (R1 + R2)) / R2;
 
   //Serial.println("vbat : " +String(vbat,2)); 
-  return vbat;
+  return vbat;*/
 
   /*float sensorValue = 0.0f;
   //float R1 = 32450.0;
