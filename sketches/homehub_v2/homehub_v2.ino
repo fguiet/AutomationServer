@@ -10,10 +10,15 @@
 #define MAX_RETRY 50
 #define MQTT_SERVER "192.168.1.25"
 #define MQTT_TOPIC "/guiet/inside/sensor"
+
+//*** CHANGE IT
 #define MQTT_CLIENT_ID "HubUpstairsMqttClient"
 //#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
 #define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
 //#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
+#define FIRMWARE_VERSION "1.0"
+//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -41,6 +46,7 @@ struct Sensor {
     String Rssi;
 };
 
+//*** CHANGE IT
 #define SENSORS_COUNT 3
 Sensor sensors[SENSORS_COUNT];
 
@@ -64,9 +70,13 @@ void InitSensors() {
   sensors[2].Name = "Parents";
   sensors[2].SensorId = "5";
   
-  //sensors[3].Address = "c5:f7:7b:9b:24:46";
-  //sensors[3].Name = "Bureau";
-  //sensors[3].SensorId = "1";
+  /*sensors[0].Address = "d4:a6:6d:1d:ef:8b";
+  sensors[0].Name = "Bureau";
+  sensors[0].SensorId = "1";
+
+  sensors[1].Address = "f4:a4:c6:6f:d8:6a";
+  sensors[1].Name = "Salon";
+  sensors[1].SensorId = "2";*/
 }
 
 
@@ -190,7 +200,7 @@ void loop() {
   unsigned long currentMillis = millis();
   if (((unsigned long)(currentMillis - previousMillis) >= INTERVAL) || ((unsigned long)(millis() - previousMillis) < 0)) {
     //Publish alive topic every 30s
-    String mess = "UPSTAIRS_HUB_ALIVE";
+    String mess = String(MQTT_HUB_MESSAGE) + ";" + String(FIRMWARE_VERSION) + ";" + String(ESP.getFreeHeap()); 
     mess.toCharArray(message_buff, mess.length()+1);
     client.publish(MQTT_HUB_TOPIC,message_buff);
 
