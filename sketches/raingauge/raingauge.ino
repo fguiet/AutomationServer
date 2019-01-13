@@ -1,3 +1,28 @@
+/*
+ * Replace AMS117 5v LDO Regulator (http://www.advanced-monolithic.com/pdf/ds1117.pdf)
+ * by HT7333 (http://www.angeladvance.com/HT73xx.pdf) so Arduino Nano can run on 3.3v
+ * 
+ * Nano CH340 Schema
+ * http://actrl.cz/blog/wp-content/uploads/nano_ch340_schematics-rev1.pdf
+ * 
+ * See this post https://forum.arduino.cc/index.php?topic=409415.0
+ *               http://forum.arduino.cc/index.php?topic=508722.0
+ *               https://www.youtube.com/watch?v=m_0U4DIGsgI
+ *               https://i2.wp.com/www.ba0sh1.com/wp-content/uploads/2013/03/ArduinoNano-3.3.png?ssl=1
+ *               https://www.ba0sh1.com/blog/2013/03/30/tutorial-3-3v-hacking-for-arduino-nano/
+ *               
+ * Clock seems to work well at 16Mhz with 3.3v so far...
+ * 
+ * I only replaced the AMS117 by HT7333..didn't do anything with the CH340 UART converter (don't care if the nano runs at 5v when I am programming it via USB)
+ * 
+ * Consumption (with voltage divider) : 2.78mA (around 10-13 mA when awake)
+ * 
+ * if battery is 500mA then device should run 125hours (5 days) with no sun at all
+ * 
+ * https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-battery-life
+ * 
+ */
+
 #include <LowPower.h>
 
 //#include <avr/interrupt.h>        // Library to use interrupt
@@ -19,7 +44,9 @@ void setup() {
   digitalWrite(LED_PIN, LOW); //necessary ? maybe not but just in case
   
   pinMode(M0_PIN, OUTPUT);    
-  pinMode(M1_PIN, OUTPUT);    
+  pinMode(M1_PIN, OUTPUT);   
+
+  pinMode(SENSOR_PIN, INPUT);
 
   digitalWrite(M0_PIN, HIGH); //
   digitalWrite(M1_PIN, HIGH); //High = Sleep mode
@@ -104,43 +131,24 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 float ReadVoltage() {
 
   float sensorValue = 0.0f;
-  float R1 = 32450.0;
-  float R2 = 7560.0;
-  float vmes = 0.0f;
+  float R1 = 32800;
+  float R2 =  7460;
   float vbat = 0.0f;
-
-  sensorValue = analogRead(SENSOR_PIN);
-  //Serial.println("sensorValue : " +String(sensorValue,2)); 
-
-  //3.3v is a little lower than expected...
-  vmes = (sensorValue * 3.4) / 1024;
-
-  vbat = (vmes * (R1 + R2)) / R2;
-
-  //Serial.println("vbat : " +String(vbat,2)); 
-  return vbat;
-
-  /*float sensorValue = 0.0f;
-  //float R1 = 32450.0;
-  //float R2 = 7560.0;
-  float vin = 0.0;
-  //float vout = 0.0;
-
-  //Calcul empirique...
-  //3.6v = 247
-  //4.1v = 237
-  //4.5v = 234     
-  sensorValue = analogRead(SENSOR_PIN);
-  vin = (((247 - sensorValue) / 2) * 0.1) + 3.6;
+  float vin = 0.0f;
   
+  sensorValue = analogRead(SENSOR_PIN);
+  float vmes = 0.0f;
+  
+  //Analog A0 attends du 3.3v mais la on a plutot du 3.4v
+  //d'où
+  
+  vmes = (3.4 * sensorValue) / 1023;
+
+  //Calcul issue du pont diviseur
+  vin = vmes / (R2 / (R1 + R2));
+
   return vin;
-  //Serial.println("sensorValue : " +String(sensorValue,2)); 
   
-  //vout = (sensorValue * 4.2) / 1024.0;
-  //vin = vout / (R2 / (R1 + R2));
-
-  //vin = sensorValue;
-  return vin;*/
 }
 
 void Hibernate()         // here arduino is put to sleep/hibernation
