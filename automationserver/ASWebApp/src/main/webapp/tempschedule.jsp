@@ -190,10 +190,10 @@
 									text : "Editer",
 									onclick : function() {
 										
+										var evt = dp.events.find(this.source.id());
 										var name = prompt("Nouvelle températures:", evt.text());
-									    if (!name) return;
-									    	
-									    	var evt = dp.events.find(this.source.id());
+									        if (!name) return;
+									    										    	
 									    	evt.text(name);
 									    
 									    	var ev = {
