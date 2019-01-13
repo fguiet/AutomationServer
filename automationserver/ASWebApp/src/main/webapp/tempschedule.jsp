@@ -201,7 +201,7 @@
 									                 "start": evt.start(),
 									                 "end": evt.end(),
 									                 "resource": evt.resource(),
-													 "text": evt.text(),
+													 "text": name,
 													 "dayofweek": evt.data.dayofweek
 									             };		 
 											
