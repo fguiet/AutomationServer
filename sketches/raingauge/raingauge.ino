@@ -130,53 +130,21 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 
 float ReadVoltage() {
 
-<<<<<<< HEAD
   float sensorValue = 0.0f;
   float R1 = 32800;
   float R2 =  7460;
-=======
   float vmes = 0.0f;
-  //int sensorValue = analogRead(SENSOR_PIN);
-
-  //3.3v is a little lower than expected...
-  //vmes = (sensorValue * 3.3) / 1023;
-
-  //need a resolution!
-  vmes = 4.2;
-  return vmes;
-  /*float sensorValue = 0.0f;
-  float R1 = 32450.0;
-  float R2 = 7560.0;
-  float vmes = 0.0f;
->>>>>>> 0106e241cb07e902de86d77af9813b14e6155ff5
-  float vbat = 0.0f;
-  float vin = 0.0f;
-  
+  float vin = 0.f;
+    
   sensorValue = analogRead(SENSOR_PIN);
-<<<<<<< HEAD
-  float vmes = 0.0f;
-  
-  //Analog A0 attends du 3.3v mais la on a plutot du 3.4v
-  //d'où
-  
-  vmes = (3.4 * sensorValue) / 1023;
-=======
-  //Serial.println("sensorValue : " +String(sensorValue,2)); 
 
   //3.3v is a little lower than expected...
   vmes = (sensorValue * 3.4) / 1024;
 
-  vbat = (vmes * (R1 + R2)) / R2;
-
-  //Serial.println("vbat : " +String(vbat,2)); 
-  return vbat;*/
->>>>>>> 0106e241cb07e902de86d77af9813b14e6155ff5
-
   //Calcul issue du pont diviseur
   vin = vmes / (R2 / (R1 + R2));
 
-  return vin;
-  
+  return vin;  
 }
 
 void Hibernate()         // here arduino is put to sleep/hibernation
