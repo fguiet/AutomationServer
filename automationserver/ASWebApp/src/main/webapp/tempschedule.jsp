@@ -116,7 +116,7 @@
 
 					// event creating
 					dp.onTimeRangeSelected = function(args) {
-						var name = prompt("Indiquer la tempÈrature:", "");
+						var name = prompt("Indiquer la temp√©rature:", "");
 						if (!name) {
 							dp.clearSelection();
 							return;
@@ -148,7 +148,7 @@
 				            	 
 				            	    dp.events.add(e);				            	   
 									dp.clearSelection();
-									//dp.message("CrÈÈ!");	 
+									//dp.message("Cr√©√©!");	 
 				             }
 				             
 				             
@@ -182,7 +182,7 @@
 								{
 									text : "Afficher l'ID",
 									onclick : function() {
-										alert("ParamÈtrage: "
+										alert("Param√©trage: "
 												+ this.source.value());
 									}
 								},
@@ -190,7 +190,7 @@
 									text : "Editer",
 									onclick : function() {
 										
-										var name = prompt("Nouvelle tempÈratures:", evt.text());
+										var name = prompt("Nouvelle temp√©ratures:", evt.text());
 									    if (!name) return;
 									    	
 									    	var evt = dp.events.find(this.source.id());
@@ -222,7 +222,7 @@
 									text : "Supprimer",
 									onclick : function() {
 										
-										if (!confirm("Voulez vous vraiment supprimer ce paramÈtrage?")) {
+										if (!confirm("Voulez vous vraiment supprimer ce param√©trage?")) {
 										      return;
 										    }
 										
@@ -234,7 +234,7 @@
 										
 										dp.events.remove(this.source);
 						            	//dp.update();
-						            	//dp.message("SupprimÈ!");
+						            	//dp.message("Supprim√©!");
 									}
 								} ]
 					});
@@ -249,7 +249,7 @@
 						name : "Chambre Manon",
 						id : 4
 					}, {
-						name : "Chambre NohÈ",
+						name : "Chambre Noh√©",
 						id : 3
 					}, {
 						name : "Chambre Parents",
@@ -267,7 +267,7 @@
 	</script>
 </header>
 <body>
-	<h2>ParamÈtrage de la tempature par dÈfaut des piËces</h2>
+	<h2>Param√©trage de la temp√©rature par d√©faut des pi√®ces</h2>
 		<div id="dp"></div>
 </body>
 </html>
