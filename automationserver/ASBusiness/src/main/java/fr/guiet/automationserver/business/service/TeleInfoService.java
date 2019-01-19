@@ -831,6 +831,7 @@ public class TeleInfoService implements Runnable {
 				}
 			} else {
 				invalidChecksum = true;
+				break; //no need to continue
 				// _logger.error("Checksum invalide pour l'etiquette :
 				// "+etiquette+", valeur : "+valeur);
 			}
