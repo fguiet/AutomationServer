@@ -4,6 +4,8 @@ import com.pi4j.io.gpio.Pin;
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
 import fr.guiet.automationserver.dto.*;
+import fr.guiet.automationserver.business.helper.GpioHelper;
+import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 /**
@@ -306,24 +308,8 @@ public class Heater implements Comparable<Heater> {
 		/*GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.LOW,
 				PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);*/
 
-		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);
+		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.helper.PinState.LOW, logMessage, _smsGammuService);
 	}
-
-	/*
-	 * private void StartTeleInfoService() {
-	 * _teleInfoService.StartCollectingTeleinfo(String.
-	 * format("heater %s from room %s", _name, _room.getName())); }
-	 */
-
-	// private void StopTeleInfoService() {
-	// _teleInfoService.StopCollectingTeleinfo(String.format("heater %s from
-	// room %s", _name, _room.getName()));
-	/*
-	 * while (!_teleInfoService.IsTeleInfoCollectStopped()) { try {
-	 * Thread.sleep(500); } catch (InterruptedException e) {
-	 * _logger.error("Error in Heater::StopTeleInfoService method"); break; } }
-	 */
-	// }
 
 	/**
 	 * Sets heater OFF
@@ -336,7 +322,7 @@ public class Heater implements Comparable<Heater> {
 		if (_room != null)
 			logMessage = String.format("Turning OFF heater %s from room %s", _name, _room.getName());
 
-		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.PinState.HIGH, logMessage, _smsGammuService);
+		GpioHelper.changeGpioPinState(_pin,fr.guiet.automationserver.business.helper.PinState.HIGH, logMessage, _smsGammuService);
 		
 		//GpioHelper.provisionGpioPin(_pin, fr.guiet.automationserver.business.PinState.HIGH,
 		//		PIN_CHAUFFAGE_NAME + _heaterId, logMessage, PinState.HIGH);		

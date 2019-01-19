@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.helper;
 
 import org.apache.log4j.Logger;
 
@@ -7,6 +7,7 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.Pin;
 
+import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class GpioHelper {

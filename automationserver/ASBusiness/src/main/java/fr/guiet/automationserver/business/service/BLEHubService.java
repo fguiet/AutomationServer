@@ -1,10 +1,13 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
+
+import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class BLEHubService implements Runnable {
+public class BLEHubService implements Runnable, IMqttable {
 	
 	private static Logger _logger = Logger.getLogger(BLEHubService.class);
 	private SMSGammuService _smsGammuService = null;
@@ -17,11 +20,18 @@ public class BLEHubService implements Runnable {
 	private Date _lastAliveDownstairsHubReception;
 	private boolean _hasDownstairsHubNotificationSent = false;
 	
+	private ArrayList<String> _mqttTopics = new ArrayList<String>();
+	
 	private boolean _isStopped = false; // Service arrete?
 	
 	public BLEHubService (SMSGammuService smsGammuService) {
 		
 	 	_smsGammuService = smsGammuService;
+	 	
+	 	//Add topics processed by this service
+	 	_mqttTopics.add(MQTT_TOPIC_HUB_UPSTAIRS);
+	 	_mqttTopics.add(MQTT_TOPIC_HUB_DOWNSTAIRS);
+	 	
     }
 	
 	@Override
@@ -78,6 +88,11 @@ public class BLEHubService implements Runnable {
 			}
      	}
 		
+	}
+	
+	@Override
+	public ArrayList<String> getTopics() {
+		return _mqttTopics;
 	}
 	
 	public boolean ProcessMqttMessage(String topic, String payload) {

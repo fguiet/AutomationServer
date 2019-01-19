@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.helper;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -10,11 +10,49 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class DateUtils {
+	
 	public static Date addDays(Date date, int days) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		cal.add(Calendar.DATE, days); // minus number would decrement the days
 		return cal.getTime();
+	}
+	
+	public static String GetDayName(int day) {
+
+		String dayString = "NA";
+
+		switch (day) {
+		case 2:
+			dayString = "Lundi";
+			break;
+
+		case 3:
+			dayString = "Mardi";
+			break;
+
+		case 4:
+			dayString = "Mercredi";
+			break;
+
+		case 5:
+			dayString = "Jeudi";
+			break;
+
+		case 6:
+			dayString = "Vendredi";
+			break;
+
+		case 7:
+			dayString = "Samedi";
+			break;
+
+		case 1:
+			dayString = "Dimanche";
+			break;
+		}
+
+		return dayString;
 	}
 	
 	public static boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException {

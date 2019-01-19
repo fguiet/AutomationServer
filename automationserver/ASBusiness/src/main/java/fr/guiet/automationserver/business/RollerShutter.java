@@ -3,14 +3,12 @@ package fr.guiet.automationserver.business;
 import java.text.ParseException;
 import java.util.Date;
 
-/*import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;*/
-
 import org.apache.log4j.Logger;
 //import org.json.JSONObject;
 
+import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
+import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class RollerShutter {
@@ -21,7 +19,7 @@ public class RollerShutter {
 	private int _id = -1;
 	//private String _apikey = null;	
 	private String _name = null;
-	private MqttClientMgt _mqttClient;
+	private MqttClientHelper _mqttClient;
 	
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
@@ -37,7 +35,7 @@ public class RollerShutter {
 		_id = id;	
 		_name = name;
 					
-		_mqttClient = new MqttClientMgt(_mqttClientId + _id);
+		_mqttClient = new MqttClientHelper(_mqttClientId + _id);
 		_smsGammuService = smsGammuService;
 	}
 	

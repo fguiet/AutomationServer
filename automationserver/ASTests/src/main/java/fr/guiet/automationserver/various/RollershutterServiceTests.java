@@ -2,7 +2,7 @@ package fr.guiet.automationserver.various;
 
 
 
-import fr.guiet.automationserver.business.RollerShutterService;
+import fr.guiet.automationserver.business.service.RollerShutterService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,7 +11,7 @@ import java.net.URL;
 
 import org.json.JSONObject;
 
-import fr.guiet.automationserver.business.RollerShutter;
+//import fr.guiet.automationserver.business.RollerShutter;
 
 
 public class RollershutterServiceTests {

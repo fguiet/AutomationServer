@@ -1,9 +1,11 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 
 //import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
+import fr.guiet.automationserver.business.RollerShutter;
+import fr.guiet.automationserver.business.RollerShutterState;
 import fr.guiet.automationserver.dto.SMSDto;
 
 

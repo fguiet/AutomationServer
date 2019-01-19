@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,6 +19,7 @@ import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -31,12 +32,12 @@ public class RainGaugeService implements Runnable {
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
 	private static String _mqttClientId = "rainGaugeCliendId";
-	private MqttClientMgt _mqttClient = null;
+	private MqttClientHelper _mqttClient = null;
 	private String _pub_topic ="/guiet/automationserver/raingauge";
 
 	public RainGaugeService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
-		_mqttClient = new MqttClientMgt(_mqttClientId);
+		_mqttClient = new MqttClientHelper(_mqttClientId);
 		_dbManager = new DbManager();
 	}
 
@@ -133,7 +134,7 @@ public class RainGaugeService implements Runnable {
 			_serial.setBufferingDataReceived(false);
 
 			_serial.open(config);
-			_logger.info("Ouverture du port serie effectué avec succès...");
+			_logger.info("Ouverture du port serie pour le pluviomètre effectué avec succès...");
 
 			sdl = CreateSerialListener();
 

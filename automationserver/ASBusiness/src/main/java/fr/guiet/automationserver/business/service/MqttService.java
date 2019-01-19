@@ -1,12 +1,14 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
+
 
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -16,11 +18,12 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import fr.guiet.automationserver.business.RollerShutterState;
 
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class MqttHelper implements MqttCallbackExtended {
+public class MqttService implements MqttCallbackExtended {
 
 	private static Logger _logger = Logger.getLogger(MqttClient.class);
 	private String _uri = "tcp://%s:%s";
@@ -30,12 +33,12 @@ public class MqttHelper implements MqttCallbackExtended {
 	private String[] _topics = null;
 	private RoomService _roomService = null;
 	private TeleInfoService _teleInfoService = null;
-	private WaterHeater _waterHeaterService = null;
-	private Print3DService _print3DService = null;
+	private WaterHeaterService _waterHeaterService = null;
+	//private Print3DService _print3DService = null;
 	private AlarmService _alarmService = null;
-	private ScenariiManager _scenariiManager = null;
+	//private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
-	private BLEHubService _BLEHubService = null;
+	//private BLEHubService _BLEHubService = null;
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
@@ -43,14 +46,24 @@ public class MqttHelper implements MqttCallbackExtended {
 	private Date _lastComputeBillCost = null;
 	private String _electricityBill = "NA";
 	
+	private ArrayList<IMqttable> _mqttClients = new ArrayList<IMqttable>();
+	
+	
+	public void addClient(IMqttable client) {
+		_mqttClients.add(client);
+	}
+	
+	public void addClients(ArrayList<IMqttable> clients) {
+		_mqttClients.addAll(clients);
+	}
+	
 	public Date GetLastBasementMessage() {
 		return _lastBasementMessage;
 	}	
 
-	public MqttHelper(SMSGammuService gammuService, RoomService roomService, 
-			TeleInfoService teleInfoService, WaterHeater waterHeaterService, AlarmService alarmService,
-			RollerShutterService rollerShutterService, ScenariiManager scenariiManager, Print3DService print3DService,
-			BLEHubService BLEHubService) {
+	public MqttService(SMSGammuService gammuService, RoomService roomService, 
+			TeleInfoService teleInfoService, WaterHeaterService waterHeaterService, AlarmService alarmService,
+			RollerShutterService rollerShutterService) {
 
 		InputStream is = null;
 		try {
@@ -72,9 +85,9 @@ public class MqttHelper implements MqttCallbackExtended {
 			_waterHeaterService = waterHeaterService;
 			_alarmService = alarmService;
 			_rollerShutterService = rollerShutterService;
-			_scenariiManager = scenariiManager;
-			_print3DService = print3DService;
-			_BLEHubService = BLEHubService;
+			//_scenariiManager = scenariiManager;
+			//_print3DService = print3DService;
+			//_BLEHubService = BLEHubService;
 			_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
@@ -99,13 +112,23 @@ public class MqttHelper implements MqttCallbackExtended {
 				
 		int subQoS = 0;
 		
-		try {		
+		try {	
+			
+			//TODO : 2019/01/19 will be removed 
 			for (String topic : _topics) {
 				if (!topic.equals("")) {
 					_logger.info("Subscribing to topic : " + topic);
 					_client.subscribe(topic, subQoS);
 				}
 			}
+			
+			for (IMqttable c : _mqttClients) {
+				for (String t : c.getTopics()) {
+					_logger.info("Subscribing to topic : " + t);
+					_client.subscribe(t, subQoS);
+				}
+			}
+			
 		}
 		catch(Exception e) {
 			_logger.error("Error while subscribing to mqtt topic", e);
@@ -130,7 +153,7 @@ public class MqttHelper implements MqttCallbackExtended {
 			
 			subscribe();
 			
-			_logger.info("Connected to mqtt broker !");
+			_logger.info("Client : "+CLIENT_ID+ " has connected to mqtt broker !");
 			
 
 		} catch (MqttException me) {
@@ -155,7 +178,7 @@ public class MqttHelper implements MqttCallbackExtended {
 			_logger.error("Error disconnecting to mqtt broker", me);
 		}
 	}
-
+	
 	/**
 	 * Publishes message to Mqtt broker
 	 * 
@@ -164,16 +187,10 @@ public class MqttHelper implements MqttCallbackExtended {
 
 		try {
 			MqttMessage mqttMessage = new MqttMessage();
-
-			for (Room room : _roomService.GetRooms()) {
-				String message = FormatRoomInfoMessage(room.getRoomId());
-				mqttMessage.setPayload(message.getBytes("UTF8"));
-				_client.publish(room.getMqttTopic(), mqttMessage);
-				// Thread.sleep(1000);
-			}
 			
 			String message = FormatHomeInfoMessage();
 			mqttMessage.setPayload(message.getBytes("UTF8"));
+			
 			_client.publish(HOME_INFO_MQTT_TOPIC, mqttMessage);
 			
 			
@@ -214,9 +231,18 @@ public class MqttHelper implements MqttCallbackExtended {
 
 	private void ProcessMessageReceived(String topic, String message) {
 		
-		if (_print3DService.ProcessMqttMessage(topic, message)) return;
-		if (_BLEHubService.ProcessMqttMessage(topic, message)) return;
+		boolean messageProcessed = false;
 		
+		//Process Mqtt message!
+		for (IMqttable c : _mqttClients) {
+			messageProcessed = c.ProcessMqttMessage(topic, message);
+			
+			if (messageProcessed) {
+				return;
+			}
+		}
+		
+		//TODO : Will be removed! 
 		String[] messageContent = message.split(";");
 
 		if (messageContent != null && messageContent.length > 0) {
@@ -264,7 +290,7 @@ public class MqttHelper implements MqttCallbackExtended {
 				
 			case "SETHOMEMODE":
 				String homeMode = messageContent[1];
-				_scenariiManager.SetHomeModeState(homeMode);
+				//_scenariiManager.SetHomeModeState(homeMode);
 				break;			
 				
 			case "SETAWAYMODE":
@@ -275,7 +301,7 @@ public class MqttHelper implements MqttCallbackExtended {
 					_waterHeaterService.SetAwayModeOn();
 					_rollerShutterService.SetAutomaticManagementOff();
 					_alarmService.SetAutomaticModeOff();
-					_scenariiManager.SetHomeModeState("NOTACTIVATED");					
+					//_scenariiManager.SetHomeModeState("NOTACTIVATED");					
 				} else {
 					_roomService.SetAwayModeOff();
 					_waterHeaterService.SetAwayModeOff();					
@@ -390,7 +416,7 @@ public class MqttHelper implements MqttCallbackExtended {
 					_logger.error("Could not process message : " + message, e);
 				}				
 				break;
-			case "SETINSIDEINFO":
+			/*case "SETINSIDEINFO":
 				try {
 					long sensorId = Long.parseLong(messageContent[1]);
 					float temp = Float.parseFloat(messageContent[2]);
@@ -418,7 +444,7 @@ public class MqttHelper implements MqttCallbackExtended {
 				} catch (Exception e) {
 					_logger.error("Could not process message : " + message, e);
 				}
-				break;
+				break;*/
 
 			default:
 				_logger.error("Could not process MQTT message : " + message);
@@ -464,7 +490,7 @@ public class MqttHelper implements MqttCallbackExtended {
 		String westRSState = _rollerShutterService.getWestRSState();
 		String northRSState = _rollerShutterService.getNorthRSState();
 		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
-		String homeModeStatus = _scenariiManager.GetHomeModeStatus();
+		//String homeModeStatus = _scenariiManager.GetHomeModeStatus();
 		
 		//Boiler Ino
 		// Last info received from sensor
@@ -479,13 +505,15 @@ public class MqttHelper implements MqttCallbackExtended {
 		
 		
 		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";" + automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
-		message = message + ";" + _scenariiManager.getNextRSOpenDate() + ";" + _scenariiManager.getNextRSCloseDate();
-		message = message + ";" + northRSState + ";" + homeModeStatus + ";" + lastBoilerInfoReceveid + ";" + lastBoilerOnDuration + ";" + boilerState + ";" + actualBoilerTemp; 
+		message = message + ";" + "NA" + ";" + "NA";
+		message = message + ";" + northRSState + ";" + "NA" + ";" + lastBoilerInfoReceveid + ";" + lastBoilerOnDuration + ";" + boilerState + ";" + actualBoilerTemp;
+		//message = message + ";" + _scenariiManager.getNextRSOpenDate() + ";" + _scenariiManager.getNextRSCloseDate();
+		//message = message + ";" + northRSState + ";" + homeModeStatus + ";" + lastBoilerInfoReceveid + ";" + lastBoilerOnDuration + ";" + boilerState + ";" + actualBoilerTemp; 
 		
 		return message;
 	}
 	
-	private String FormatRoomInfoMessage(long roomId) {
+	/*private String FormatRoomInfoMessage(long roomId) {
 
 		String actualTemp = "NA";
 		if (_roomService.GetActualTemp(roomId) != null) {
@@ -521,12 +549,11 @@ public class MqttHelper implements MqttCallbackExtended {
 		}
 
 		String sensorKO = "SENSORKO";
-		if (_roomService.IsSensorResponding(roomId)) {
+		if (_roomService.isSensorOperational(roomId)) {
 			sensorKO = "SENSOROK";
 		}
 
-		// Last info received from sensor
-		String lastInfoReceveid = _roomService.LastInfoReceived(roomId);
+		String lastSensorUpdate = _roomService.getLastSensorUpdate(roomId);
 
 		// Battery
 		String battery = "NA";
@@ -539,14 +566,10 @@ public class MqttHelper implements MqttCallbackExtended {
 		if (_roomService.GetBattery(roomId) != null) {
 			rssi = String.format("%.2f", _roomService.GetRssi(roomId));
 		}
-
-		/*String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-				+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + hchc + ";" + hchp + ";" + papp + ";"
-				+ awayModeStatus + ";" + lastInfoReceveid;*/
 		
 		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
-		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastInfoReceveid + ";" + battery + ";" + rssi;
+		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastSensorUpdate + ";" + battery + ";" + rssi;
  		
 		return message;
-	}
+	}*/
 }

@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

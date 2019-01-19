@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import java.util.List;
 import java.util.Properties;
@@ -14,6 +14,9 @@ import java.util.Collections;
 
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
+import fr.guiet.automationserver.business.Heater;
+import fr.guiet.automationserver.business.Room;
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class RoomService implements Runnable {
@@ -22,7 +25,9 @@ public class RoomService implements Runnable {
 	private static Logger _logger = Logger.getLogger(RoomService.class);
 
 	private List<Room> _roomList = new ArrayList<Room>();
+	
 	private boolean _isStopped = false; // Service arrete?
+	
 	private TeleInfoService _teleInfoService = null;
 	private List<Heater> _heaterListPhase1 = new ArrayList<Heater>();
 	private List<Heater> _heaterListPhase2 = new ArrayList<Heater>();
@@ -30,12 +35,16 @@ public class RoomService implements Runnable {
 	private List<Heater> _allHeaterList = new ArrayList<Heater>();
 	private static final int MAX_INTENSITE_PAR_PHASE = 25;
 	private SMSGammuService _smsGammuService = null;
+	//private MqttService _mqttService = null;
 	private Timer _timer = null;
+	private Timer _timer2 = null;
 	private DbManager _dbManager = null;
 	private Float _hysteresis = null;
 	private Float _awayTemp = null;
 	private boolean _awayModeStatus = false;
 	private boolean _verboseLogEnable = false;
+	private static String MQTT_CLIENT_ID = "roomServiceCliendId";
+	private MqttClientHelper _mqttClient = null;
 
 	// Constructeur
 	/**
@@ -94,6 +103,7 @@ public class RoomService implements Runnable {
 
 		_teleInfoService = teleInfoService;
 		_smsGammuService = smsGammuService;
+		_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
 		_dbManager = new DbManager();
 	}
 
@@ -157,20 +167,30 @@ public class RoomService implements Runnable {
 		// Must not occur
 		return null;
 	}
+	
+	public ArrayList<IMqttable> getMqttableClients() {
+		
+		ArrayList<IMqttable> m = new ArrayList<IMqttable>();
+		for (Room r : _roomList) {
+			m.add(r.getSensor());
+		}
+		
+		return m;
+	}
 
-	public boolean IsSensorResponding(long roomId) {
+	/*public boolean isSensorOperational(long roomId) {
 		Room r = GetRoomById(roomId);
 		if (r != null) {
-			return r.IsSensorResponding();
+			return r.isSensorOperational();
 		} else {
 			return false;
 		}
 	}
 
-	public String LastInfoReceived(long roomId) {
+	public String getLastSensorUpdate(long roomId) {
 		Room r = GetRoomById(roomId);
 		if (r != null) {
-			return r.lastInfoReceivedFromSensor();
+			return r.getLastSensorUpdate();
 		} else {
 			return "NA";
 		}
@@ -202,12 +222,12 @@ public class RoomService implements Runnable {
 		} else {
 			return null;
 		}
-	}
+	}/*
 
-	public Float GetBattery(long roomId) {
+	/*public Float GetBattery(long roomId) {
 		Room r = GetRoomById(roomId);
 		if (r != null) {
-			return r.getBattery();
+			return r.getBatteryVoltage();
 		} else {
 			return null;
 		}
@@ -229,9 +249,9 @@ public class RoomService implements Runnable {
 		} else {
 			return null;
 		}
-	}
+	}*/
 
-	public boolean IsOffForced(long roomId) {
+	/*public boolean IsOffForced(long roomId) {
 		Room r = GetRoomById(roomId);
 		if (r != null) {
 			return r.IsOffForced();
@@ -256,7 +276,7 @@ public class RoomService implements Runnable {
 		} else {
 			return null;
 		}
-	}
+	}*/
 
 	// Définit la temperature desiree pour une piece
 	public void SetWantedTemp(long roomId, float wantedTemp) {
@@ -298,6 +318,9 @@ public class RoomService implements Runnable {
 		if (_timer != null)
 			_timer.cancel();
 
+		if (_timer2 != null)
+			_timer2.cancel();
+		
 		for (Room r : _roomList) {
 			r.StopService();
 		}
@@ -310,26 +333,34 @@ public class RoomService implements Runnable {
 	// Création de la tache de sauvegarde en bdd
 	private void CreateSaveToDBTask() {
 
+		_logger.info("Creating save to db room info task");
+		
 		TimerTask roomServiceTask = new TimerTask() {
 			@Override
 			public void run() {
-
-				for (Room room : _roomList) {
-
-					// Pas de sauvegarde si une valeur est nulle
-					if (room.getActualTemp() != null && room.getWantedTemp() != null
-							&& room.getActualHumidity() != null) {
-						// DbManager dbManager = new DbManager();
-						//_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
-						//		room.getWantedTemp(), room.getActualHumidity());
-						//_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
-						//		+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
-						//		+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
-
-						
-						_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
-								room.getWantedTemp(), room.getActualHumidity(), room.getBattery());
+				
+				try {
+				
+					for (Room room : _roomList) {
+	
+						// Pas de sauvegarde si une valeur est nulle
+						if (room.getActualTemp() != null && room.getWantedTemp() != null
+								&& room.getActualHumidity() != null) {
+							// DbManager dbManager = new DbManager();
+							//_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
+							//		room.getWantedTemp(), room.getActualHumidity());
+							//_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
+							//		+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
+							//		+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
+	
+							
+							_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
+									room.getWantedTemp(), room.getActualHumidity(), room.getBatteryVoltage());
+						}
 					}
+				}
+				catch(Exception e) {
+					_logger.error("Error occured in room service task", e);
 				}
 			}
 		};
@@ -337,7 +368,97 @@ public class RoomService implements Runnable {
 		_timer = new Timer(true);
 		// Toutes les minutes on enregistre
 		_timer.schedule(roomServiceTask, 5000, 60000);
+		
+		_logger.info("Save to db room info task has been created.");
+	}
+	
+	//Publishing room information to mqtt
+	private void createPublishMqttRoomInfoTask() {
+		
+		_logger.info("Creating publish mqtt room info task");
+		
+		TimerTask publishMqttRoomInfo = new TimerTask() {
+			@Override
+			public void run() {
+				
+				try {
 
+					for (Room room : _roomList ) {
+						String message = FormatRoomInfoMessage(room);
+						_mqttClient.SendMsg(room.getMqttTopic(), message);
+					}
+				}
+				catch(Exception e) {
+					_logger.error("Error occured in publish mqtt room task",e);
+				}
+			}
+		};
+
+		_timer2 = new Timer(true);
+		//Publish room information every 10s
+		_timer2.schedule(publishMqttRoomInfo, 5000, 10000);
+		
+		_logger.info("Publish mqtt room info task has been created.");
+	}
+	
+	private String FormatRoomInfoMessage(Room room) {
+
+		String actualTemp = "NA";
+		if (room.getActualTemp() != null) {
+			actualTemp = String.format("%.2f", room.getActualTemp());
+		}
+	
+		String wantedTemp = "NA";
+		if (room.getWantedTemp() != null) {
+			wantedTemp = String.format("%.2f", room.getWantedTemp());
+		}
+	
+		String actualHumidity = "NA";
+		if (room.getActualHumidity() != null) {
+			actualHumidity = String.format("%.2f", room.getActualHumidity());
+		}
+	
+		String nextDefaultTemp = room.NextChangeDefaultTemp();
+	
+		String hasHeaterOn = "HEATEROFF";
+		if (room.AtLeastOneHeaterOn()) {
+			hasHeaterOn = "HEATERON";
+		}
+	
+		String progTemp = "NA";
+		Float tempProg = room.GetTempProg();
+		if (tempProg != null) {
+			progTemp = String.format("%.2f", tempProg);
+		}
+	
+		String offForced = "FORCEDHEATEROFF";
+		if (room.IsOffForced()) {
+			offForced = "FORCEDHEATERON";
+		}
+	
+		String sensorKO = "SENSORKO";
+		if (room.isSensorOperational()) {
+			sensorKO = "SENSOROK";
+		}
+	
+		String lastSensorUpdate = room.getLastSensorUpdate();
+	
+		// Battery
+		String battery = "NA";
+		if (room.getBatteryVoltage() != null) {
+			battery = String.format("%.2f", room.getBatteryVoltage() );
+		}
+		
+		// Rssi
+		String rssi = "NA";
+		if (room.getRssi() != null) {
+			rssi = String.format("%.2f", room.getRssi());
+		}
+		
+		String message = actualTemp + ";" + actualHumidity + ";" + progTemp + ";" + nextDefaultTemp + ";" + hasHeaterOn
+		+ ";" + offForced + ";" + sensorKO + ";" + wantedTemp + ";" + lastSensorUpdate + ";" + battery + ";" + rssi;
+			
+		return message;
 	}
 
 	@Override
@@ -346,6 +467,8 @@ public class RoomService implements Runnable {
 		_logger.info("Starting Room Service...");
 
 		CreateSaveToDBTask();
+		
+		createPublishMqttRoomInfoTask();
 
 		LoadRoomList();
 
@@ -382,7 +505,7 @@ public class RoomService implements Runnable {
 					//Gestion des radiateurs!
 					ManageHeaters();					
 				}
-
+				
 				// Toutes les 5 secondes
 				Thread.sleep(5000);
 
@@ -441,6 +564,7 @@ public class RoomService implements Runnable {
 		Collections.sort(_heaterListPhase3);
 
 		TeleInfoTrameDto teleInfoTrame = _teleInfoService.GetLastTrame();
+		
 		if (teleInfoTrame != null) {
 			ManagerHeatersByPhase(1, teleInfoTrame.IINST1, _heaterListPhase1);
 			ManagerHeatersByPhase(2, teleInfoTrame.IINST2, _heaterListPhase2);

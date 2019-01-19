@@ -1,10 +1,13 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import org.apache.log4j.Logger;
+
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class Print3DService {
+public class Print3DService implements IMqttable {
 	
 	private static Logger _logger = Logger.getLogger(Print3DService.class);
 	private SMSGammuService _smsGammuService = null;
@@ -14,14 +17,25 @@ public class Print3DService {
 	private static String MQTT_MESSAGE_TURN_PRINTER_OFF="off";
 	private Date _startTime;
 	private static String MQTT_CLIENT_ID = "print3DServiceCliendId";
-	private MqttClientMgt _mqttClient = null;
+	private MqttClientHelper _mqttClient = null;
+	private ArrayList<String> _mqttTopics = new ArrayList<String>();
 	
 	public Print3DService (SMSGammuService smsGammuService) {
 
-		_mqttClient = new MqttClientMgt(MQTT_CLIENT_ID);
+		_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
 	 	_smsGammuService = smsGammuService;
+	 	
+	 	//add topics processed by this service
+	 	_mqttTopics.add(MQTT_TOPIC_PRINT_STARTED);
+	 	_mqttTopics.add(MQTT_TOPIC_PRINT_DONE);
+	 	
      	_logger.info("Starting 3D print service...");
     }
+	
+	@Override
+	public ArrayList<String> getTopics() {
+		return _mqttTopics;
+	}
 	
 	public boolean ProcessMqttMessage(String topic, String payload) {
 		

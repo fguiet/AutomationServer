@@ -1,3 +1,16 @@
+/**** 
+ * homehub_v2
+ * 
+ * F. Guiet 
+ * Creation           : End of 2018
+ * Last modification  : 
+ * 
+ * Version            : 1.0
+ * 
+ * History            : 
+ *                      
+ */
+
 //Software serial (allow debugging...)
 #include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
@@ -12,13 +25,13 @@
 #define MQTT_TOPIC "/guiet/inside/sensor"
 
 //*** CHANGE IT
-#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
-//#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
-#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
-//#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
+//#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
+#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
+//#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
+#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
 #define FIRMWARE_VERSION "1.0"
-//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
-#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
+#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+//#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -47,7 +60,7 @@ struct Sensor {
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 3
+#define SENSORS_COUNT 2
 Sensor sensors[SENSORS_COUNT];
 
 void InitSensors() {
@@ -58,7 +71,7 @@ void InitSensors() {
   //String SENSORID =  "4"; //Manon
   //String SENSORID =  "5"; //Parents
   
-  sensors[0].Address = "d2:48:c8:a5:35:4c";
+  /*sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
   
@@ -68,27 +81,27 @@ void InitSensors() {
   
   sensors[2].Address = "e9:3d:63:97:39:5e";
   sensors[2].Name = "Parents";
-  sensors[2].SensorId = "5";
+  sensors[2].SensorId = "5";*/
   
-  /*sensors[0].Address = "d4:a6:6d:1d:ef:8b";
+  sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
 
   sensors[1].Address = "f4:a4:c6:6f:d8:6a";
   sensors[1].Name = "Salon";
-  sensors[1].SensorId = "2";*/
+  sensors[1].SensorId = "2";
 }
 
 
 void setup() {
-  Serial.begin(SERIAL_BAUD);
+  Serial.begin(SERIAL_BAUD); //ESP8266 default serial on UART0 is GPIO1 (TX) and GPIO3 (RX)
   softSerial.begin(SERIAL_BAUD); // to AltSoftSerial RX
 
   //pinMode(pinHandShake, OUTPUT);
   pinMode(BUILTIN_LED, OUTPUT);
 
-  connectToWifi();
-  connectToMqtt();
+  //connectToWifi();  
+  //connectToMqtt();
 
   InitSensors();
   
@@ -168,18 +181,21 @@ void jsonParser(char *buffer) {
 }
 
 void loop() {
- 
-  if (WiFi.status() != WL_CONNECTED) {
-      connectToWifi();
-  }
 
-  client.loop();
+  if (WiFi.status() != WL_CONNECTED) {
+      digitalWrite(BUILTIN_LED, LOW);  //LED on
+      connectToWifi();
+      digitalWrite(BUILTIN_LED, HIGH);  //LED off
+  }
 
   if (!client.connected()) {
     connectToMqtt();
   }
+
+   client.loop();
   
   if (softSerial.available() > 0) {
+  //if (Serial.available() > 0) {
     //received serial line of json
     if (readline(softSerial.read(), serialbuffer, serialBufSize) > 0)
     {

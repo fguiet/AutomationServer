@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.helper;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,15 +13,15 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class MqttClientMgt implements MqttCallback {
+public class MqttClientHelper implements MqttCallback {
 	
-	private static Logger _logger = Logger.getLogger(MqttClientMgt.class);
+	private static Logger _logger = Logger.getLogger(MqttClientHelper.class);
 	private String _uri = "tcp://%s:%s";
 	//private MqttClient _client = null;
 	private String _clientId = null;
 	//private final String CLIENT_ID = "Tomcat Mqtt Client";
 	
-	public MqttClientMgt(String clientId) {
+	public MqttClientHelper(String clientId) {
 
 		_clientId = clientId;
 		InputStream is = null;

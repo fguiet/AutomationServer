@@ -704,7 +704,7 @@ public class DbManager {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
 		            .getConnection();
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version, c.mqtt_topic FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -719,6 +719,7 @@ public class DbManager {
 			dto.name = rs.getString("name");
 			dto.tempshift = rs.getFloat("tempshift");
 			dto.firmware_version = rs.getInt("firmware_version");
+			dto.mqtt_topic = rs.getString("mqtt_topic");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);

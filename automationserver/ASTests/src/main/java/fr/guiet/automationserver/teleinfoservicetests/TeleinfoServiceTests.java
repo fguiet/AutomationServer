@@ -1,12 +1,10 @@
 package fr.guiet.automationserver.teleinfoservicetests;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import fr.guiet.automationserver.business.DateUtils;
-import fr.guiet.automationserver.business.SMSGammuService;
-import fr.guiet.automationserver.business.TeleInfoService;
+import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.service.SMSGammuService;
+import fr.guiet.automationserver.business.service.TeleInfoService;
 
 public class TeleinfoServiceTests {
 	public static void main(String args[]) {

@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.Locale;
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.*;
+import fr.guiet.automationserver.business.helper.GpioHelper;
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
+import fr.guiet.automationserver.business.service.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -25,11 +28,11 @@ public class AutomationServer implements Daemon {
 
 	private Thread _mainThread = null; // Thread principal
 	private AlarmService _alarmService = null; //Alarm service
-	private ScenariiManager _scenariiManager = null;
+	//private ScenariiManager _scenariiManager = null;
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
 	private RainGaugeService _rainGaugeService = null; //service raingauge
 	private RoomService _roomService = null; // service de room service
-	private WaterHeater _waterHeater = null; // service de gestion du
+	private WaterHeaterService _waterHeater = null; // service de gestion du
 												// chauffe-eau
 	private RollerShutterService _rollerShutterService = null;
 	private BLEHubService _BLEHubService = null;  
@@ -42,7 +45,7 @@ public class AutomationServer implements Daemon {
 	private Thread _BLEHubServiceThread = null;
 	private Print3DService _print3DService = null;
 	private SMSGammuService _smsGammuService = null;
-	private MqttHelper _mqttHelper = null;
+	private MqttService _mqttHelper = null;
 	private boolean _alertSent5 = false; // Réinitialisation
 	private boolean _alertSent10 = false; // Réinitialisation
 	private boolean _alertSentMore = false; // Réinitialisation
@@ -76,27 +79,6 @@ public class AutomationServer implements Daemon {
 			public void run() {
 
 				try {
-										
-					//Date startDate = new Date();
-
-					// Wait a little before starting...
-					//Sometimes while rebooting database connection are not ready and may cause some errorsq
-					
-					//_logger.info("Automation is starting...waiting one minute so Raspberry can initialized itselft smoothly (serial port, system service, etc)");
-					
-					//Wait one minute
-					//Thread.sleep(60000);
-					//while (!_isStopped) {						
-
-						/*Date currentDate = new Date();
-						long diff = currentDate.getTime() - startDate.getTime();
-						long diffMinutes = diff / (60 * 1000);
-
-						if (diffMinutes >= 1) {
-							_logger.info("Starting automation server...");
-							break;
-						}*/
-					//}
 												
 					_logger.info("Starting automation server...");
 					
@@ -118,14 +100,9 @@ public class AutomationServer implements Daemon {
 					_teleInfoService = new TeleInfoService(_smsGammuService);
 					_teleInfoServiceThread = new Thread(_teleInfoService);
 					_teleInfoServiceThread.start();	
-									
-					// Starting room service
-					_roomService = new RoomService(_teleInfoService, _smsGammuService);
-					_roomServiceThread = new Thread(_roomService);
-					_roomServiceThread.start();
-
+					
 					// Starting water heater
-					_waterHeater = new WaterHeater(_teleInfoService, _smsGammuService);
+					_waterHeater = new WaterHeaterService(_teleInfoService, _smsGammuService);
 					_waterHeaterServiceThread = new Thread(_waterHeater);
 					_waterHeaterServiceThread.start();								
 					
@@ -143,18 +120,25 @@ public class AutomationServer implements Daemon {
 					_alarmService = new AlarmService(_rollerShutterService, _smsGammuService);
 					
 					//Start scenarii service
-					_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
+					//_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
 					
 					//Start 3D Print service
 					_print3DService = new Print3DService(_smsGammuService);
 					
-					// TODO : Replace this server by MQTT subscribe
-					//ServerSocket socket = new ServerSocket(4310);
-					//_logger.info("Starting messages management queue...");
-					_mqttHelper = new MqttHelper(_smsGammuService, _roomService, _teleInfoService, _waterHeater, 
-							_alarmService, _rollerShutterService, _scenariiManager, _print3DService,
-							_BLEHubService);
+					// Starting room service
+					_roomService = new RoomService(_teleInfoService, _smsGammuService);
+					_roomServiceThread = new Thread(_roomService);
+					_roomServiceThread.start();
+					
+					_mqttHelper = new MqttService(_smsGammuService, _roomService, _teleInfoService, _waterHeater, 
+							_alarmService, _rollerShutterService);
+					_mqttHelper.addClient(_BLEHubService);
+					_mqttHelper.addClient(_print3DService);
+					_mqttHelper.addClients(_roomService.getMqttableClients());
+					
 					_mqttHelper.connectAndSubscribe();
+					
+					
 
 					SMSDto sms = new SMSDto();
 					sms.setMessage("Automation server has started...");
@@ -165,6 +149,7 @@ public class AutomationServer implements Daemon {
 						//Publication des données toutes les 10s
 						Thread.sleep(10000);
 						
+						//TODO : please remove that!!!
 						_mqttHelper.PublishInfoToMqttBroker();
 						
 						//Check whether sensors are still alive....
@@ -178,8 +163,6 @@ public class AutomationServer implements Daemon {
 					sms.setMessage("Error occured in main loop !");
 					_smsGammuService.sendMessage(sms, true);
 
-					//try to stop services properly
-					//stop();
 				}
 			}
 		};
@@ -188,7 +171,7 @@ public class AutomationServer implements Daemon {
 	private void DoSystemSanityChecks() {
 		
 		DbManager dbManager = new DbManager();
-		MqttClientMgt mqttClient = new MqttClientMgt("SanityCheck");
+		MqttClientHelper mqttClient = new MqttClientHelper("SanityCheck");
 		
 		_logger.info("Starting system sanity check...");
 		
@@ -379,7 +362,7 @@ public class AutomationServer implements Daemon {
 			_BLEHubService.StopService();
 			_rainGaugeService.StopService();
 			_alarmService.StopService();
-			_scenariiManager.StopScenariiManager();
+			//_scenariiManager.StopScenariiManager();
 			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
 			_roomService.StopService();
@@ -401,6 +384,7 @@ public class AutomationServer implements Daemon {
 			_logger.info("Bye bye automation server stopped...");
 			
 		} catch (Exception e) {
+			
 			_logger.error("Automation server has not stopped properly", e);
 		}
 	}

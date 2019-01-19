@@ -1,4 +1,4 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import org.apache.log4j.Logger;
 
@@ -28,6 +28,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import fr.guiet.automationserver.dto.*;
+import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class TeleInfoService implements Runnable {
@@ -63,6 +64,7 @@ public class TeleInfoService implements Runnable {
 	private Date _nextBillDate;
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
 	private Serial _serial = null;
+	private boolean _alertMessageSent = false;
 
 	public TeleInfoService(SMSGammuService smsGammuService) {
 		_smsGammuService = smsGammuService;
@@ -101,17 +103,14 @@ public class TeleInfoService implements Runnable {
 			_serial.setBufferingDataReceived(false);
 			
 			_serial.open(config);
-			_logger.info("Ouverture du port serie effectué avec succès...");
+			_logger.info("Ouverture du port serie pour la TeleInfo effectué avec succès...");
 		
 			sdl = CreateSerialListener();
 			_serial.addListener(sdl);
+			
 		} catch (IOException e) {			
 			_logger.error("Impossible d'ouvrir le port série");
 		}
-		//serial.open(_defaultDevice, 1200);
-		
-
-		// serial.discardAll();
 	}
 
 	@Override
@@ -246,14 +245,6 @@ public class TeleInfoService implements Runnable {
 
 			try {
 
-				// if (_startStopCounter > 0 && SerialFactory.isShutdown()) {
-				/*
-				 * if (_startStopCounter > 0) { NotifyCollectInfoStop();
-				 * _logger.
-				 * info("ok teleinfoservice stoppé!! (start_stop_counter :)" +
-				 * _startStopCounter); Thread.sleep(2000); continue; }
-				 */
-
 				// Recuperation de la trame de teleinfo
 				String trameReceived = GetTeleInfoTrame();
 				// _logger.error("Test TeleInfoService...");
@@ -300,14 +291,16 @@ public class TeleInfoService implements Runnable {
 		TimerTask saveElecTask = new TimerTask() {
 			@Override
 			public void run() {
-
+				
 				Date hier = DateUtils.addDays(new Date(), -1);
-				hier = DateUtils.getDateWithoutTime(hier);
-				// hier is today-1 at 00:00
-
-				Date today = DateUtils.getDateWithoutTime(new Date());
-
+				
 				try {
+						
+					hier = DateUtils.getDateWithoutTime(hier);
+					// hier is today-1 at 00:00
+
+					Date today = DateUtils.getDateWithoutTime(new Date());
+					
 					HashMap<String, Float> info = GetElectricityBillInfo(hier, today);
 
 					_dbManager.SaveElectricityCost(hier, Math.round(info.get("hc")), Math.round(info.get("hp")),
@@ -334,9 +327,16 @@ public class TeleInfoService implements Runnable {
 		TimerTask teleInfoTask = new TimerTask() {
 			@Override
 			public void run() {
-				if (_lastTeleInfoTrameReceived != null) {
-					// Sauvegarde en bdd
-					SaveTrameToDb(_lastTeleInfoTrameReceived);
+				
+				try {
+				
+					if (_lastTeleInfoTrameReceived != null) {
+						// Sauvegarde en bdd
+						SaveTrameToDb(_lastTeleInfoTrameReceived);
+					}
+				}
+				catch(Exception e) {
+					_logger.error("Error occured in save to db teleinfo task", e);
 				}
 			}
 		};
@@ -506,24 +506,17 @@ public class TeleInfoService implements Runnable {
 		_endTrameDetected = false;
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
-		//Serial serial = null;
-		//SerialDataEventListener sdl = null;
-
+		
 		try {
 
-		
-
-			// TODO : traduire tous les messages en anglais
-			// serial.close();
-			// serial.open("/dev/serial0", 1200);
-			// _logger.info("*** ouverture du port serie reussir");
-
 			Date _startTime = new Date();
+			
 			while (!_trameFullyReceived) {
 				// _logger.info("Buffer Has Data : "+serial.read());
 				// System.out.println("Buffer Has Data :
 				// "+serial.availableBytes());
 				try {
+					
 					// wait 1 second before continuing
 					Thread.sleep(1000);
 
@@ -532,17 +525,21 @@ public class TeleInfoService implements Runnable {
 					long diff = currentDate.getTime() - _startTime.getTime();
 					long diffMinutes = diff / (60 * 1000);
 
-					// 201603 - Hack pour le lancement du service au
-					// demarrage...le serial port n'est pas correctement ouvert
-					// la première fois??
 					if (diffMinutes >= 1) {
-						_logger.warn(
-								"Timeout dans la réception d'une trame, relance d'une écoute sur le serial port...");
-
-						SMSDto sms = new SMSDto();
-						sms.setMessage("Warning ! automation server did not receive electrical information anymore !");
-						_smsGammuService.sendMessage(sms, true);
-
+						
+						String mess = "Aucune trame de téléinfo recue dans la minute qui vient de s'écouler, tentative de relance d'une instance sur le port série";
+						
+						_logger.warn(mess);
+						
+						if (!_alertMessageSent) {
+							
+							SMSDto sms = new SMSDto();
+							sms.setMessage(mess);
+							_smsGammuService.sendMessage(sms, true);
+							
+							_alertMessageSent = true;
+						}
+						
 						// Reinitialisation de la denrière trame reçue!
 						_lastTeleInfoTrameReceived = null;
 																
@@ -550,22 +547,15 @@ public class TeleInfoService implements Runnable {
 
 						return null;
 					}
+					
 				} catch (InterruptedException ie) {
 					_logger.error("TeleInfoService : Interrupted Exception", ie);
-					//throw ie;
 				}
 			}
 
-			/*
-			 * if (_startStopCounter > 0) {
-			 * _logger.info("Receive stop collecting teleinfotrame event!");
-			 * return null; }
-			 */
-
-			// serial.removeListener(_sdl);
-
-			// System.out.println("Trame recue :
-			// "+TeleInfoService.ArrayListToStringHelper(trame));
+			//Trame received! reset flag
+			_alertMessageSent = false;
+			
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
 			// _logger.info("Trame recue" + trame);
 

@@ -5,6 +5,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
+import fr.guiet.automationserver.business.service.MqttService;
+import fr.guiet.automationserver.business.service.SMSGammuService;
+import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
+import fr.guiet.automationserver.business.sensor.HDC1080_Sensor;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class Room {
@@ -12,10 +17,13 @@ public class Room {
 	private static Logger _logger = Logger.getLogger(Room.class);
 
 	private long _id;
+	
 	private String _name;
-	private Sensor _sensor = null;
+	
+	private EnvironmentalSensor _sensor = null;
+	
 	private ArrayList<Heater> _heaterList = new ArrayList<Heater>();
-	// private Timer _timer = null;
+	
 	private Float _userWantedTemp = null;
 	private Float _lastDefaultTemp = null;
 	private String _mqttTopic;
@@ -27,12 +35,12 @@ public class Room {
 	public List<Heater> getHeaterList() {
 		return _heaterList;
 	}
-
-	public String lastInfoReceivedFromSensor() {
-		return _sensor.lastInfoReceived();
+	
+	public String getLastSensorUpdate() {
+		return _sensor.getLastSensorUpdate();
 	}
 
-	public Sensor getSensor() {
+	public EnvironmentalSensor getSensor() {
 		return _sensor;
 	}
 
@@ -52,28 +60,41 @@ public class Room {
 		return _name;
 	}
 
-	public Float getActualHumidity() {
-		if (_sensor.HasTimeoutOccured()) {
-			return null;
-		} else {
-			return _sensor.getActualHumidity();
-		}
+	public boolean isSensorOperational() {
+		return _sensor.isOperational();
 	}
 	
-	public Float getBattery() {
-		if (_sensor.HasTimeoutOccured()) {
-			return null;	
-		} else {
-			return _sensor.getBattery();
+	public Float getActualHumidity() {
+		
+		if (_sensor instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			return hdc1080_sensor.getHumidity();
 		}
+		
+		return null;
+	}
+	
+	public Float getBatteryVoltage() {
+		
+		if (_sensor instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			return hdc1080_sensor.getBatteryVoltage();
+		}
+		
+		return null;
 	}
 	
 	public Float getRssi() {
-		if (_sensor.HasTimeoutOccured()) {
-			return null;	
-		} else {
-			return _sensor.getRssi();
+		if (_sensor instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			return hdc1080_sensor.getRssi();
 		}
+		
+		return null;
+	}
+	
+	public Float getActualTemp() {
+		return _sensor.getTemperature();
 	}
 
 	/**
@@ -105,7 +126,7 @@ public class Room {
 					calendarHourBegin.setTime(ts.getHourBegin());
 					String hour = String.format("%02d:%02d", calendarHourBegin.get(Calendar.HOUR_OF_DAY),
 							calendarHourBegin.get(Calendar.MINUTE));
-					result = GetDayName(dayOfWeek) + " à " + hour + " ("
+					result = DateUtils.GetDayName(dayOfWeek) + " à " + hour + " ("
 							+ String.format("%.2f", ts.getDefaultTempNeeded()) + "°C)";
 					break;
 				}
@@ -134,13 +155,7 @@ public class Room {
 		return result;
 	}
 
-	public Float getActualTemp() {
-		if (_sensor.HasTimeoutOccured()) {
-			return null;
-		} else {
-			return _sensor.getActualTemp();
-		}
-	}
+	
 
 	public Float getWantedTemp() {
 		return _userWantedTemp; // Peut etre null
@@ -161,9 +176,9 @@ public class Room {
 		return false;
 	}
 
-	public boolean IsSensorResponding() {
+	/*public boolean IsSensorResponding() {
 		return !_sensor.HasTimeoutOccured();
-	}
+	}*/
 
 	public boolean IsOffForced() {
 		for (Heater h : _heaterList) {
@@ -241,17 +256,27 @@ public class Room {
 			return awayModeTemp;
 	}
 
+	/*
+	 * Heater link to this room declared?
+	 */
+	private boolean HasHeater() {
+		return !_heaterList.isEmpty();
+	}
+	
 	private Float GetDefaultTempByDayAndTime() {
 		
 		Float defaultTemp = null;
-		
+	
 		try {
 		
-			defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
-	
-			if (defaultTemp == null) {
-				_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
-						+ ".Le radiateur ne va pas etre controler correctement...");
+			//Do not try to get default temp for this room if no heater has been defined for this room!
+			if (HasHeater()) {	
+				defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
+		
+				if (defaultTemp == null) {
+					_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
+							+ ".Le radiateur ne va pas etre controler correctement...");
+				}
 			}
 		}
 		catch (Exception e) {
@@ -266,7 +291,7 @@ public class Room {
 
 	// Arret du service RoomService
 	public void StopService() {
-		_sensor.StopService();
+		_sensor.Stop();
 	}
 
 	private Room(RoomDto dto, SMSGammuService gammuService) {
@@ -282,16 +307,17 @@ public class Room {
 		try {
 		
 			SensorDto sensorDto = _dbManager.GetSensorById(dto.idSensor);
-	
+			
+			//It could be another sensor type but let's say it is always a HDC1080 :)
+			_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);
+			
 			ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
 			for (HeaterDto heaterDto : heaterDtoList) {
 	
 				Heater heater = Heater.LoadFromDto(heaterDto, this, gammuService);
 				_heaterList.add(heater);
 			}
-				
-			_sensor = Sensor.LoadFromDto(sensorDto, this, gammuService);
-	
+		
 			_lastDefaultTemp = GetDefaultTempByDayAndTime();
 			_userWantedTemp = _lastDefaultTemp; // temperature par defaut et
 												// temperature utilisateur identique
@@ -310,40 +336,5 @@ public class Room {
 		return new Room(dto, gammuService);
 	}
 
-	private String GetDayName(int day) {
-
-		String dayString = "NA";
-
-		switch (day) {
-		case 2:
-			dayString = "Lundi";
-			break;
-
-		case 3:
-			dayString = "Mardi";
-			break;
-
-		case 4:
-			dayString = "Mercredi";
-			break;
-
-		case 5:
-			dayString = "Jeudi";
-			break;
-
-		case 6:
-			dayString = "Vendredi";
-			break;
-
-		case 7:
-			dayString = "Samedi";
-			break;
-
-		case 1:
-			dayString = "Dimanche";
-			break;
-		}
-
-		return dayString;
-	}
+	
 }

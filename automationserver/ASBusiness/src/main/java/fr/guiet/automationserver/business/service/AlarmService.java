@@ -1,7 +1,9 @@
-package fr.guiet.automationserver.business;
+package fr.guiet.automationserver.business.service;
 
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
+
+import fr.guiet.automationserver.business.helper.GpioHelper;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class AlarmService {
@@ -75,11 +77,11 @@ public class AlarmService {
 			String logMessage = "Turning house alarm ON";
 			
 			//String pinName, PinState state, String logMessage, SMSGammuService smsService
-			GpioHelper.changeGpioPinState(RaspiPin.GPIO_06,fr.guiet.automationserver.business.PinState.HIGH, logMessage, _smsGammuService);
+			GpioHelper.changeGpioPinState(RaspiPin.GPIO_06,fr.guiet.automationserver.business.helper.PinState.HIGH, logMessage, _smsGammuService);
 			
 			Thread.sleep(1000);
 			
-			GpioHelper.changeGpioPinState(RaspiPin.GPIO_06,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);
+			GpioHelper.changeGpioPinState(RaspiPin.GPIO_06,fr.guiet.automationserver.business.helper.PinState.LOW, logMessage, _smsGammuService);
 			
 			//Close all rollers shutters if not allready closed
 			_rollerShutterService.CloseAllRollerShutters();				
@@ -107,11 +109,11 @@ public class AlarmService {
 		//GPIO_25 (notation Pi4J) = GPIO_26 (notation raspberry) = PIN37
 		try {
 			String logMessage = "Turning house alarm OFF";
-			GpioHelper.changeGpioPinState(RaspiPin.GPIO_25,fr.guiet.automationserver.business.PinState.HIGH, logMessage, _smsGammuService);
+			GpioHelper.changeGpioPinState(RaspiPin.GPIO_25,fr.guiet.automationserver.business.helper.PinState.HIGH, logMessage, _smsGammuService);
 							
 			Thread.sleep(1000);
 			
-			GpioHelper.changeGpioPinState(RaspiPin.GPIO_25,fr.guiet.automationserver.business.PinState.LOW, logMessage, _smsGammuService);						
+			GpioHelper.changeGpioPinState(RaspiPin.GPIO_25,fr.guiet.automationserver.business.helper.PinState.LOW, logMessage, _smsGammuService);						
 		}
 		catch(Exception e) {			
 			_logger.error("Error occured setting alarm off", e);
