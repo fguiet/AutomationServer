@@ -45,6 +45,7 @@ public class RoomService implements Runnable {
 	private boolean _verboseLogEnable = false;
 	private static String MQTT_CLIENT_ID = "roomServiceCliendId";
 	private MqttClientHelper _mqttClient = null;
+	private boolean _roomListLoaded = false;
 
 	// Constructeur
 	/**
@@ -665,6 +666,10 @@ public class RoomService implements Runnable {
 			}
 		}	
 	}
+	
+	public boolean isRoomListLoaded() {
+		return _roomListLoaded;
+	}
 
 	private void LoadRoomList() {
 		
@@ -683,6 +688,11 @@ public class RoomService implements Runnable {
 				
 				_logger.info("Chargement de la pièce : " + r.getName());
 			}
+			
+			_roomListLoaded = true;
+			
+			_logger.info("Chargement de la liste des pièces terminé...");
+			
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la liste des pièces");
 			SMSDto sms = new SMSDto();

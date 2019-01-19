@@ -130,6 +130,11 @@ public class AutomationServer implements Daemon {
 					_roomServiceThread = new Thread(_roomService);
 					_roomServiceThread.start();
 					
+					while(!_roomService.isRoomListLoaded()) {
+						_logger.info("Waiting for room list to be fully loaded !");
+						Thread.sleep(1000);
+					}
+					
 					_mqttHelper = new MqttService(_smsGammuService, _roomService, _teleInfoService, _waterHeater, 
 							_alarmService, _rollerShutterService);
 					_mqttHelper.addClient(_BLEHubService);
@@ -137,8 +142,6 @@ public class AutomationServer implements Daemon {
 					_mqttHelper.addClients(_roomService.getMqttableClients());
 					
 					_mqttHelper.connectAndSubscribe();
-					
-					
 
 					SMSDto sms = new SMSDto();
 					sms.setMessage("Automation server has started...");
