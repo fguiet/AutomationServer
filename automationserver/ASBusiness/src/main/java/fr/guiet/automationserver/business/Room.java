@@ -103,6 +103,10 @@ public class Room {
 	public String NextChangeDefaultTemp() {
 
 		String result = "NA";
+		
+		//No heater...so...no next change default temp
+		if (!HasHeater())
+			return result;
 
 		try {
 			// DbManager dbManager = new DbManager();
