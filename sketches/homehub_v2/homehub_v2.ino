@@ -5,9 +5,9 @@
  * Creation           : End of 2018
  * Last modification  : 
  * 
- * Version            : 1.0
+ * Version            : 1.1
  * 
- * History            : 
+ * History            : Huge refactoring - add mqtt toppic for each sensor
  *                      
  */
 
@@ -22,14 +22,14 @@
 #define DEBUG 0
 #define MAX_RETRY 50
 #define MQTT_SERVER "192.168.1.25"
-#define MQTT_TOPIC "/guiet/inside/sensor"
+//#define MQTT_TOPIC "/guiet/inside/sensor"
 
 //*** CHANGE IT
 //#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
 #define MQTT_CLIENT_ID "HubDownstairsMqttClient"
 //#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
 #define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
-#define FIRMWARE_VERSION "1.0"
+#define FIRMWARE_VERSION "1.1"
 #define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
 //#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
@@ -57,6 +57,7 @@ struct Sensor {
     String Humidity;
     String Battery;
     String Rssi;
+    String Mqtt_topic;
 };
 
 //*** CHANGE IT
@@ -74,22 +75,28 @@ void InitSensors() {
   /*sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
+  sensors[0].Mqtt_topic = "guiet/upstairs/room_manon/sensor/4";
   
   sensors[1].Address = "c7:b9:43:94:24:3a";
   sensors[1].Name = "Nohé";
   sensors[1].SensorId = "3";
+  sensors[1].Mqtt_topic = "guiet/upstairs/room_nohe/sensor/3";
   
   sensors[2].Address = "e9:3d:63:97:39:5e";
   sensors[2].Name = "Parents";
-  sensors[2].SensorId = "5";*/
+  sensors[2].SensorId = "5";
+  sensors[2].Mqtt_topic = "guiet/upstairs/room_parents/sensor/5";
+  */
   
   sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
+  sensors[0].Mqtt_topic = "guiet/downstairs/room_parents/sensor/1";
 
   sensors[1].Address = "f4:a4:c6:6f:d8:6a";
   sensors[1].Name = "Salon";
   sensors[1].SensorId = "2";
+  sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
 }
 
 
@@ -175,7 +182,7 @@ void jsonParser(char *buffer) {
                   
       mess.toCharArray(message_buff, mess.length()+1);
       
-      client.publish(MQTT_TOPIC,message_buff);    
+      client.publish(sensor.Mqtt_topic.c_str() ,message_buff);    
     }
   }
 }

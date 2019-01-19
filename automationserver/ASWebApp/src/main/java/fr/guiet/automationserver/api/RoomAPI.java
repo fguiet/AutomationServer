@@ -6,8 +6,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import fr.guiet.automationserver.business.MqttClientMgt;
 import org.apache.log4j.Logger;
+
+import fr.guiet.automationserver.business.helper.MqttClientHelper;
 
 @Path("/room")
 public class RoomAPI {
@@ -39,7 +40,7 @@ public class RoomAPI {
 						
 				String message = action + ";" + roomId + ";" + temp;
 			
-				MqttClientMgt rtt = new MqttClientMgt(_mqttClientId);
+				MqttClientHelper rtt = new MqttClientHelper(_mqttClientId);
 				rtt.SendMsg(_topic, message);
 				
 				break;
