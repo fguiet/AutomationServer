@@ -667,6 +667,9 @@ public class RoomService implements Runnable {
 	}
 
 	private void LoadRoomList() {
+		
+		_logger.info("Chargement de la liste des pièces...");
+		
 		// Initialisation des pieces et chauffages
 		// DbManager dbManager = new DbManager();
 		List<RoomDto> roomDtoList;
@@ -674,9 +677,11 @@ public class RoomService implements Runnable {
 			roomDtoList = _dbManager.GetRooms();
 			
 			for (RoomDto dtoRoom : roomDtoList) {
-
-				Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);
+                                
+				Room r = Room.LoadFromDto(dtoRoom, _smsGammuService);				
 				_roomList.add(r);
+				
+				_logger.info("Chargement de la pièce : " + r.getName());
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la liste des pièces");
