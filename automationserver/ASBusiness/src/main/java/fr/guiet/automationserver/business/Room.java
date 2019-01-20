@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
-import fr.guiet.automationserver.business.service.MqttService;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;

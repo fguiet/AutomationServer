@@ -39,8 +39,8 @@ public class TeleInfoService implements Runnable {
 	// create an instance of the serial communications class
 	// final Serial _serial = SerialFactory.createInstance();
 	// serial data listener
-	//private SerialDataEventListener _sdl = null;
-	//private SerialDataListener _sdl = null;
+	// private SerialDataEventListener _sdl = null;
+	// private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -59,7 +59,7 @@ public class TeleInfoService implements Runnable {
 	private float _ctaCost = 0;
 	private float _cspeCost = 0;
 	private float _tcfeCost = 0;
-	//TODO : reload date without restarting automation server
+	// TODO : reload date without restarting automation server
 	private Date _lastBillDate;
 	private Date _nextBillDate;
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
@@ -74,41 +74,40 @@ public class TeleInfoService implements Runnable {
 	public Date getLastBillDate() {
 		return _lastBillDate;
 	}
-	
-	private void CreateSerialInstance()  {
-		
+
+	private void CreateSerialInstance() {
+
 		SerialDataEventListener sdl = null;
-		
+
 		if (_serial != null) {
 			if (_serial.isOpen())
 				try {
 					_logger.info("Fermeture du port série...");
 					_serial.close();
 				} catch (Exception e) {
-					_logger.error("Impossible de fermer correctement le port série...",e);
+					_logger.error("Impossible de fermer correctement le port série...", e);
 				}
 		}
-		
+
 		_serial = SerialFactory.createInstance();
-				
-		
+
 		// open the default serial port provided on the GPIO header at 1200
 		// bauds
 		// serial.open(_defaultDevice, _defaultBaud);
 		SerialConfig config = new SerialConfig();
-		config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN)
-		.stopBits(StopBits._1).flowControl(FlowControl.NONE);
+		config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(Parity.EVEN).stopBits(StopBits._1)
+				.flowControl(FlowControl.NONE);
 
 		try {
 			_serial.setBufferingDataReceived(false);
-			
+
 			_serial.open(config);
 			_logger.info("Ouverture du port serie pour la TeleInfo effectué avec succès...");
-		
+
 			sdl = CreateSerialListener();
 			_serial.addListener(sdl);
-			
-		} catch (IOException e) {			
+
+		} catch (IOException e) {
 			_logger.error("Impossible d'ouvrir le port série");
 		}
 	}
@@ -137,9 +136,9 @@ public class TeleInfoService implements Runnable {
 				_lastBillDate = cal.getTime();
 				_logger.warn("Bad lastbill.date defined in config file !, set to actual date by default", e);
 			}
-			
+
 			String nextBillDate = prop.getProperty("nextbill.date");
-			//SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			// SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			try {
 				_nextBillDate = formatter.parse(nextBillDate);
 			} catch (ParseException e) {
@@ -228,19 +227,16 @@ public class TeleInfoService implements Runnable {
 		// information
 		_logger.info("Using serial device : " + _defaultDevice);
 
-		
 		CreateSerialInstance();
-		
-		
-		//CreateSerialListener();
+
+		// CreateSerialListener();
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
 
 		// Save electrical yesterday cost consumption
 		CreateSaveElectricityToDBTask();
-		
-		
+
 		while (!_isStopped) {
 
 			try {
@@ -280,7 +276,7 @@ public class TeleInfoService implements Runnable {
 		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);
 		c1.set(Calendar.HOUR_OF_DAY, 2);
 		c1.set(Calendar.MINUTE, 0);
-		c1.set(Calendar.SECOND, 0);		
+		c1.set(Calendar.SECOND, 0);
 
 		return c1.getTime();
 	}
@@ -291,16 +287,16 @@ public class TeleInfoService implements Runnable {
 		TimerTask saveElecTask = new TimerTask() {
 			@Override
 			public void run() {
-				
+
 				Date hier = DateUtils.addDays(new Date(), -1);
-				
+
 				try {
-						
+
 					hier = DateUtils.getDateWithoutTime(hier);
 					// hier is today-1 at 00:00
 
 					Date today = DateUtils.getDateWithoutTime(new Date());
-					
+
 					HashMap<String, Float> info = GetElectricityBillInfo(hier, today);
 
 					_dbManager.SaveElectricityCost(hier, Math.round(info.get("hc")), Math.round(info.get("hp")),
@@ -327,15 +323,14 @@ public class TeleInfoService implements Runnable {
 		TimerTask teleInfoTask = new TimerTask() {
 			@Override
 			public void run() {
-				
+
 				try {
-				
+
 					if (_lastTeleInfoTrameReceived != null) {
 						// Sauvegarde en bdd
 						SaveTrameToDb(_lastTeleInfoTrameReceived);
 					}
-				}
-				catch(Exception e) {
+				} catch (Exception e) {
 					_logger.error("Error occured in save to db teleinfo task", e);
 				}
 			}
@@ -346,7 +341,7 @@ public class TeleInfoService implements Runnable {
 		_timer.schedule(teleInfoTask, 5000, 60000);
 
 	}
-	
+
 	public boolean isOperational() {
 		return (null != _lastTeleInfoTrameReceived);
 	}
@@ -360,16 +355,16 @@ public class TeleInfoService implements Runnable {
 		if (_timer2 != null) {
 			_timer2.cancel();
 		}
-		
+
 		try {
 			if (_serial.isOpen()) {
-			 _logger.info("Fermeture port serie");
-	 		 _serial.close();
+				_logger.info("Fermeture port serie");
+				_serial.close();
 			}
 		} catch (IOException ioe) {
-		 _logger.error("Impossible de fermer le port serie", ioe);
+			_logger.error("Impossible de fermer le port serie", ioe);
 		}
-		
+
 		SerialFactory.shutdown();
 
 		_logger.info("Stopping TeleInfo service...");
@@ -378,12 +373,12 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Récupération de la dernière trame teleinfo recue
-	synchronized public TeleInfoTrameDto GetLastTrame() {
+	public TeleInfoTrameDto GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	}
 
 	// Retourne null si la dernière trame recu vaut null
-	synchronized public Boolean IsHeureCreuse() {
+	public Boolean IsHeureCreuse() {
 
 		if (_lastTeleInfoTrameReceived != null) {
 			return (_lastTeleInfoTrameReceived.PTEC.equals("HC.."));
@@ -393,9 +388,9 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Sauvegarde de la trame de teleinfo recue en bdd
-	synchronized private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
+	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		//_dbManager.SaveTeleInfoTrame(teleInfoTrame);
+		// _dbManager.SaveTeleInfoTrame(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
 
 		// if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
@@ -405,20 +400,20 @@ public class TeleInfoService implements Runnable {
 	}
 
 	private String convert(byte[] data) {
-	    StringBuilder sb = new StringBuilder(data.length);
-	    for (int i = 0; i < data.length; ++ i) {
-        	//if (data[i] < 0) throw new IllegalArgumentException();
-	        sb.append((char) data[i]);
-	    }
-	    return sb.toString();
+		StringBuilder sb = new StringBuilder(data.length);
+		for (int i = 0; i < data.length; ++i) {
+			// if (data[i] < 0) throw new IllegalArgumentException();
+			sb.append((char) data[i]);
+		}
+		return sb.toString();
 	}
 
 	// Creation du listener sur le port serie
 	private SerialDataEventListener CreateSerialListener() {
 
 		return new SerialDataEventListener() {
-		 //_sdl = new SerialDataEventListener() {
-		//_sdl = new SerialDataListener() {
+			// _sdl = new SerialDataEventListener() {
+			// _sdl = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
 
@@ -426,12 +421,12 @@ public class TeleInfoService implements Runnable {
 					return;
 
 				String dataSZ = "";
-				 try {
+				try {
 					dataSZ = convert(event.getBytes());
-				//event.
-				//dataSZ = event.getData();
-				 } catch (IOException e) {
-				 _logger.error("Unable de read serial port", e);
+					// event.
+					// dataSZ = event.getData();
+				} catch (IOException e) {
+					_logger.error("Unable de read serial port", e);
 				}
 
 				char[] data = dataSZ.toCharArray();
@@ -440,11 +435,11 @@ public class TeleInfoService implements Runnable {
 					char receivedChar = data[i];
 					receivedChar &= 0x7F;
 
-					//_logger.warn("carac recu: "+(int)receivedChar);
+					// _logger.warn("carac recu: "+(int)receivedChar);
 
 					// System.out.println("int char : "+(int)receivedChar);
-					//String decoded = String.valueOf(receivedChar);
-				   //_logger.warn("carac recu: "+decoded);
+					// String decoded = String.valueOf(receivedChar);
+					// _logger.warn("carac recu: "+decoded);
 					// System.out.println(decoded);
 
 					// Reception indicateur debut trame
@@ -506,17 +501,17 @@ public class TeleInfoService implements Runnable {
 		_endTrameDetected = false;
 		_trameFullyReceived = false;
 		_checkFirstChar = false;
-		
+
 		try {
 
 			Date _startTime = new Date();
-			
+
 			while (!_trameFullyReceived) {
 				// _logger.info("Buffer Has Data : "+serial.read());
 				// System.out.println("Buffer Has Data :
 				// "+serial.availableBytes());
 				try {
-					
+
 					// wait 1 second before continuing
 					Thread.sleep(1000);
 
@@ -526,36 +521,36 @@ public class TeleInfoService implements Runnable {
 					long diffMinutes = diff / (60 * 1000);
 
 					if (diffMinutes >= 1) {
-						
+
 						String mess = "Aucune trame de téléinfo recue dans la minute qui vient de s'écouler, tentative de relance d'une instance sur le port série";
-						
+
 						_logger.warn(mess);
-						
+
 						if (!_alertMessageSent) {
-							
+
 							SMSDto sms = new SMSDto();
 							sms.setMessage(mess);
 							_smsGammuService.sendMessage(sms, true);
-							
+
 							_alertMessageSent = true;
 						}
-						
+
 						// Reinitialisation de la denrière trame reçue!
 						_lastTeleInfoTrameReceived = null;
-																
+
 						CreateSerialInstance();
 
 						return null;
 					}
-					
+
 				} catch (InterruptedException ie) {
 					_logger.error("TeleInfoService : Interrupted Exception", ie);
 				}
 			}
 
-			//Trame received! reset flag
+			// Trame received! reset flag
 			_alertMessageSent = false;
-			
+
 			String trame = TeleInfoService.ArrayListToStringHelper(_trame);
 			// _logger.info("Trame recue" + trame);
 
@@ -568,31 +563,29 @@ public class TeleInfoService implements Runnable {
 		catch (Exception e) {
 			_logger.error("Exception dans GetTeleInfoTrame : ", e);
 			return null;
-		} 
-		//finally {
-			// _logger.info("shut down serial factory");
-			// SerialFactory.shutdown();
-			//if (serial != null) {
-				// _logger.info("remove listener");
-				//serial.discardAll();
-				//serial.removeListener(sdl);
-				// try {
-				//if (serial.isOpen()) {
-					// _logger.info("fermeture port serie");
-			//		serial.close();
-			//	}
-				// } catch (IOException ioe) {
-				// _logger.error("Impossible de fermer le port serie", ioe);
-				// }
-			//}
+		}
+		// finally {
+		// _logger.info("shut down serial factory");
+		// SerialFactory.shutdown();
+		// if (serial != null) {
+		// _logger.info("remove listener");
+		// serial.discardAll();
+		// serial.removeListener(sdl);
+		// try {
+		// if (serial.isOpen()) {
+		// _logger.info("fermeture port serie");
+		// serial.close();
+		// }
+		// } catch (IOException ioe) {
+		// _logger.error("Impossible de fermer le port serie", ioe);
+		// }
+		// }
 
-			//serial = null;
-			//sdl = null;
-			//SerialFactory.shutdown();
-		//}
+		// serial = null;
+		// sdl = null;
+		// SerialFactory.shutdown();
+		// }
 	}
-
-	
 
 	public float GetNextElectricityBillCost() {
 
@@ -603,7 +596,8 @@ public class TeleInfoService implements Runnable {
 		_logger.info("Computing next electricity bill cost");
 
 		try {
-			//HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, DateUtils.addDays(_lastBillDate, 59));
+			// HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate,
+			// DateUtils.addDays(_lastBillDate, 59));
 			HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, _nextBillDate);
 
 			hc_cost = info.get("hc_cost");
@@ -650,9 +644,8 @@ public class TeleInfoService implements Runnable {
 			returns.put("hp", (float) hpConso);
 
 			/*
-			 * hcConso = 2252; hpConso = 2515; _hcCost = (float) 0.056; _hpCost
-			 * = (float) 0.075; _aboCost = (float) 13.64;
-			 * System.out.println(hcConso+hpConso);
+			 * hcConso = 2252; hpConso = 2515; _hcCost = (float) 0.056; _hpCost = (float)
+			 * 0.075; _aboCost = (float) 13.64; System.out.println(hcConso+hpConso);
 			 */
 
 			// Montant HT
@@ -709,7 +702,7 @@ public class TeleInfoService implements Runnable {
 	// Décodage de la trame recue
 	private TeleInfoTrameDto DecodeTrame(String trame) {
 
-		boolean invalidChecksum = false;
+		//boolean invalidChecksum = false;
 
 		// \r : CR
 		// \n : LF
@@ -830,26 +823,26 @@ public class TeleInfoService implements Runnable {
 					break;
 				}
 			} else {
-				invalidChecksum = true;
-				break; //no need to continue
-				// _logger.error("Checksum invalide pour l'etiquette :
-				// "+etiquette+", valeur : "+valeur);
+				_logger.info("Checksum invalide pour l'etiquette : "+etiquette+", valeur : "+valeur);
+				//Bad checksum ! process ends here!
+				return null;
+				
 			}
-		}
+		} //End of for (String g : groupes) 
 
-		if (invalidChecksum)
+		/*if (invalidChecksum)
 			return null;
-		else
-			return teleInfoTrame;
+		else*/
+		return teleInfoTrame;
 	}
 
 	// Vérification de la trame recue
 	private boolean Checksum(String etiquette, String valeur, String checksum) {
-		
-		//Sanity check method parameters! 
-		if ("".equals(checksum)) //|| "".equals(etiquette) || "".equals(valeur))
+
+		// Sanity check method parameters!
+		if ("".equals(checksum)) // || "".equals(etiquette) || "".equals(valeur))
 			return false;
-			
+
 		int sum = 32; // Somme des codes ASCII du message + un espace
 		int i;
 
@@ -875,8 +868,7 @@ public class TeleInfoService implements Runnable {
 		// System.out.println("Cheksum : "+(int)checksumChar);
 
 		/*
-		 * _logger.info("etiquette : "+etiquette);
-		 * _logger.info("valeur : "+valeur);
+		 * _logger.info("etiquette : "+etiquette); _logger.info("valeur : "+valeur);
 		 */
 		// _logger.info("sum : "+sum);
 		// _logger.info("checksum : "+(int)checksumChar);

@@ -25,13 +25,13 @@
 //#define MQTT_TOPIC "/guiet/inside/sensor"
 
 //*** CHANGE IT
-//#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
-#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
-//#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
-#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
+#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
+//#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
+#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
+//#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
 #define FIRMWARE_VERSION "1.1"
-#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
-//#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
+//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -61,7 +61,7 @@ struct Sensor {
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 2
+#define SENSORS_COUNT 3
 Sensor sensors[SENSORS_COUNT];
 
 void InitSensors() {
@@ -72,7 +72,7 @@ void InitSensors() {
   //String SENSORID =  "4"; //Manon
   //String SENSORID =  "5"; //Parents
   
-  /*sensors[0].Address = "d2:48:c8:a5:35:4c";
+  sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
   sensors[0].Mqtt_topic = "guiet/upstairs/room_manon/sensor/4";
@@ -86,17 +86,17 @@ void InitSensors() {
   sensors[2].Name = "Parents";
   sensors[2].SensorId = "5";
   sensors[2].Mqtt_topic = "guiet/upstairs/room_parents/sensor/5";
-  */
   
-  sensors[0].Address = "d4:a6:6d:1d:ef:8b";
+  
+  /*sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
-  sensors[0].Mqtt_topic = "guiet/downstairs/room_parents/sensor/1";
+  sensors[0].Mqtt_topic = "guiet/downstairs/office/sensor/1";
 
   sensors[1].Address = "f4:a4:c6:6f:d8:6a";
   sensors[1].Name = "Salon";
   sensors[1].SensorId = "2";
-  sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
+  sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";*/
 }
 
 
