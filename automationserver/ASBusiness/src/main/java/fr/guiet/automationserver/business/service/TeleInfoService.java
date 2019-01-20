@@ -847,7 +847,7 @@ public class TeleInfoService implements Runnable {
 	private boolean Checksum(String etiquette, String valeur, String checksum) {
 		
 		//Sanity check method parameters! 
-		if ("".equals(checksum) || "".equals(etiquette) || "".equals(valeur))
+		if ("".equals(checksum)) //|| "".equals(etiquette) || "".equals(valeur))
 			return false;
 			
 		int sum = 32; // Somme des codes ASCII du message + un espace
