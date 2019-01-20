@@ -1,9 +1,12 @@
 package fr.guiet.automationserver.business.sensor;
 
 import fr.guiet.automationserver.business.service.SMSGammuService;
+
+import java.util.HashMap;
+
 import fr.guiet.automationserver.business.service.IMqttable;
 
-public abstract class EnvironmentalSensor extends Sensor implements IEnvironmentalSensor, IMqttable {
+public abstract class EnvironmentalSensor extends Sensor implements IMqttable {
 	
 	protected Float _temperature = null;
 	
@@ -12,13 +15,16 @@ public abstract class EnvironmentalSensor extends Sensor implements IEnvironment
 		super(id, name, mqtt_topic, smsGammuService);
 	}
 
-	public Float getTemperature() {
+	public abstract boolean sanityCheck(HashMap<String, String> values);
+	public abstract Float getTemperature();
+	
+	/*public Float getTemperature() {
 		
 		if (this.isOperational())
 			return _temperature;
 		else
 			return null;
-	}
+	}*/
 	
 	public long getId() {
 		return super.getId();

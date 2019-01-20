@@ -1,9 +1,13 @@
 package fr.guiet.automationserver.business.sensor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
+import fr.guiet.automationserver.business.helper.ParseUtils;
 import fr.guiet.automationserver.business.service.SMSGammuService;
+import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.SensorDto;
 
 public class HDC1080_Sensor extends EnvironmentalSensor {
@@ -17,13 +21,6 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 	private Float _batteryVoltage = null;
 	private Float _rssi = null;
 	
-	/*public void update(float temperature, float humidity, float batteryVoltage, int rssi) {
-		
-		_temperature = temperature;
-		_humidity = humidity;
-		_batteryVoltage = batteryVoltage;
-		_rssi = rssi;
-	}*/
 	
 	public static HDC1080_Sensor LoadFromDto(SensorDto dto, SMSGammuService gammuService) {
 
@@ -66,6 +63,15 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 		if (topic.equals(_mqttTopics.get(0))) {
 			
 			try {
+				
+				HashMap<String, String> hm = new HashMap<String, String>();
+				
+				hm.put("temperature", messageContent[2]);
+				hm.put("humidity", messageContent[3]);
+				
+				//return message process, but do not update sensor value!
+				if (!sanityCheck(hm)) return true;
+				
 				//long sensorId = Long.parseLong(messageContent[1]);
 				float temperature = Float.parseFloat(messageContent[2]);
 				float humidity = Float.parseFloat(messageContent[3]);
@@ -104,6 +110,110 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 	@Override
 	public ArrayList<String> getTopics() {
 		return _mqttTopics;
+	}
+
+	@Override
+	public boolean sanityCheck(HashMap<String, String> values) {
+		
+		boolean isOk = true;
+		String mess;
+		
+		String temperature = values.get("temperature");
+		//Check whether it is a float or not
+		Float retVal = ParseUtils.tryFloatParse(temperature);
+		if (retVal != null) {
+			BigDecimal a = new BigDecimal(temperature);
+			BigDecimal b = new BigDecimal("0.00");
+			
+		    //a.compareTo(b);
+		    //Method returns:
+		    //-1 – if a < b)
+		    //0 – if a == b
+		    //1 – if a > b
+			
+			//Check temp = 0 or temp < 0
+			if (a.compareTo(b) == 0 || a.compareTo(b) == -1) {
+			    
+				mess = "Sanity check failed for sensor : " + this.getName() + " (id : " + this.getId()+ "), incorrect temperature : "+temperature;
+				
+				_logger.info(mess);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms, true);
+				
+				isOk = false;
+			}
+			
+			//Check temp > 50
+			a = new BigDecimal(temperature);
+			b = new BigDecimal("50.00");
+			if (a.compareTo(b) == 1) {
+				
+				mess = "Sanity check failed for sensor : " + this.getName() + " (id : " + this.getId()+ "), incorrect temperature : "+temperature;
+				
+				_logger.info(mess);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms, true);
+				
+				isOk = false;
+			}
+		}
+		
+		String humidity = values.get("humidity");
+		//Check whether it is a float or not
+		retVal = ParseUtils.tryFloatParse(humidity);
+		if (retVal != null) {
+			BigDecimal a = new BigDecimal(humidity);
+			BigDecimal b = new BigDecimal("0.00");
+			
+		    //a.compareTo(b);
+		    //Method returns:
+		    //-1 – if a < b)
+		    //0 – if a == b
+		    //1 – if a > b
+			
+			//Check humidity = 0 or humidity < 0
+			if (a.compareTo(b) == 0 || a.compareTo(b) == -1) {
+				
+				mess = "Sanity check failed for sensor : " + this.getName() + " (id : " + this.getId()+ "), incorrect humidity : "+humidity;
+				
+				_logger.info(mess);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms, true);
+				
+				isOk = false;
+			}
+			
+			//Check humidity > 100
+			a = new BigDecimal(temperature);
+			b = new BigDecimal("100.00");
+			if (a.compareTo(b) == 1) {
+				
+				mess = "Sanity check failed for sensor : " + this.getName() + " (id : " + this.getId()+ "), incorrect humidity : "+humidity;
+				
+				_logger.info(mess);
+				
+				SMSDto sms = new SMSDto();
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms, true);
+				
+				isOk = false;
+			}
+		}
+		
+		return isOk;
+		
+	}
+
+	@Override
+	public Float getTemperature() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
