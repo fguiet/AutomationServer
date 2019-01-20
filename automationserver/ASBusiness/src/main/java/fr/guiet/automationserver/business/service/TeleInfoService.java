@@ -393,7 +393,7 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Sauvegarde de la trame de teleinfo recue en bdd
-	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
+	synchronized private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
 		//_dbManager.SaveTeleInfoTrame(teleInfoTrame);
 		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
