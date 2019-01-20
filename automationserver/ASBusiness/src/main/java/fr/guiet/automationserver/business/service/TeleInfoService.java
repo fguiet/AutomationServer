@@ -378,12 +378,12 @@ public class TeleInfoService implements Runnable {
 	}
 
 	// Récupération de la dernière trame teleinfo recue
-	public TeleInfoTrameDto GetLastTrame() {
+	synchronized public TeleInfoTrameDto GetLastTrame() {
 		return _lastTeleInfoTrameReceived;
 	}
 
 	// Retourne null si la dernière trame recu vaut null
-	public Boolean IsHeureCreuse() {
+	synchronized public Boolean IsHeureCreuse() {
 
 		if (_lastTeleInfoTrameReceived != null) {
 			return (_lastTeleInfoTrameReceived.PTEC.equals("HC.."));
