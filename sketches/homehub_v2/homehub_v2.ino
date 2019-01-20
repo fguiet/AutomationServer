@@ -61,7 +61,7 @@ struct Sensor {
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 3
+#define SENSORS_COUNT 4
 Sensor sensors[SENSORS_COUNT];
 
 void InitSensors() {
@@ -71,6 +71,7 @@ void InitSensors() {
   //String SENSORID =  "3"; //Nohe
   //String SENSORID =  "4"; //Manon
   //String SENSORID =  "5"; //Parents
+  //String SENSORID =  "12"; //Bathroom (upstairs)
   
   sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
@@ -86,12 +87,17 @@ void InitSensors() {
   sensors[2].Name = "Parents";
   sensors[2].SensorId = "5";
   sensors[2].Mqtt_topic = "guiet/upstairs/room_parents/sensor/5";
+
+  sensors[3].Address = "d8:15:dc:ff:2c:4d";
+  sensors[3].Name = "Bathroom";
+  sensors[3].SensorId = "12";
+  sensors[3].Mqtt_topic = "guiet/upstairs/bathroom/sensor/12";
   
-  
-  /*sensors[0].Address = "d4:a6:6d:1d:ef:8b";
+  /*
+  sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
-  sensors[0].Mqtt_topic = "guiet/downstairs/office/sensor/1";
+  sensors[0].Mqtt_topic = "guiet/downstairs/room_parents/sensor/1";
 
   sensors[1].Address = "f4:a4:c6:6f:d8:6a";
   sensors[1].Name = "Salon";
