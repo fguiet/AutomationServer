@@ -28,6 +28,8 @@
 * Author               : F.Guiet
 * Creation             : 20181215
 *
+* Modification         : 20190120 - Battery info is now voltage and not percentage, disable ADC to save power
+*
 */
 
 //Includes
@@ -58,7 +60,7 @@ uint8_t mac_reverse[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 //device name                                             
 const static char     DEVICE_NAME[]        = "Fred";
 
-const static float    VBAT_IN_V = 3.1;
+//const static float    VBAT_IN_V = 3.1;
 
 //to trigger sensor polling in main thread
 static volatile bool  triggerSensorPolling = false;
@@ -74,7 +76,7 @@ const uint16_t POLL_DATA_INTERVAL_IN_S = 60; //In seconds
 const uint16_t ADVERTISE_INTERVAL_IN_MS = 5000; //In seconds
 
 float _temperature = 0;
-int _battery = 0;
+float _battery = 0;
 int _humidity = 0;
 
 /* ****************************************
@@ -110,7 +112,7 @@ uint16_t read_bat_volt(void)
     
     //disable ADC to lower bat consumption
     NRF_ADC->TASKS_STOP = 1;
-    //NRF_ADC->ENABLE = ADC_ENABLE_ENABLE_Disabled;    //disable to shutdown ADC & lower bat consumption
+    NRF_ADC->ENABLE = ADC_ENABLE_ENABLE_Disabled;    //disable to shutdown ADC & lower bat consumption
     
     return (uint16_t)NRF_ADC->RESULT; // 10 bit
     //return myresult;
@@ -151,10 +153,15 @@ void generateAdvertisingData(BLE &ble) {
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::SERVICE_DATA,  (uint8_t *)service_data, sizeof(service_data));
     
     //Battery
-    uint8_t service_data2[3];
+    uint8_t service_data2[4];
     service_data2[0] = BATTERY_UUID_SERVICE & 0xff;
     service_data2[1] = BATTERY_UUID_SERVICE >> 8;
-    service_data2[2] = _battery;    
+    
+    temp = _battery * 100;    
+    sprintf(hex, "%x", temp);
+    service_data2[2] = temp & 0xff;
+    service_data2[3] = temp >> 8;
+            
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::SERVICE_DATA,  (uint8_t *)service_data2, sizeof(service_data2));
     
     //Humidity
@@ -203,18 +210,16 @@ void pollDataCallBack(void)
 }
 
 //read and convert battery voltage
-uint8_t get_battery_level() {
-    
+float get_battery_level() {
+            
     float bat_reading = (float)read_bat_volt();    
     bat_reading = (bat_reading * 3.6) / 1024.0;
     
     #if DEBUG_MODE
        _device.printf("battery reading: %f \r\n", bat_reading);
-    #endif
+    #endif    
     
-    uint8_t percent = (uint8_t)((bat_reading * 100) / VBAT_IN_V);
-    
-    return percent;
+    return bat_reading;
     
     //write battery voltage
     //uint8_t total_chars;
@@ -273,7 +278,7 @@ int main() {
            _battery = get_battery_level();
            
            #if DEBUG_MODE
-              _device.printf("Battery percentage : %d \r\n", _battery);
+              _device.printf("Battery percentage : %6.2f \r\n", _battery);
            #endif
            
            _temperature = _sensor.sample_ctemp();

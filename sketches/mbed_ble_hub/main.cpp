@@ -1,3 +1,16 @@
+/*
+*
+* Description  : Sensor Hub
+*
+* Library Requirements : BLE_API, HTU21D, nRF51822, mbed
+* Author               : F.Guiet
+* Creation             : 20181215
+*
+* Modification         : 20180120 - Change battery from percent to voltage
+*
+*/
+
+
 //Includes
 #include "mbed.h"
 #include "ble/BLE.h"
@@ -6,10 +19,16 @@
 //c7:b9:43:94:24:3a - N
 //e9:3d:63:97:39:5e - P
 BLEProtocol::AddressBytes_t  home_sensors_address [] = { //Careful !! Little Indian Order
-                                                            
+                                                           
+                                                           //Upstairs 
                                                            {0x4c, 0x35, 0xa5, 0xc8, 0x48, 0xd2},
                                                            {0x3a, 0x24, 0x94, 0x43, 0xb9, 0xc7},
-                                                           {0x5e, 0x39, 0x97, 0x63, 0x3d, 0xe9},                                                           
+                                                           {0x5e, 0x39, 0x97, 0x63, 0x3d, 0xe9},
+                                                           {0x4d, 0x2c, 0xff, 0xdc, 0x15, 0xd8} //Bathroom                                                           
+                                                           
+                                                           //Downstairs
+                                                           //{0x6a, 0xd8, 0x6f, 0xc6, 0xa4, 0xf4}, //Salon
+                                                           //{0x8b, 0xef, 0x1d, 0x6d, 0xa6, 0xd4} //Bureau
                                                            //{0x46, 0x24, 0x9b, 0x7b, 0xf7, 0xc5} //Testing purpose
                                                         };
 
@@ -131,7 +150,8 @@ void advertisementCallback(const Gap::AdvertisementCallbackParams_t *params) {
                 
                 //Battery
                 if (serviceDataOrder == 2) {
-                    sprintf(valueString, "%.0f", valueFloat);
+                    float valueFloat = valueFloat / 100;
+                    sprintf(valueString, "%.2f", valueFloat);
                 }
                 
                 //Humidity
