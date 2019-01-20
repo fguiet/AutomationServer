@@ -1,6 +1,9 @@
 package fr.guiet.automationserver.business;
 
 import com.pi4j.io.gpio.Pin;
+
+import java.util.UUID;
+
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
 import fr.guiet.automationserver.dto.*;
@@ -229,7 +232,7 @@ public class Heater implements Comparable<Heater> {
 			priority = _dbManager.GetCurrentPriorityByHeaterId(_heaterId);
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la priorité du radiateur : " + _heaterId, e);
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("5f00c522-a9ed-48b1-8406-ba19f2dcb140"));
 			sms.setMessage("Error occured in heater class, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}

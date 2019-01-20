@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -487,7 +488,7 @@ public class RoomService implements Runnable {
 		catch (Exception e) {
 			_logger.error("Error occured in roomservice", e);
 
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("c4b3b685-992f-4973-8cb8-6522add19edb"));
 			sms.setMessage("Error occured in room Service, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}
@@ -513,7 +514,7 @@ public class RoomService implements Runnable {
 			} catch (Exception e) {
 				_logger.error("Error occured in room Service", e);
 
-				SMSDto sms = new SMSDto();
+				SMSDto sms = new SMSDto(UUID.fromString("d9dfbe55-03a4-4fba-977c-ec07e9eb8477"));
 				sms.setMessage("Error occured in room Service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
 			}
@@ -695,7 +696,7 @@ public class RoomService implements Runnable {
 			
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la liste des pièces");
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("91d7b078-3d5b-4890-9951-f01cf0c1ed5f"));
 			sms.setMessage("Error occured in room Service, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}		

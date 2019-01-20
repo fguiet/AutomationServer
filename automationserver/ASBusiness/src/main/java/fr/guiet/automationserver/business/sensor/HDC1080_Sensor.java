@@ -138,9 +138,9 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				
 				_logger.info(mess);
 				
-				SMSDto sms = new SMSDto();
+				/*SMSDto sms = new SMSDto();
 				sms.setMessage(mess);
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms, true);*/
 				
 				isOk = false;
 			}
@@ -154,9 +154,9 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				
 				_logger.info(mess);
 				
-				SMSDto sms = new SMSDto();
+				/*SMSDto sms = new SMSDto();
 				sms.setMessage(mess);
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms, true);*/
 				
 				isOk = false;
 			}
@@ -182,9 +182,9 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				
 				_logger.info(mess);
 				
-				SMSDto sms = new SMSDto();
+				/*SMSDto sms = new SMSDto();
 				sms.setMessage(mess);
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms, true);*/
 				
 				isOk = false;
 			}
@@ -198,9 +198,9 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				
 				_logger.info(mess);
 				
-				SMSDto sms = new SMSDto();
+				/*SMSDto sms = new SMSDto();
 				sms.setMessage(mess);
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms, true);*/
 				
 				isOk = false;
 			}
@@ -212,8 +212,10 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 
 	@Override
 	public Float getTemperature() {
-		// TODO Auto-generated method stub
-		return null;
+		if (this.isOperational())
+			return _temperature;
+		else
+			return null;
 	}
 
 }

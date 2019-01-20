@@ -1,5 +1,7 @@
 package fr.guiet.automationserver.business.service;
 
+import java.util.UUID;
+
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
 
@@ -65,7 +67,7 @@ public class AlarmService {
 		
 		SetOn();
 		
-		SMSDto sms = new SMSDto();
+		SMSDto sms = new SMSDto(UUID.fromString("f26a0589-402a-4326-8e7a-5a5387068b39"));
 		sms.setMessage("L'alarme vient d'être automatiquement activée. Bonne et douce journée Maître");
 		_smsGammuService.sendMessage(sms, true);
 	}
@@ -99,7 +101,7 @@ public class AlarmService {
 		
 		SetOff();
 		
-		SMSDto sms = new SMSDto();
+		SMSDto sms = new SMSDto(UUID.fromString("7610f1fb-c1f0-40da-b8ee-70b514453ef7"));
 		sms.setMessage("L'alarme vient d'être automatiquement désactivée.");
 		_smsGammuService.sendMessage(sms, true);
 	}

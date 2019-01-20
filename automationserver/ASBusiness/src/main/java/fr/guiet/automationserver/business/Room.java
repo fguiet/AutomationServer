@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Calendar;
 import org.apache.log4j.Logger;
@@ -150,7 +151,7 @@ public class Room {
 			}
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération du prochain changement de température", e);
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("d3678188-8f55-4c6b-9076-bf5f56905ede"));
 			sms.setMessage("Error occured in room class, review error log for more details");
 			_gammuService.sendMessage(sms, true);
 		}
@@ -284,7 +285,7 @@ public class Room {
 		}
 		catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la température par défaut", e);
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("d72e4b20-7774-45a0-8122-0388c629e811"));
 			sms.setMessage("Error occured in room class, review error log for more details");
 			_gammuService.sendMessage(sms, true);
 		}
@@ -294,6 +295,12 @@ public class Room {
 
 	// Arret du service RoomService
 	public void StopService() {
+		
+		//Turn heater off when exiting...
+		for (Heater h : _heaterList) {
+			h.SetOff();
+		}
+		
 		_sensor.Stop();
 	}
 
@@ -328,7 +335,7 @@ public class Room {
 		}
 		catch (Exception e) {
 			_logger.error("Erreur dans le constructeur de la class room", e);
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("16577983-79d1-4e0f-be20-80f8f731a23a"));
 			sms.setMessage("Error occured in room class, review error log for more details");
 			_gammuService.sendMessage(sms, true);
 		}

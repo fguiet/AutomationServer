@@ -2,6 +2,8 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
+
 import org.apache.log4j.Logger;
 
 import fr.guiet.automationserver.business.helper.MqttClientHelper;
@@ -53,7 +55,7 @@ public class Print3DService implements IMqttable {
 			messageProcessed = true;
 			_logger.info("3D Print done !...yeah !...Print duration in minutes : "+GetPrintDuration());
 			
-			SMSDto sms = new SMSDto();
+			SMSDto sms = new SMSDto(UUID.fromString("1ad22dfa-918f-4acc-af84-3187da0352be"));
 			sms.setMessage("Impression 3D terminée en "+GetPrintDuration()+" minutes");
 			_smsGammuService.sendMessage(sms, true);
 			

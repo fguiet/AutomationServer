@@ -100,6 +100,10 @@ public class DateUtils {
 		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
 	}
 	
+	public static Long minutesBetweenDate(Date firstDate, Date secondDate) {
+		return ChronoUnit.MINUTES.between(firstDate.toInstant(), secondDate.toInstant());
+	}
+	
 	public static Date parseDate(String date) {
 		try {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(date);

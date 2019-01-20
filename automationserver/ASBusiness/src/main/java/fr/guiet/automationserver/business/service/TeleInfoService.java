@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.helper.DateUtils;
@@ -261,7 +262,7 @@ public class TeleInfoService implements Runnable {
 			} catch (Exception e) {
 				_logger.error("Error occured in TeleInfo service...", e);
 
-				SMSDto sms = new SMSDto();
+				SMSDto sms = new SMSDto(UUID.fromString("1f5e1fa1-49c5-4700-b02d-a588d9a8f5b5"));
 				sms.setMessage("Error occured in TeleInfo services service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
 			}
@@ -528,7 +529,7 @@ public class TeleInfoService implements Runnable {
 
 						if (!_alertMessageSent) {
 
-							SMSDto sms = new SMSDto();
+							SMSDto sms = new SMSDto(UUID.fromString("954e5116-ceed-43c5-951b-ebb5d629bc74"));
 							sms.setMessage(mess);
 							_smsGammuService.sendMessage(sms, true);
 
