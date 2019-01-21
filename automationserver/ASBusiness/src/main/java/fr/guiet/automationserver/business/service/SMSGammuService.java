@@ -109,8 +109,8 @@ public class SMSGammuService {
 					
 						Date lastMessageDate = entry.getValue();
 
-						Long elapsedTime = DateUtils.minutesBetweenDate(currentDate, lastMessageDate);
-						_logger.info("Flood Task, processing mess : " + entry.getKey().toString() + ", elapsedtime : " + elapsedTime);
+						Long elapsedTime = DateUtils.minutesBetweenDate(lastMessageDate, currentDate);
+						//_logger.info("Flood Task, processing mess : " + entry.getKey().toString() + ", elapsedtime : " + elapsedTime);
 
 						// Purge messages older than 10 minutes
 						if (elapsedTime > 10) {
