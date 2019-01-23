@@ -39,7 +39,7 @@ public class FirmwareAPI {
 			JSONObject obj = new JSONObject();
 			
 			DbManager dbManager = new DbManager();
-			SensorDto dto = dbManager.GetSensorById(Long.parseLong(sensorid));
+			SensorDto dto = dbManager.getSensorById(Long.parseLong(sensorid));
 			
 			if ( dto !=null ) {
 				obj.put("sensorid", sensorid);
