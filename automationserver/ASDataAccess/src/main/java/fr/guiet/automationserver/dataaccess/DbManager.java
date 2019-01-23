@@ -417,6 +417,56 @@ public class DbManager {
 			}
 		}
 	}
+
+	/**
+	 * @param influxDbMeasurementName
+	 * @param temperature
+	 */
+	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature, float humidity) {
+
+		InfluxDB influxDb = null;
+		
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+						
+			influxDb = GetInfluxDbConnection();
+			
+			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("temperature", temperature)
+					.addField("humidity", humidity)
+					.build();
+					
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			influxDb.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			//influxDb.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		}
+		finally {
+
+			try {			
+				if (influxDb != null) {
+					influxDb.close();
+					influxDb= null;
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+	}
 	
 	/**
 	 * @param influxDbMeasurementName

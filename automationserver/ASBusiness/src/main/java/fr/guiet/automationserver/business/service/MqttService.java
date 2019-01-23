@@ -41,7 +41,7 @@ public class MqttService implements MqttCallbackExtended {
 	private DbManager _dbManager = null;
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
-	private Date _lastBasementMessage = new Date();
+	//private Date _lastBasementMessage = new Date();
 	private Date _lastComputeBillCost = null;
 	private String _electricityBill = "NA";
 	
@@ -55,9 +55,9 @@ public class MqttService implements MqttCallbackExtended {
 		_mqttClients.addAll(clients);
 	}
 	
-	public Date GetLastBasementMessage() {
+	/*public Date GetLastBasementMessage() {
 		return _lastBasementMessage;
-	}	
+	}	*/
 
 	public MqttService(SMSGammuService gammuService, RoomService roomService, 
 			TeleInfoService teleInfoService, WaterHeaterService waterHeaterService, AlarmService alarmService,
@@ -288,11 +288,11 @@ public class MqttService implements MqttCallbackExtended {
 				}
 			break;
 				
-			case "SETHOMEMODE":
+			/*case "SETHOMEMODE":
 				String homeMode = messageContent[1];
 				//_scenariiManager.SetHomeModeState(homeMode);
 				break;			
-				
+				*/
 			case "SETAWAYMODE":
 				String awayMode = messageContent[1];
 
@@ -357,7 +357,7 @@ public class MqttService implements MqttCallbackExtended {
 				}
 				break;
 
-			case "SETCAVEINFO":
+			/*case "SETCAVEINFO":
 				try {
 					
 					float temp = Float.parseFloat(messageContent[1]);
@@ -371,7 +371,7 @@ public class MqttService implements MqttCallbackExtended {
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from basement", e);
 				}
-				break;
+				break;*/
 			/*case "SETOUTSIDEINFO":
 
 				try {

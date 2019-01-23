@@ -6,7 +6,6 @@ import org.apache.commons.daemon.DaemonInitException;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -48,9 +47,6 @@ public class AutomationServer implements Daemon {
 	private OutsideEnvironmentalService _outsideEnvService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttService _mqttHelper = null;
-	private boolean _alertSent5 = false; // Réinitialisation
-	private boolean _alertSent10 = false; // Réinitialisation
-	private boolean _alertSentMore = false; // Réinitialisation
 	
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);	
@@ -160,10 +156,7 @@ public class AutomationServer implements Daemon {
 						
 						//TODO : please remove that!!!
 						_mqttHelper.PublishInfoToMqttBroker();
-						
-						//Check whether sensors are still alive....
-						CheckMessagesReception();
-						
+												
 					}					
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
@@ -287,7 +280,7 @@ public class AutomationServer implements Daemon {
 		}
 	}
 	
-	private void CheckMessagesReception() {
+	/*private void CheckMessagesReception() {
 		
 		String name="basement";
 		
@@ -348,7 +341,7 @@ public class AutomationServer implements Daemon {
 		_alertSent10 = false; // Réinitialisation
 		_alertSentMore = false; // Réinitialisation
 		
-	}
+	}*/
 
 	// Méthode start de jsvc (Classe Deamon)
 	@Override
