@@ -84,7 +84,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 	@Override
 	protected void createSaveToDBTask() {
 		
-		_logger.info("Creating save to db sensor info task");
+		_logger.info("Creating save to db sensor info task (Sensor : "+_name+")");
 
 		TimerTask sensorSavingToDbTask = new TimerTask() {
 			@Override
@@ -94,7 +94,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 					
 					if (isOperational()) {
 						
-						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to InfluxDB"); 
+						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to "+_influxDbMeasurement+" InfluxDB measurement"); 
 						
 						//No timeout detected and correct values sets to sensor in here...
 						_dbManager.saveSensorInfoInfluxDB(_influxDbMeasurement, _temperature);
@@ -109,7 +109,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 		_saveToDbTaskTimer = new Timer(true);
 		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000, 60000);
 
-		_logger.info("Save to db room info task has been created.");
+		_logger.info("Save to db sensor info task has been created.");
 		
 	}
 }
