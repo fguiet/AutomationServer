@@ -95,6 +95,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 					if (isOperational()) {
 						
 						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to "+_influxDbMeasurement+" InfluxDB measurement"); 
+						_logger.info("toto");
 						
 						//No timeout detected and correct values sets to sensor in here...
 						_dbManager.saveSensorInfoInfluxDB(_influxDbMeasurement, _temperature);
