@@ -709,7 +709,7 @@ public class DbManager {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
 		            .getConnection();
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -722,7 +722,6 @@ public class DbManager {
 			dto.sensorId = rs.getLong("id_sensor");
 			dto.sensorAddress = rs.getString("sensor_address");
 			dto.name = rs.getString("name");
-			dto.tempshift = rs.getFloat("tempshift");
 			dto.firmware_version = rs.getInt("firmware_version");
 			dto.mqtt_topic = rs.getString("mqtt_topic");
 			dto.influxDbMeasurement = rs.getString("influxdbmeasurement");
