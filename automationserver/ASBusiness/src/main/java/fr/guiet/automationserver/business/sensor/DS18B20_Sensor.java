@@ -61,12 +61,6 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 	}
 
 	@Override
-	public ArrayList<String> getTopics() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean sanityCheck(HashMap<String, String> values) {
 
 		boolean isOk = true;
