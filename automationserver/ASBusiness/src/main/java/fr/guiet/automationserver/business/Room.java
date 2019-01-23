@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.sensor.DHT22_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
 import fr.guiet.automationserver.business.sensor.HDC1080_Sensor;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -313,8 +314,14 @@ public class Room {
 		
 			SensorDto sensorDto = _dbManager.getSensorById(dto.idSensor);
 			
-			//It could be another sensor type but let's say it is always a HDC1080 :)
-			_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);
+			//Cave / Basement
+			if (dto.idSensor == 15) {
+				_sensor = DHT22_Sensor.LoadFromDto(sensorDto, gammuService);
+			}
+			else {
+				//It could be another sensor type but let's say it is always a HDC1080 :)
+				_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);	
+			}
 			
 			ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
 			for (HeaterDto heaterDto : heaterDtoList) {
