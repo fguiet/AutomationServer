@@ -34,6 +34,14 @@ import fr.guiet.automationserver.dto.*;
  * @author guiet
  *
  */
+/**
+ * @author guiet
+ *
+ */
+/**
+ * @author guiet
+ *
+ */
 public class DbManager {
 
 	// Logger
@@ -355,14 +363,12 @@ public class DbManager {
 	}
 
 	/**
-	 * Saves sensor information into InfluxDB
-	 * 
-	 * @param sensorName
-	 * @param actualTemp
-	 * @param wantedTemp
+	 * @param influxDbMeasurementName
+	 * @param temperature
 	 * @param humidity
+	 * @param battery
 	 */
-	public void SaveSensorInfoInfluxDB(String roomName, Float actualTemp, Float wantedTemp, float humidity, float battery) {
+	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature, float humidity, float battery_voltage) {
 
 		InfluxDB influxDb = null;
 		
@@ -372,17 +378,16 @@ public class DbManager {
 						
 			influxDb = GetInfluxDbConnection();
 			
-			_logger.info("Saving sensor info from room " + roomName + " to InfluxDB");
+			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(roomName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("actual_temp", actualTemp)
-					.addField("wanted_temp", wantedTemp)
+			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("temperature", temperature)
 					.addField("humidity", humidity)
-					.addField("battery", battery).build();
+					.addField("battery_voltage", battery_voltage).build();
 
 			batchPoints.point(point1);
 
@@ -687,7 +692,7 @@ public class DbManager {
 	 * @param sensorId
 	 * @return
 	 */
-	public SensorDto GetSensorById(long sensorId) throws Exception {
+	public SensorDto getSensorById(long sensorId) throws Exception {
 
 		//Use cache!
 		if (_sensorDtoList.containsKey(sensorId)) {
@@ -704,7 +709,7 @@ public class DbManager {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
 		            .getConnection();
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version, c.mqtt_topic FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.tempshift, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -720,6 +725,7 @@ public class DbManager {
 			dto.tempshift = rs.getFloat("tempshift");
 			dto.firmware_version = rs.getInt("firmware_version");
 			dto.mqtt_topic = rs.getString("mqtt_topic");
+			dto.influxDbMeasurement = rs.getString("influxdbmeasurement");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
@@ -865,7 +871,7 @@ public class DbManager {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
 		            .getConnection();
 
-			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic, a.influxdb_measurement FROM automation.room a ";
+			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic FROM automation.room a ";
 
 			pst = connection.prepareStatement(query);
 
@@ -878,7 +884,6 @@ public class DbManager {
 				r.name = rs.getString("name");
 				r.idSensor = rs.getLong("id_sensor");
 				r.mqttTopic = rs.getString("mqtt_topic");
-				r.influxdbMeasurement = rs.getString("influxdb_measurement");
 
 				roomList.add(r);
 			}

@@ -4,27 +4,29 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import fr.guiet.automationserver.business.helper.ParseUtils;
 import fr.guiet.automationserver.business.service.SMSGammuService;
-import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.SensorDto;
 
 public class HDC1080_Sensor extends EnvironmentalSensor {
 	
 	//Constructor
-	public HDC1080_Sensor(long id, String name, String mqtt_topic, SMSGammuService smsGammuService) {
-		super(id, name, mqtt_topic, smsGammuService);
+	public HDC1080_Sensor(long id, String name, String mqtt_topic, String influxDbMeasurement, SMSGammuService smsGammuService) {
+		super(id, name, mqtt_topic, influxDbMeasurement, smsGammuService);
 	}
 	
 	private Float _humidity = null;
 	private Float _batteryVoltage = null;
 	private Float _rssi = null;
+	private Timer _timer2 = null;
 	
 	
 	public static HDC1080_Sensor LoadFromDto(SensorDto dto, SMSGammuService gammuService) {
 
-		return new HDC1080_Sensor(dto.sensorId, dto.name, dto.mqtt_topic, gammuService);
+		return new HDC1080_Sensor(dto.sensorId, dto.name, dto.mqtt_topic, dto.influxDbMeasurement, gammuService);
 	}
 	
 	public Float getHumidity() {
@@ -216,6 +218,36 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			return _temperature;
 		else
 			return null;
+	}
+
+	@Override
+	protected void createSaveToDBTask() {
+		
+		_logger.info("Creating save to db sensor info task");
+
+		TimerTask sensorSavingToDbTask = new TimerTask() {
+			@Override
+			public void run() {
+
+				try {
+					
+					if (isOperational()) {
+						
+						//No timeout detected and correct values sets to sensor in here...
+						_dbManager.saveSensorInfoInfluxDB(_influxDbMeasurement, _temperature, _humidity, _batteryVoltage);
+						
+					}
+				} catch (Exception e) {
+					_logger.error("Error occured in sensorSavingToDbTask", e);
+				}
+			}
+		};
+
+		_timer2 = new Timer(true);
+		_timer2.schedule(sensorSavingToDbTask, 5000, 60000);
+
+		_logger.info("Save to db room info task has been created.");
+		
 	}
 
 }

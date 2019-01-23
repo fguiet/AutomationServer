@@ -13,5 +13,5 @@ public class RoomDto {
 	//Sensor linked to the room
 	public long idSensor;
 	public String mqttTopic;
-	public String influxdbMeasurement;
+	//public String influxdbMeasurement;
 }

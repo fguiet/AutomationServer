@@ -14,4 +14,5 @@ public class SensorDto {
 	public float tempshift;
 	public int firmware_version;
 	public String mqtt_topic;
+	public String influxDbMeasurement;
 }

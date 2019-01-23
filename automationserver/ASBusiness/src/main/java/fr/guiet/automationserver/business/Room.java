@@ -27,7 +27,7 @@ public class Room {
 	private Float _userWantedTemp = null;
 	private Float _lastDefaultTemp = null;
 	private String _mqttTopic;
-	private String _influxdbMeasurement;
+	
 	private DbManager _dbManager = null;
 	private SMSGammuService _gammuService = null;
 
@@ -42,10 +42,6 @@ public class Room {
 
 	public EnvironmentalSensor getSensor() {
 		return _sensor;
-	}
-
-	public String getInfluxdbMeasurement() {
-		return _influxdbMeasurement;
 	}
 
 	public long getRoomId() {
@@ -309,14 +305,13 @@ public class Room {
 		_id = dto.id;
 		_name = dto.name;
 		_mqttTopic = dto.mqttTopic;
-		_influxdbMeasurement = dto.influxdbMeasurement;
 		_gammuService = gammuService;
 
 		_dbManager = new DbManager();
 		
 		try {
 		
-			SensorDto sensorDto = _dbManager.GetSensorById(dto.idSensor);
+			SensorDto sensorDto = _dbManager.getSensorById(dto.idSensor);
 			
 			//It could be another sensor type but let's say it is always a HDC1080 :)
 			_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);

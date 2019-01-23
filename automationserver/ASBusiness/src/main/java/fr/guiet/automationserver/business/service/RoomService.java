@@ -331,48 +331,6 @@ public class RoomService implements Runnable {
 
 		_isStopped = true;
 	}
-
-	// Création de la tache de sauvegarde en bdd
-	private void CreateSaveToDBTask() {
-
-		_logger.info("Creating save to db room info task");
-		
-		TimerTask roomServiceTask = new TimerTask() {
-			@Override
-			public void run() {
-				
-				try {
-				
-					for (Room room : _roomList) {
-	
-						// Pas de sauvegarde si une valeur est nulle
-						if (room.getActualTemp() != null && room.getWantedTemp() != null
-								&& room.getActualHumidity() != null) {
-							// DbManager dbManager = new DbManager();
-							//_dbManager.SaveSensorInfo(room.getSensor().getIdSendor(), room.getActualTemp(),
-							//		room.getWantedTemp(), room.getActualHumidity());
-							//_logger.info("Sauvegardee en base de donnees des infos du capteur pour la piece : "
-							//		+ room.getName() + ", Temp actuelle : " + room.getActualTemp() + ", Temp désirée : "
-							//		+ room.getWantedTemp() + ", Humidité : " + room.getActualHumidity());
-	
-							
-							_dbManager.SaveSensorInfoInfluxDB(room.getInfluxdbMeasurement(), room.getActualTemp(),
-									room.getWantedTemp(), room.getActualHumidity(), room.getBatteryVoltage());
-						}
-					}
-				}
-				catch(Exception e) {
-					_logger.error("Error occured in room service task", e);
-				}
-			}
-		};
-
-		_timer = new Timer(true);
-		// Toutes les minutes on enregistre
-		_timer.schedule(roomServiceTask, 5000, 60000);
-		
-		_logger.info("Save to db room info task has been created.");
-	}
 	
 	//Publishing room information to mqtt
 	private void createPublishMqttRoomInfoTask() {
@@ -467,8 +425,6 @@ public class RoomService implements Runnable {
 	public void run() {
 
 		_logger.info("Starting Room Service...");
-
-		CreateSaveToDBTask();
 		
 		createPublishMqttRoomInfoTask();
 
