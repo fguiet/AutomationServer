@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
-import fr.guiet.automationserver.business.Room;
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -18,7 +17,7 @@ import fr.guiet.automationserver.dto.SMSDto;
  * @author guiet
  *
  */
-public abstract class Sensor {
+abstract class Sensor {
 
 	// Logger
 	protected static Logger _logger = Logger.getLogger(Sensor.class);
@@ -30,6 +29,8 @@ public abstract class Sensor {
 	protected ArrayList<String> _mqttTopics = new ArrayList<String>();
 
 	private Timer _timer = null;
+	
+	public Timer _saveToDbTaskTimer = null;
 	
 	// Sensor Name
 	protected String _name;
@@ -65,6 +66,10 @@ public abstract class Sensor {
 
 	public boolean isOperational() {
 		return !_sensorUpdateTimeout;
+	}
+	
+	public ArrayList<String> getTopics() {
+		return _mqttTopics;
 	}
 
 	public String getLastSensorUpdate() {

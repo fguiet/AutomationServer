@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-//import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -47,7 +46,6 @@ public class MqttService implements MqttCallbackExtended {
 	private String _electricityBill = "NA";
 	
 	private ArrayList<IMqttable> _mqttClients = new ArrayList<IMqttable>();
-	
 	
 	public void addClient(IMqttable client) {
 		_mqttClients.add(client);
@@ -237,7 +235,9 @@ public class MqttService implements MqttCallbackExtended {
 		for (IMqttable c : _mqttClients) {
 			messageProcessed = c.ProcessMqttMessage(topic, message);
 			
-			if (messageProcessed) {
+			//TODO : Remove this horror
+			//Change outsidemonitoring to send two topics for the two sensors
+			if (messageProcessed && !topic.equals("/guiet/outside/sensorinfo")) {
 				return;
 			}
 		}
@@ -372,7 +372,7 @@ public class MqttService implements MqttCallbackExtended {
 					_logger.error("Could not read or save information received from basement", e);
 				}
 				break;
-			case "SETOUTSIDEINFO":
+			/*case "SETOUTSIDEINFO":
 
 				try {
 					float garageTemp = Float.parseFloat(messageContent[1]);
@@ -381,10 +381,11 @@ public class MqttService implements MqttCallbackExtended {
 					float outsideTemp = Float.parseFloat(messageContent[4]);
 
 					_dbManager.SaveOutsideSensorsInfo(outsideTemp, garageTemp, pressure, altitude);
+					
 				} catch (Exception e) {
 					_logger.error("Could not read or save information received from outside", e);
 				}
-				break;
+				break;*/
 			case "SETRSSTATE":
 				long rsId = Long.parseLong(messageContent[1]);
 				String state = messageContent[2];

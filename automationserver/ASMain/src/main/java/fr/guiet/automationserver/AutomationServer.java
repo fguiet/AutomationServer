@@ -11,7 +11,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import fr.guiet.automationserver.business.*;
 import fr.guiet.automationserver.business.helper.GpioHelper;
 import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.business.service.*;
@@ -46,6 +45,7 @@ public class AutomationServer implements Daemon {
 	private Thread _rollerShutterServiceThread = null;
 	private Thread _BLEHubServiceThread = null;
 	private Print3DService _print3DService = null;
+	private OutsideEnvironmentalService _outsideEnvService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttService _mqttHelper = null;
 	private boolean _alertSent5 = false; // Réinitialisation
@@ -127,6 +127,9 @@ public class AutomationServer implements Daemon {
 					//Start 3D Print service
 					_print3DService = new Print3DService(_smsGammuService);
 					
+					//Start Outside Environmental service
+					_outsideEnvService = new OutsideEnvironmentalService(_smsGammuService);
+					
 					// Starting room service
 					_roomService = new RoomService(_teleInfoService, _smsGammuService);
 					_roomServiceThread = new Thread(_roomService);
@@ -142,6 +145,7 @@ public class AutomationServer implements Daemon {
 					_mqttHelper.addClient(_BLEHubService);
 					_mqttHelper.addClient(_print3DService);
 					_mqttHelper.addClients(_roomService.getMqttableClients());
+					_mqttHelper.addClients(_outsideEnvService.getMqttableClients());
 					
 					_mqttHelper.connectAndSubscribe();
 

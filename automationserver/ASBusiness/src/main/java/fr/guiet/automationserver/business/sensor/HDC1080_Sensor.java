@@ -1,7 +1,6 @@
 package fr.guiet.automationserver.business.sensor;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
@@ -21,8 +20,6 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 	private Float _humidity = null;
 	private Float _batteryVoltage = null;
 	private Float _rssi = null;
-	private Timer _timer2 = null;
-	
 	
 	public static HDC1080_Sensor LoadFromDto(SensorDto dto, SMSGammuService gammuService) {
 
@@ -70,6 +67,8 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				
 				hm.put("temperature", messageContent[2]);
 				hm.put("humidity", messageContent[3]);
+				hm.put("battery", messageContent[4]);
+				hm.put("rssi", messageContent[5]);
 				
 				//return message process, but do not update sensor value!
 				if (!sanityCheck(hm)) return true;
@@ -77,19 +76,8 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				//long sensorId = Long.parseLong(messageContent[1]);
 				float temperature = Float.parseFloat(messageContent[2]);
 				float humidity = Float.parseFloat(messageContent[3]);
-				
-				//100% per default if power operated
-				float battery = 100;
-				
-				if (messageContent[4] != null) 
-					battery = Float.parseFloat(messageContent[4]);
-				
-				//Rssi 0 per default if power operated
-				float rssi = 0;
-				
-				if (messageContent.length >= 6)  {																
-				   rssi = Float.parseFloat(messageContent[5]);
-				}
+				float battery = Float.parseFloat(messageContent[4]);
+				float rssi = Float.parseFloat(messageContent[5]);
 				
 				_temperature = temperature;
 				_humidity = humidity;
@@ -107,11 +95,6 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 		}
 	
 		return messageProcessed;	
-	}
-
-	@Override
-	public ArrayList<String> getTopics() {
-		return _mqttTopics;
 	}
 
 	@Override
@@ -208,16 +191,32 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			}
 		}
 		
+		String battery = values.get("battery");
+		// Check whether it is a float or not
+		retVal = ParseUtils.tryFloatParse(battery);
+		if (retVal == null) {
+			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect battery voltage : "
+					+ battery;
+
+			_logger.info(mess);
+
+			isOk = false;
+		}
+		
+		String rssi = values.get("rssi");
+		// Check whether it is a float or not
+		retVal = ParseUtils.tryFloatParse(rssi);
+		if (retVal == null) {
+			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect rssi : "
+					+ rssi;
+
+			_logger.info(mess);
+
+			isOk = false;
+		}
+		
 		return isOk;
 		
-	}
-
-	@Override
-	public Float getTemperature() {
-		if (this.isOperational())
-			return _temperature;
-		else
-			return null;
 	}
 
 	@Override
@@ -245,8 +244,8 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			}
 		};
 
-		_timer2 = new Timer(true);
-		_timer2.schedule(sensorSavingToDbTask, 5000, 60000);
+		_saveToDbTaskTimer = new Timer(true);
+		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000, 60000);
 
 		_logger.info("Save to db room info task has been created.");
 		
