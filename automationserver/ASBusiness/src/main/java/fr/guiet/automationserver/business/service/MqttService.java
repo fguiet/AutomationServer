@@ -237,7 +237,7 @@ public class MqttService implements MqttCallbackExtended {
 			
 			//TODO : Remove this horror
 			//Change outsidemonitoring to send two topics for the two sensors
-			if (messageProcessed && !topic.equals("/guiet/outside/sensorinfo")) {
+			if (messageProcessed && !topic.equals("/guiet/outside/sensorsinfo")) {
 				return;
 			}
 		}
