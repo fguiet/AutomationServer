@@ -24,7 +24,7 @@ public abstract class Sensor {
 	protected static Logger _logger = Logger.getLogger(Sensor.class);
 
 	// Sensor Id
-	private long _id;
+	protected long _id;
 
 	// Mqtt topic or topics served by this sensor
 	protected ArrayList<String> _mqttTopics = new ArrayList<String>();
@@ -32,7 +32,7 @@ public abstract class Sensor {
 	private Timer _timer = null;
 	
 	// Sensor Name
-	private String _name;
+	protected String _name;
 
 	// Last sensor update
 	protected Date _lastSensorUpdate = null;
@@ -48,18 +48,6 @@ public abstract class Sensor {
 	private boolean _sensorUpdateTimeout = true;
 
 	protected DbManager _dbManager = null;
-	
-	public long getId() {
-		return _id;
-	}
-
-	public String getName() {
-		return _name;
-	}
-
-	public void setId(long id) {
-		_id = id;
-	}
 
 	public Sensor(long id, String name, String mqttTopic, String influxDbMeasurement, SMSGammuService smsGammuService) {
 		_id = id;
