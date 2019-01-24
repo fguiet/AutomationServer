@@ -36,7 +36,7 @@ public class SMSGammuService {
 	private static Logger _logger = Logger.getLogger(SMSGammuService.class);
 	private String[] _configRecipientList = null;
 	private String _configGammu = null;
-	private HashMap<UUID, Date> _messageMap = new HashMap<UUID, Date>();
+	private HashMap<String, Date> _messageMap = new HashMap<String, Date>();
 	private Timer _timer = null;
 
 	public SMSGammuService() {
@@ -101,11 +101,11 @@ public class SMSGammuService {
 				try {
 
 					Date currentDate = new Date();
-					Iterator<Entry<UUID, Date>> entryIt = _messageMap.entrySet().iterator();
+					Iterator<Entry<String, Date>> entryIt = _messageMap.entrySet().iterator();
 
 					// Iterate over all the elements
 					while (entryIt.hasNext()) {
-						Entry<UUID, Date> entry = entryIt.next();
+						Entry<String, Date> entry = entryIt.next();
 					
 						Date lastMessageDate = entry.getValue();
 
@@ -134,7 +134,7 @@ public class SMSGammuService {
 
 	private boolean CheckSmsFlooding(SMSDto smsDto) {
 
-		UUID messId = smsDto.getId();
+		String messId = smsDto.getId();
 
 		if (!_messageMap.containsKey(messId)) {
 			_logger.info("Adding SMS message UUID to cache : "+messId.toString());

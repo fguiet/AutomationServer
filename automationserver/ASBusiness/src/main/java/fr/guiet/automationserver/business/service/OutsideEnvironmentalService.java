@@ -2,17 +2,15 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
-
 import fr.guiet.automationserver.business.sensor.BMP085_Sensor;
 import fr.guiet.automationserver.business.sensor.DS18B20_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SensorDto;
 
-public class OutsideEnvironmentalService extends AbstractService {
+public class OutsideEnvironmentalService extends AbstractAutomationService {
 
-	private static Logger _logger = Logger.getLogger(OutsideEnvironmentalService.class);
+	//private static Logger _logger = Logger.getLogger(OutsideEnvironmentalService.class);
 
 	private EnvironmentalSensor _bmp085_garage_sensor;
 	private EnvironmentalSensor _ds18b20_outside_sensor;
@@ -30,8 +28,10 @@ public class OutsideEnvironmentalService extends AbstractService {
 		return m;
 	}
 
-	public OutsideEnvironmentalService(SMSGammuService gammuService) {
+	public OutsideEnvironmentalService(String name, SMSGammuService gammuService) {
 
+		super(name);
+		
 		_dbManager = new DbManager();
 
 		SensorDto sensorDto = _dbManager.getSensorById(BMP085_GARAGE_SENSOR_ID);
@@ -42,13 +42,15 @@ public class OutsideEnvironmentalService extends AbstractService {
 
 		_ds18b20_outside_sensor = DS18B20_Sensor.LoadFromDto(sensorDto, gammuService);
 		
-     	_logger.info("Starting Outside Environmental service...");
+     	//_logger.info("Starting Outside Environmental service...");
 	}
 
 	@Override
-	void stop() {
+	public void run() {
 		// TODO Auto-generated method stub
 		
 	}
+
+	
 
 }

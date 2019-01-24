@@ -100,7 +100,7 @@ public class RollerShutterService implements Runnable {
 			} catch (Exception e) {
 				_logger.error("Error occured in rollershutter management service", e);
 
-				SMSDto sms = new SMSDto(UUID.fromString("6b41cf93-119a-4c72-bb64-cd17689f93b9"));
+				SMSDto sms = new SMSDto("6b41cf93-119a-4c72-bb64-cd17689f93b9");
 				sms.setMessage("Error occured in rollershutter management service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
 			}

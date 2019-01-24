@@ -104,7 +104,7 @@ public class WaterHeaterService implements Runnable {
 			} catch (Exception e) {
 				_logger.error("Error occured in water heater management service", e);
 
-				SMSDto sms = new SMSDto(UUID.fromString("14cab02b-7407-41d8-b085-16d3fab14876"));
+				SMSDto sms = new SMSDto("14cab02b-7407-41d8-b085-16d3fab14876");
 				sms.setMessage("Error occured in water heater management service, review error log for more details");
 				_smsGammuService.sendMessage(sms, true);
 			}

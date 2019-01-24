@@ -61,7 +61,7 @@ public class RollerShutter {
 
 				setState(RollerShutterState.UNREACHABLE, false);
 				
-				SMSDto sms = new SMSDto(UUID.fromString("8ee5a384-c76c-4af3-9aeb-52bfaabfc15f"));
+				SMSDto sms = new SMSDto("8ee5a384-c76c-4af3-9aeb-52bfaabfc15f");
 				String message = String.format("Rollershutter %s is not sending state (5 minutes alert)", _name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
@@ -77,7 +77,7 @@ public class RollerShutter {
 			if (!_alertSent10) {
 				setState(RollerShutterState.UNREACHABLE, false);
 				
-				SMSDto sms = new SMSDto(UUID.fromString("bc2f7d30-6700-4571-ae27-68b860cbe4a7"));
+				SMSDto sms = new SMSDto("bc2f7d30-6700-4571-ae27-68b860cbe4a7");
 				String message = String.format("Rollershutter %s is not sending state (10 minutes alert)", _name);
 				sms.setMessage(message);
 				
@@ -94,7 +94,7 @@ public class RollerShutter {
 			if (!_alertSentMore) {
 				setState(RollerShutterState.UNREACHABLE, false);
 				
-				SMSDto sms = new SMSDto(UUID.fromString("bfc86eaf-6f26-4692-b5fd-ae5098834329"));
+				SMSDto sms = new SMSDto("bfc86eaf-6f26-4692-b5fd-ae5098834329");
 				String message = String.format("Rollershutter %s is not sending state (20 minutes alert)...Time to do something", _name);
 				sms.setMessage(message);
 				_smsGammuService.sendMessage(sms, true);
@@ -149,7 +149,7 @@ public class RollerShutter {
 															   _state == RollerShutterState.VOID ||
 																	   _state == RollerShutterState.UNDETERMINED ||
 																	   _state == RollerShutterState.ERROR)) {
-				SMSDto sms = new SMSDto(UUID.fromString("e92abc77-10df-41e4-98f2-ca7fcf0c14fd"));
+				SMSDto sms = new SMSDto("e92abc77-10df-41e4-98f2-ca7fcf0c14fd");
 				sms.setMessage("Le volet roulant "+_name+" est passé de l'état : "+_previousState.name()+ " à l'état : "+_state.name()+ " durant la période 21:00:00 - 06:00:00. Bizarre non?");
 				_smsGammuService.sendMessage(sms, true);
 			}

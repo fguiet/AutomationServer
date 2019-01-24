@@ -58,7 +58,7 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 				messageProcessed = true;
 
 			} catch (Exception e) {
-				_logger.error("Sensor : " + _name + " (id : " + _id + ") - Could not process mqtt message : " + message,
+				_logger.error("Sensor : " + getName() + " (id : " + getId() + ") - Could not process mqtt message : " + message,
 						e);
 			}
 		}
@@ -76,7 +76,7 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		Float retVal = ParseUtils.tryFloatParse(temperature);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect temperature : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "
 					+ temperature;
 
 			_logger.info(mess);
@@ -88,7 +88,7 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		retVal = ParseUtils.tryFloatParse(pressure);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect pressure : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect pressure : "
 					+ temperature;
 
 			_logger.info(mess);
@@ -100,7 +100,7 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		retVal = ParseUtils.tryFloatParse(altitude);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect altitude : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect altitude : "
 					+ temperature;
 
 			_logger.info(mess);
@@ -114,7 +114,7 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 	@Override
 	protected void createSaveToDBTask() {
 		
-		_logger.info("Creating save to db sensor info task (Sensor : "+_name+")");
+		_logger.info("Creating save to db sensor info task (Sensor : "+ getName() +")");
 
 		TimerTask sensorSavingToDbTask = new TimerTask() {
 			@Override
@@ -124,10 +124,10 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 					
 					if (isOperational()) {
 						
-						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to "+_influxDbMeasurement+" InfluxDB measurement");
+						_logger.info("Saving sensor info : " + getName() + " (id : " + getId() + ") to "+getInfluxDbMeasurement()+" InfluxDB measurement");
 						
 						//No timeout detected and correct values sets to sensor in here...
-						_dbManager.saveSensorInfoInfluxDB2(_influxDbMeasurement, _temperature, _pressure, _altitude);
+						_dbManager.saveSensorInfoInfluxDB2(getInfluxDbMeasurement(), _temperature, _pressure, _altitude);
 						
 					}
 				} catch (Exception e) {

@@ -131,7 +131,7 @@ public class MqttService implements MqttCallbackExtended {
 		catch(Exception e) {
 			_logger.error("Error while subscribing to mqtt topic", e);
 
-			SMSDto sms = new SMSDto(UUID.fromString("b7e40b31-abf3-4a3f-bca6-934cbbda4dbf"));
+			SMSDto sms = new SMSDto("b7e40b31-abf3-4a3f-bca6-934cbbda4dbf");
 			sms.setMessage("Error while subscribing to mqtt topic, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}
@@ -157,13 +157,13 @@ public class MqttService implements MqttCallbackExtended {
 		} catch (MqttException me) {
 			_logger.error("Error while connecting to mqtt broker", me);
 
-			SMSDto sms = new SMSDto(UUID.fromString("f2d0fb97-4f95-4eb8-a5de-18ab8bdd0b4d"));
+			SMSDto sms = new SMSDto("f2d0fb97-4f95-4eb8-a5de-18ab8bdd0b4d");
 			sms.setMessage("Error occured in mqtt helper (MqttException), review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		} catch(Exception e) {
 			_logger.error("Error while connecting to mqtt broker", e);
 
-			SMSDto sms = new SMSDto(UUID.fromString("a8730a13-b209-430e-a517-9d5aff75dc4c"));
+			SMSDto sms = new SMSDto("a8730a13-b209-430e-a517-9d5aff75dc4c");
 			sms.setMessage("Error occured in mqtt helper (Exception), review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 		}
@@ -195,7 +195,7 @@ public class MqttService implements MqttCallbackExtended {
 		} catch (MqttException me) {
 			_logger.error("Error sending sensor value to mqtt broker", me);
 
-			SMSDto sms = new SMSDto(UUID.fromString("3b6f870b-97f3-496f-8f47-b4dc17a642f9"));
+			SMSDto sms = new SMSDto("3b6f870b-97f3-496f-8f47-b4dc17a642f9");
 			sms.setMessage("Error occured in mqtt helper, review error log for more details");
 			_smsGammuService.sendMessage(sms, true);
 			
@@ -261,7 +261,7 @@ public class MqttService implements MqttCallbackExtended {
 			case "SETNEWSERIE":
 				String serie = messageContent[1];				
 				String mess1 = "Hey! you got a new serie to watch : " +serie;				
-				SMSDto sms1 = new SMSDto(UUID.fromString("238588b4-767f-484b-8cb6-d867e267bdd6"));
+				SMSDto sms1 = new SMSDto("238588b4-767f-484b-8cb6-d867e267bdd6");
 				sms1.setMessage(mess1);
 				_smsGammuService.sendMessage(sms1, true);
 				break;
@@ -334,7 +334,7 @@ public class MqttService implements MqttCallbackExtended {
 						 * mailService.SendMailSSL("Hey! you got mail", mess);
 						 */
 
-						SMSDto sms = new SMSDto(UUID.fromString("fdaed23f-92d6-4334-8aec-bf39be62f3aa"));
+						SMSDto sms = new SMSDto("fdaed23f-92d6-4334-8aec-bf39be62f3aa");
 						sms.setMessage(mess);
 						_smsGammuService.sendMessage(sms, true);
 					}

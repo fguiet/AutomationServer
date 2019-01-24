@@ -90,7 +90,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 				messageProcessed = true;
 				
 			} catch (Exception e) {
-				_logger.error("Sensor : " + _name + " (id : " + _id + ") - Could not process mqtt message : " + message, e);
+				_logger.error("Sensor : " + getName() + " (id : " + getId() + ") - Could not process mqtt message : " + message, e);
 			}			
 		}
 	
@@ -119,7 +119,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			//Check temp = 0 or temp < 0
 			if (a.compareTo(b) == 0 || a.compareTo(b) == -1) {
 			    
-				mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect temperature : "+temperature;
+				mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "+temperature;
 				
 				_logger.info(mess);
 				
@@ -135,7 +135,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			b = new BigDecimal("50.00");
 			if (a.compareTo(b) == 1) {
 				
-				mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect temperature : "+temperature;
+				mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "+temperature;
 				
 				_logger.info(mess);
 				
@@ -163,7 +163,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			//Check humidity = 0 or humidity < 0
 			if (a.compareTo(b) == 0 || a.compareTo(b) == -1) {
 				
-				mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect humidity : "+humidity;
+				mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect humidity : "+humidity;
 				
 				_logger.info(mess);
 				
@@ -179,7 +179,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 			b = new BigDecimal("100.00");
 			if (a.compareTo(b) == 1) {
 				
-				mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect humidity : "+humidity;
+				mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect humidity : "+humidity;
 				
 				_logger.info(mess);
 				
@@ -195,7 +195,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		retVal = ParseUtils.tryFloatParse(battery);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect battery voltage : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect battery voltage : "
 					+ battery;
 
 			_logger.info(mess);
@@ -207,7 +207,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		retVal = ParseUtils.tryFloatParse(rssi);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect rssi : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect rssi : "
 					+ rssi;
 
 			_logger.info(mess);
@@ -222,7 +222,7 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 	@Override
 	protected void createSaveToDBTask() {
 		
-		_logger.info("Creating save to db sensor info task (Sensor : "+_name+")");
+		_logger.info("Creating save to db sensor info task (Sensor : "+getName()+")");
 
 		TimerTask sensorSavingToDbTask = new TimerTask() {
 			@Override
@@ -232,10 +232,10 @@ public class HDC1080_Sensor extends EnvironmentalSensor {
 					
 					if (isOperational()) {
 						
-						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to "+_influxDbMeasurement+" InfluxDB measurement"); 
+						_logger.info("Saving sensor info : " + getName() + " (id : " + getId() + ") to "+getInfluxDbMeasurement()+" InfluxDB measurement"); 
 						
 						//No timeout detected and correct values sets to sensor in here...
-						_dbManager.saveSensorInfoInfluxDB(_influxDbMeasurement, _temperature, _humidity, _batteryVoltage);
+						_dbManager.saveSensorInfoInfluxDB(getInfluxDbMeasurement(), _temperature, _humidity, _batteryVoltage);
 						
 					}
 				} catch (Exception e) {

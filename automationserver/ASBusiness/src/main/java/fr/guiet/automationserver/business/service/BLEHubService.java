@@ -58,7 +58,7 @@ public class BLEHubService implements Runnable, IMqttable {
 						String message = "Warning! No news from upstairs hub...last alive message reception : " + DateUtils.getDateToString(_lastAliveUpstairsHubReception);
 						_logger.info(message);
 						
-						SMSDto sms = new SMSDto(UUID.fromString("bdafdfcf-775a-4b8e-af4d-02c0e6254bbd"));
+						SMSDto sms = new SMSDto("bdafdfcf-775a-4b8e-af4d-02c0e6254bbd");
 						sms.setMessage(message);
 						_smsGammuService.sendMessage(sms, true);
 					}
@@ -73,7 +73,7 @@ public class BLEHubService implements Runnable, IMqttable {
 						String message = "Warning! No news from downstairs hub...last alive message reception : " + DateUtils.getDateToString(_lastAliveUpstairsHubReception);
 						_logger.info(message);
 						
-						SMSDto sms = new SMSDto(UUID.fromString("19332bf7-9a73-4ab3-87a9-edb894358483"));
+						SMSDto sms = new SMSDto("19332bf7-9a73-4ab3-87a9-edb894358483");
 						sms.setMessage(message);
 						_smsGammuService.sendMessage(sms, true);
 					}
@@ -84,7 +84,7 @@ public class BLEHubService implements Runnable, IMqttable {
 			} catch (Exception e) {
 				_logger.error("Error occured in BLE Hub Service...", e);
 
-				SMSDto sms = new SMSDto(UUID.fromString("f134a988-5edb-40b7-b343-e313d4b3b150"));
+				SMSDto sms = new SMSDto("f134a988-5edb-40b7-b343-e313d4b3b150");
 				sms.setMessage("Error occured in BLE Hub Service, review error log for more details : "+ e.getMessage());
 				_smsGammuService.sendMessage(sms, true);
 			}

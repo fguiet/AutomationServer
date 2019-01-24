@@ -51,7 +51,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 				messageProcessed = true;
 
 			} catch (Exception e) {
-				_logger.error("Sensor : " + _name + " (id : " + _id + ") - Could not process mqtt message : " + message,
+				_logger.error("Sensor : " + getName() + " (id : " + getId() + ") - Could not process mqtt message : " + message,
 						e);
 			}
 		}
@@ -69,7 +69,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 		// Check whether it is a float or not
 		Float retVal = ParseUtils.tryFloatParse(temperature);
 		if (retVal == null) {
-			mess = "Sanity check failed for sensor : " + _name + " (id : " + _id + "), incorrect temperature : "
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "
 					+ temperature;
 
 			_logger.info(mess);
@@ -83,7 +83,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 	@Override
 	protected void createSaveToDBTask() {
 		
-		_logger.info("Creating save to db sensor info task (Sensor : "+_name+")");
+		_logger.info("Creating save to db sensor info task (Sensor : "+getName()+")");
 
 		TimerTask sensorSavingToDbTask = new TimerTask() {
 			@Override
@@ -93,10 +93,10 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 					
 					if (isOperational()) {
 						
-						_logger.info("Saving sensor info : " + _name + " (id : " + _id + ") to "+_influxDbMeasurement+" InfluxDB measurement"); 
+						_logger.info("Saving sensor info : " + getName() + " (id : " + getId() + ") to "+getInfluxDbMeasurement()+" InfluxDB measurement"); 
 						
 						//No timeout detected and correct values sets to sensor in here...
-						_dbManager.saveSensorInfoInfluxDB(_influxDbMeasurement, _temperature);
+						_dbManager.saveSensorInfoInfluxDB(getInfluxDbMeasurement(), _temperature);
 						
 					}
 				} catch (Exception e) {

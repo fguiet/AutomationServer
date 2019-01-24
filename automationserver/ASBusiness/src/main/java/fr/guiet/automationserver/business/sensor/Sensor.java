@@ -23,7 +23,7 @@ abstract class Sensor {
 	protected static Logger _logger = Logger.getLogger(Sensor.class);
 
 	// Sensor Id
-	protected long _id;
+	private long _id;
 
 	// Mqtt topic or topics served by this sensor
 	protected ArrayList<String> _mqttTopics = new ArrayList<String>();
@@ -33,14 +33,14 @@ abstract class Sensor {
 	public Timer _saveToDbTaskTimer = null;
 	
 	// Sensor Name
-	protected String _name;
+	private String _name;
 
 	// Last sensor update
 	protected Date _lastSensorUpdate = null;
 
-	protected SMSGammuService _smsGammuService = null;
+	private SMSGammuService _smsGammuService = null;
 	
-	protected String _influxDbMeasurement;
+	private String _influxDbMeasurement;
 
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
@@ -64,6 +64,22 @@ abstract class Sensor {
 		createSaveToDBTask();
 	}
 
+	public long getId() {
+		return _id;
+	}
+	
+	public String getName() {
+		return _name;
+	}
+	
+	public String getInfluxDbMeasurement() {
+		return _influxDbMeasurement;
+	}
+	
+	public SMSGammuService getSmsGammuService() {
+		return _smsGammuService;
+	}
+	
 	public boolean isOperational() {
 		return !_sensorUpdateTimeout;
 	}
@@ -112,8 +128,7 @@ abstract class Sensor {
 
 						if (!_alertSent5) {
 
-							//SMSDto sms = new SMSDto(UUID.fromString("14b869ef-6233-4830-996f-fe7d136fbcb4-" + _id));
-							SMSDto sms = new SMSDto(UUID.fromString("14b869ef-6233-4830-996f-fe7d136fbcb4"));
+							SMSDto sms = new SMSDto("14b869ef-6233-4830-996f-fe7d136fbcb4-" + _id);
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within least 5 minutes", _name,
 									_id);
@@ -131,8 +146,7 @@ abstract class Sensor {
 
 						if (!_alertSent10) {
 
-							//SMSDto sms = new SMSDto(UUID.fromString("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7-" + _id));
-							SMSDto sms = new SMSDto(UUID.fromString("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7"));
+							SMSDto sms = new SMSDto("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7-" + _id);
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within at least 10 minutes", _name,
 									_id);
@@ -150,8 +164,7 @@ abstract class Sensor {
 
 						if (!_alertSentMore) {
 
-							//SMSDto sms = new SMSDto(UUID.fromString("bf3b78e3-1d6d-4435-a750-d400f04ab05b-" + _id));
-							SMSDto sms = new SMSDto(UUID.fromString("bf3b78e3-1d6d-4435-a750-d400f04ab05b"));
+							SMSDto sms = new SMSDto("bf3b78e3-1d6d-4435-a750-d400f04ab05b- " + _id);
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within least 20 minutes", _name,
 									_id);

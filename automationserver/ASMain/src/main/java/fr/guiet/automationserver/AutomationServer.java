@@ -124,7 +124,7 @@ public class AutomationServer implements Daemon {
 					_print3DService = new Print3DService(_smsGammuService);
 					
 					//Start Outside Environmental service
-					_outsideEnvService = new OutsideEnvironmentalService(_smsGammuService);
+					_outsideEnvService = new OutsideEnvironmentalService("Outside Environmental",_smsGammuService);
 					
 					// Starting room service
 					_roomService = new RoomService(_teleInfoService, _smsGammuService);
@@ -145,7 +145,7 @@ public class AutomationServer implements Daemon {
 					
 					_mqttHelper.connectAndSubscribe();
 
-					SMSDto sms = new SMSDto(UUID.fromString("ba92bca9-a67f-4945-a6ee-51bf44bfaed5"));
+					SMSDto sms = new SMSDto("ba92bca9-a67f-4945-a6ee-51bf44bfaed5");
 					sms.setMessage("Automation server has started...");
 					_smsGammuService.sendMessage(sms, true);
 					
@@ -161,7 +161,7 @@ public class AutomationServer implements Daemon {
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
 					
-					SMSDto sms = new SMSDto(UUID.fromString("6b81daa5-eca5-49c4-bc58-53fa9cd192a6"));
+					SMSDto sms = new SMSDto("6b81daa5-eca5-49c4-bc58-53fa9cd192a6");
 					sms.setMessage("Error occured in main loop !");
 					_smsGammuService.sendMessage(sms, true);
 
@@ -280,76 +280,12 @@ public class AutomationServer implements Daemon {
 		}
 	}
 	
-	/*private void CheckMessagesReception() {
-		
-		String name="basement";
-		
-		long diffMinutes = 0;
-		if (_mqttHelper.GetLastBasementMessage() != null) {
-			Date currentDate = new Date();
-			long diff = currentDate.getTime() - _mqttHelper.GetLastBasementMessage().getTime();
-			diffMinutes = diff / (60 * 1000);
-		}
-		
-		if (diffMinutes > 5 && diffMinutes < 10) {
-
-			if (!_alertSent5) {
-
-				SMSDto sms = new SMSDto(UUID.fromString("dc98c499-f898-42dd-aab5-ff3259b9fc03"));
-				String message = String.format("Sensor %s does not send messages anymore (5 minutes alert)", name);
-				sms.setMessage(message);
-				_smsGammuService.sendMessage(sms, true);
-
-				_alertSent5 = true;
-			}
-
-			return;
-		}
-
-		if (diffMinutes >= 10 && diffMinutes < 20) {
-
-			if (!_alertSent10) {
-
-				SMSDto sms = new SMSDto(UUID.fromString("ea475155-bd4c-4cc9-b170-c3614a6df5a6"));
-				String message = String.format("Sensor %s does not send messages anymore (10 minutes alert)", name);
-				sms.setMessage(message);
-				_smsGammuService.sendMessage(sms, true);
-
-				_alertSent10 = true;
-			}
-
-			return;
-		}
-
-		if (diffMinutes >= 20) {
-
-			if (!_alertSentMore) {
-
-				SMSDto sms = new SMSDto(UUID.fromString("a856f5f7-0b38-45cf-ae81-2969269a6c51"));
-				String message = String.format(
-						"Sensor %s does not send messages anymore (20 minutes alert)...Time to do something", name);
-				sms.setMessage(message);
-				_smsGammuService.sendMessage(sms, true);
-
-				_alertSentMore = true;
-			}
-
-			return;
-		}
-
-		_alertSent5 = false; // Réinitialisation
-		_alertSent10 = false; // Réinitialisation
-		_alertSentMore = false; // Réinitialisation
-		
-	}*/
-
 	// Méthode start de jsvc (Classe Deamon)
 	@Override
 	public void start() throws Exception {
 		_mainThread.start(); // Démarrage du thread principal
 	}
 
-	
 	/* (non-Javadoc)
 	 * @see org.apache.commons.daemon.Daemon#stop()
 	 */
@@ -371,7 +307,7 @@ public class AutomationServer implements Daemon {
 			_waterHeater.StopService();
 			_mqttHelper.disconnect();			
 			
-			SMSDto sms = new SMSDto(UUID.fromString("773ad55b-1007-4e3e-a325-0f568816ba68"));
+			SMSDto sms = new SMSDto("773ad55b-1007-4e3e-a325-0f568816ba68");
 			sms.setMessage("Automation server has stopped...");
 			_smsGammuService.sendMessage(sms, true);
 			

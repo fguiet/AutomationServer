@@ -1,7 +1,5 @@
 package fr.guiet.automationserver.dto;
 
-import java.util.UUID;
-
 /**
  * SMS DTO
  * 
@@ -12,13 +10,13 @@ public class SMSDto {
 	
 	private String _recipient;
 	private String _message;
-	private UUID _messageId;
+	private String _messageId;
 	
-	public SMSDto(UUID messageId) {
+	public SMSDto(String messageId) {
 		_messageId = messageId;
 	}
 	
-	public UUID getId() {
+	public String getId() {
 		return _messageId;
 	}
 	
