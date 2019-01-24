@@ -345,7 +345,7 @@ public class RoomService implements Runnable {
 
 					for (Room room : _roomList ) {
 						
-						if (!"".equals(room.getMqttTopic())) {
+						if (room.getMqttTopic() != null) {
 							String message = FormatRoomInfoMessage(room);
 							_mqttClient.SendMsg(room.getMqttTopic(), message);
 						}
