@@ -112,7 +112,8 @@ abstract class Sensor {
 
 						if (!_alertSent5) {
 
-							SMSDto sms = new SMSDto(UUID.fromString("14b869ef-6233-4830-996f-fe7d136fbcb4-" + _id));
+							//SMSDto sms = new SMSDto(UUID.fromString("14b869ef-6233-4830-996f-fe7d136fbcb4-" + _id));
+							SMSDto sms = new SMSDto(UUID.fromString("14b869ef-6233-4830-996f-fe7d136fbcb4"));
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within least 5 minutes", _name,
 									_id);
@@ -130,7 +131,8 @@ abstract class Sensor {
 
 						if (!_alertSent10) {
 
-							SMSDto sms = new SMSDto(UUID.fromString("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7-" + _id));
+							//SMSDto sms = new SMSDto(UUID.fromString("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7-" + _id));
+							SMSDto sms = new SMSDto(UUID.fromString("8aaf28ea-fff8-4d3f-843f-1e4288b1ceb7"));
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within at least 10 minutes", _name,
 									_id);
@@ -148,7 +150,8 @@ abstract class Sensor {
 
 						if (!_alertSentMore) {
 
-							SMSDto sms = new SMSDto(UUID.fromString("bf3b78e3-1d6d-4435-a750-d400f04ab05b-" + _id));
+							//SMSDto sms = new SMSDto(UUID.fromString("bf3b78e3-1d6d-4435-a750-d400f04ab05b-" + _id));
+							SMSDto sms = new SMSDto(UUID.fromString("bf3b78e3-1d6d-4435-a750-d400f04ab05b"));
 							String message = String.format(
 									"No updates received from sensor : %s (id : %s) within least 20 minutes", _name,
 									_id);
