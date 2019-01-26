@@ -14,7 +14,7 @@ public class BLEHubService implements Runnable, IMqttable {
 	private static Logger _logger = Logger.getLogger(BLEHubService.class);
 	private SMSGammuService _smsGammuService = null;
 	
-	private static String MQTT_TOPIC_HUB_UPSTAIRS = "/guiet/upstairs/hub";
+	private static String MQTT_TOPIC_HUB_UPSTAIRS = "guiet/upstairs/hub";
 	private Date _lastAliveUpstairsHubReception;
 	private boolean _hasUpstairsHubNotificationSent = false;
 	
