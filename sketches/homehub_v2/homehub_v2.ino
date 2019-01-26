@@ -3,11 +3,12 @@
  * 
  * F. Guiet 
  * Creation           : End of 2018
- * Last modification  : 
+ * Last modification  : 20190126
  * 
- * Version            : 1.1
+ * Version            : 1.2
  * 
  * History            : Huge refactoring - add mqtt toppic for each sensor
+ *                      Remove first / in topic, fix bug in mqtt connect (possible infinite loop), improve debug_message function
  *                      
  */
 
@@ -22,16 +23,15 @@
 #define DEBUG 0
 #define MAX_RETRY 50
 #define MQTT_SERVER "192.168.1.25"
-//#define MQTT_TOPIC "/guiet/inside/sensor"
 
 //*** CHANGE IT
-//#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
-#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
-//#define MQTT_HUB_TOPIC "/guiet/upstairs/hub"
-#define MQTT_HUB_TOPIC "/guiet/downstairs/hub"
-#define FIRMWARE_VERSION "1.1"
-#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
-//#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
+#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
+//#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
+#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
+//#define MQTT_HUB_TOPIC "guiet/downstairs/hub"
+#define FIRMWARE_VERSION "1.2"
+//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -73,7 +73,7 @@ void InitSensors() {
   //String SENSORID =  "5"; //Parents
   //String SENSORID =  "12"; //Bathroom (upstairs)
   
-  /*sensors[0].Address = "d2:48:c8:a5:35:4c";
+  sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
   sensors[0].Mqtt_topic = "guiet/upstairs/room_manon/sensor/4";
@@ -91,9 +91,10 @@ void InitSensors() {
   sensors[3].Address = "d8:15:dc:ff:2c:4d";
   sensors[3].Name = "Bathroom";
   sensors[3].SensorId = "12";
-  sensors[3].Mqtt_topic = "guiet/upstairs/bathroom/sensor/12";*/
+  sensors[3].Mqtt_topic = "guiet/upstairs/bathroom/sensor/12";
   
   
+  /*
   sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
@@ -103,6 +104,7 @@ void InitSensors() {
   sensors[1].Name = "Salon";
   sensors[1].SensorId = "2";
   sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
+  */
 }
 
 
@@ -110,20 +112,19 @@ void setup() {
   Serial.begin(SERIAL_BAUD); //ESP8266 default serial on UART0 is GPIO1 (TX) and GPIO3 (RX)
   softSerial.begin(SERIAL_BAUD); // to AltSoftSerial RX
 
-  //pinMode(pinHandShake, OUTPUT);
-  pinMode(BUILTIN_LED, OUTPUT);
-
-  //connectToWifi();  
-  //connectToMqtt();
-
   InitSensors();
   
-  debug_message("Ready");
+  debug_message("Ready", true);
+  
 }
 
-void debug_message(String message) {
+void debug_message(String message, bool doReturnLine) {
   if (DEBUG) {
-    Serial.println(message);
+
+    if (doReturnLine)
+      Serial.println(message);
+    else
+      Serial.print(message);
   }
 }
 
@@ -131,7 +132,7 @@ int getSensorByAddress(String address, Sensor &sensor) {
   for(int i=0;i<SENSORS_COUNT;i++) {
     if (sensors[i].Address == address) {
       sensor = sensors[i];
-      debug_message("Found : " + sensor.SensorId);
+      debug_message("Found : " + sensor.SensorId, true);
       return 1;
     }
   }
@@ -184,7 +185,7 @@ void jsonParser(char *buffer) {
   
       String mess = "SETINSIDEINFO;"+sensor.SensorId+";"+sensor.Temperature+";"+sensor.Humidity+";"+sensor.Battery+";"+sensor.Rssi;
   
-      debug_message("Publishing : " + mess);
+      debug_message("Publishing : " + mess, true);
                   
       mess.toCharArray(message_buff, mess.length()+1);
       
@@ -215,9 +216,9 @@ void loop() {
       //digitalWrite(pinHandShake, HIGH);
       digitalWrite(BUILTIN_LED, LOW);  //LED on
       
-      debug_message("You entered: >");
-      debug_message(serialbuffer);
-      debug_message("<");
+      debug_message("You entered: >", false);
+      debug_message(serialbuffer, false);
+      debug_message("<", true);
 
       jsonParser(serialbuffer);
       
@@ -233,7 +234,7 @@ void loop() {
     mess.toCharArray(message_buff, mess.length()+1);
     client.publish(MQTT_HUB_TOPIC,message_buff);
 
-    debug_message("Publishing : " + mess);
+    debug_message("Publishing : " + mess, true);
 
     // Save the current time to compare "later"
     previousMillis = currentMillis;
@@ -246,20 +247,20 @@ void connectToMqtt() {
 
   int retry = 0;
 
-  debug_message("Attempting MQTT connection...");
+  debug_message("Attempting MQTT connection...", true);
   while (!client.connected()) {   
     if (client.connect(MQTT_CLIENT_ID)) {
-      debug_message("connected to MQTT Broker...");
+      debug_message("connected to MQTT Broker...", true);
     }
     else {
       delay(500);
-
-      debug_message(".");
+      debug_message(".", false);
+      retry++;
     }
-  }
 
-  if (retry >= MAX_RETRY) {
-    ESP.restart();
+    if (retry >= MAX_RETRY) {
+      ESP.restart();
+    }
   }
 }
 
@@ -269,21 +270,21 @@ void connectToWifi()
 
   WiFi.disconnect();
 
-  debug_message("Connecting to WiFi...");
+  debug_message("Connecting to WiFi...", true);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
   int retry = 0;
-  while (WiFi.status() != WL_CONNECTED && retry < MAX_RETRY) {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
 
-    debug_message(".");
-    retry++;    
-  }
+    debug_message(".", true);
+    retry++;  
 
-  if (retry >= MAX_RETRY)
-    ESP.restart();
+    if (retry >= MAX_RETRY)
+      ESP.restart();
+  }
 
   if (DEBUG) {
     Serial.println ( "" );
@@ -306,4 +307,14 @@ void connectToWifi()
     Serial.print(":");
     Serial.println(mac[0],HEX);
   }
+}
+
+void makeLedBlink(int blinkTimes, int millisecond) {
+
+  for (int x = 0; x < blinkTimes; x++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(millisecond);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(millisecond);
+  } 
 }

@@ -1,9 +1,12 @@
 package fr.guiet.automationserver.business.sensor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.json.JSONObject;
 
 import fr.guiet.automationserver.business.helper.ParseUtils;
 import fr.guiet.automationserver.business.service.SMSGammuService;
@@ -16,7 +19,7 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 			SMSGammuService smsGammuService) {
 		super(id, name, mqtt_topic, influxDbMeasurement, smsGammuService);
 	}
-	
+
 	public static DS18B20_Sensor LoadFromDto(SensorDto dto, SMSGammuService gammuService) {
 
 		return new DS18B20_Sensor(dto.sensorId, dto.name, dto.mqtt_topic, dto.influxDbMeasurement, gammuService);
@@ -27,9 +30,6 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 
 		boolean messageProcessed = false;
 
-		// TODO : Change to JSON please!
-		String[] messageContent = message.split(";");
-
 		// At the moment DS18B20 process only one mqtt topic
 		if (topic.equals(_mqttTopics.get(0))) {
 
@@ -37,13 +37,16 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 
 				HashMap<String, String> hm = new HashMap<String, String>();
 
-				hm.put("temperature", messageContent[4]);
-			
+				JSONObject json = new JSONObject(message);
+				String temperature = json.getString("temperature");
+
+				hm.put("temperature", temperature);
+
 				// return message process, but do not update sensor value!
 				if (!sanityCheck(hm))
 					return true;
 
-				_temperature = Float.parseFloat(messageContent[4]);
+				_temperature = Float.parseFloat(temperature);
 
 				// Update last sensor update date
 				_lastSensorUpdate = new Date();
@@ -51,8 +54,8 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 				messageProcessed = true;
 
 			} catch (Exception e) {
-				_logger.error("Sensor : " + getName() + " (id : " + getId() + ") - Could not process mqtt message : " + message,
-						e);
+				_logger.error("Sensor : " + getName() + " (id : " + getId() + ") - Could not process mqtt message : "
+						+ message, e);
 			}
 		}
 
@@ -76,28 +79,41 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 
 			isOk = false;
 		}
+		
+		//Check temp = -127
+		BigDecimal a = new BigDecimal(temperature);
+		BigDecimal b = new BigDecimal("-127.00");
+		if (a.compareTo(b) == 0) {
+			
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "+temperature;
+			
+			_logger.info(mess);
+			
+			isOk = false;
+		}
 
 		return isOk;
 	}
 
 	@Override
 	protected void createSaveToDBTask() {
-		
-		_logger.info("Creating save to db sensor info task (Sensor : "+getName()+")");
+
+		_logger.info("Creating save to db sensor info task (Sensor : " + getName() + ")");
 
 		TimerTask sensorSavingToDbTask = new TimerTask() {
 			@Override
 			public void run() {
 
 				try {
-					
+
 					if (isOperational()) {
-						
-						_logger.info("Saving sensor info : " + getName() + " (id : " + getId() + ") to "+getInfluxDbMeasurement()+" InfluxDB measurement"); 
-						
-						//No timeout detected and correct values sets to sensor in here...
+
+						_logger.info("Saving sensor info : " + getName() + " (id : " + getId() + ") to "
+								+ getInfluxDbMeasurement() + " InfluxDB measurement");
+
+						// No timeout detected and correct values sets to sensor in here...
 						_dbManager.saveSensorInfoInfluxDB(getInfluxDbMeasurement(), _temperature);
-						
+
 					}
 				} catch (Exception e) {
 					_logger.error("Error occured in sensorSavingToDbTask", e);
@@ -109,6 +125,6 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000, 60000);
 
 		_logger.info("Save to db sensor info task has been created.");
-		
+
 	}
 }

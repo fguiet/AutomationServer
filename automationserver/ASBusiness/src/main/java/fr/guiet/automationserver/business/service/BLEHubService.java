@@ -18,7 +18,7 @@ public class BLEHubService implements Runnable, IMqttable {
 	private Date _lastAliveUpstairsHubReception;
 	private boolean _hasUpstairsHubNotificationSent = false;
 	
-	private static String MQTT_TOPIC_HUB_DOWNSTAIRS = "/guiet/downstairs/hub";
+	private static String MQTT_TOPIC_HUB_DOWNSTAIRS = "guiet/downstairs/hub";
 	private Date _lastAliveDownstairsHubReception;
 	private boolean _hasDownstairsHubNotificationSent = false;
 	

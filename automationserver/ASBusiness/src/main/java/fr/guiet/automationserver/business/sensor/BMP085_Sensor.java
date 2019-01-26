@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.json.JSONObject;
+
 import fr.guiet.automationserver.business.helper.ParseUtils;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dto.SensorDto;
@@ -30,27 +32,30 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 
 		boolean messageProcessed = false;
 
-		// TODO : Change to JSON please!
-		String[] messageContent = message.split(";");
-
 		// At the moment BMP085 process only one mqtt topic
 		if (topic.equals(_mqttTopics.get(0))) {
 
 			try {
 
 				HashMap<String, String> hm = new HashMap<String, String>();
+				
+				JSONObject json = new JSONObject(message);
+				
+				String temperature = json.getString("temperature");
+				String altitude = json.getString("altitude");
+				String pressure = json.getString("pressure");
 
-				hm.put("temperature", messageContent[1]);
-				hm.put("pressure", messageContent[2]);
-				hm.put("altitude", messageContent[3]);
+				hm.put("temperature", temperature);
+				hm.put("pressure", pressure);
+				hm.put("altitude", altitude);
 
 				// return message process, but do not update sensor value!
 				if (!sanityCheck(hm))
 					return true;
 
-				_temperature = Float.parseFloat(messageContent[1]);
-				_pressure = Float.parseFloat(messageContent[2]);
-				_altitude = Float.parseFloat(messageContent[3]);
+				_temperature = Float.parseFloat(temperature);
+				_pressure = Float.parseFloat(pressure);
+				_altitude = Float.parseFloat(altitude);
 
 				// Update last sensor update date
 				_lastSensorUpdate = new Date();

@@ -25,55 +25,52 @@ import fr.guiet.automationserver.dto.SensorDto;
 
 @Path("/firmware")
 public class FirmwareAPI {
-	
+
 	private static Logger _logger = Logger.getLogger(FirmwareAPI.class);
-	
-	@GET	
+
+	@GET
 	@Path("/getversion/{sensorid}")
-	@Produces({ MediaType.APPLICATION_JSON})	
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response getVersion(@PathParam("sensorid") String sensorid) {
-		
+
 		try {
-			_logger.info("Sensor with ID : "+sensorid + " asked for last firmware version");
-			
+			_logger.info("Sensor with ID : " + sensorid + " asked for last firmware version");
+
 			JSONObject obj = new JSONObject();
-			
+
 			DbManager dbManager = new DbManager();
 			SensorDto dto = dbManager.getSensorById(Long.parseLong(sensorid));
-			
-			if ( dto !=null ) {
+
+			if (dto != null) {
 				obj.put("sensorid", sensorid);
 				obj.put("lastversion", dto.firmware_version);
-			}
-			else {
+			} else {
 				obj.put("sensorid", sensorid);
-		        obj.put("lastversion", -1);
-			}		
-			
+				obj.put("lastversion", -1);
+			}
+
 			return Response.status(Status.OK).entity(obj.toString()).build();
-		}
-		catch(Exception e) {
-			_logger.error("Error lors de la récupération des infos du capteur",e);
+		} catch (Exception e) {
+			_logger.error("Error lors de la récupération des infos du capteur", e);
 			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 	}
-	
+
 	@GET
 	@Path("/getfirmware/{sensorid}/{version}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response getFirmware(@PathParam("sensorid") String sensorid, @PathParam("version") String version) {
-		
-		_logger.info("Sensor ID : "+sensorid+" upgrading to firmware version : "+version);
-		
-		String fileName = "firmware_sensorid_"+sensorid+"_version_"+version+".bin";
-		File file = new File (GetFirmwareFolder() + fileName);
-		
-		ResponseBuilder response = Response.ok((Object) file); 
-		response.header("Content-Disposition", "attachment; filename="
-                + file.getName());
-		
+
+		_logger.info("Sensor ID : " + sensorid + " upgrading to firmware version : " + version);
+
+		String fileName = "firmware_sensorid_" + sensorid + "_version_" + version + ".bin";
+		File file = new File(GetFirmwareFolder() + fileName);
+
+		ResponseBuilder response = Response.ok((Object) file);
+		response.header("Content-Disposition", "attachment; filename=" + file.getName());
+
 		return response.build();
-				
+
 	}
 
 	private String GetFirmwareFolder() {
@@ -87,16 +84,16 @@ public class FirmwareAPI {
 			Properties prop = new Properties();
 			prop.load(is);
 
-			firmwareFolder = prop.getProperty("firmwares.folder");	
-			
-			_logger.info("Using folder : "+firmwareFolder+" to download sensor firmware");
+			firmwareFolder = prop.getProperty("firmwares.folder");
+
+			_logger.info("Using folder : " + firmwareFolder + " to download sensor firmware");
 
 		} catch (FileNotFoundException e) {
 			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
 		} catch (IOException e) {
 			_logger.error("Error in reading configuration file classpath_folder/config/automationserver.properties", e);
 		}
-		
+
 		return firmwareFolder;
 	}
 

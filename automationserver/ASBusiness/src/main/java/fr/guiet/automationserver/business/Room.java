@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.sensor.BMP085_Sensor;
 import fr.guiet.automationserver.business.sensor.DHT22_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
 import fr.guiet.automationserver.business.sensor.HDC1080_Sensor;
@@ -18,17 +19,17 @@ public class Room {
 	private static Logger _logger = Logger.getLogger(Room.class);
 
 	private long _id;
-	
+
 	private String _name;
-	
+
 	private EnvironmentalSensor _sensor = null;
-	
+
 	private ArrayList<Heater> _heaterList = new ArrayList<Heater>();
-	
+
 	private Float _userWantedTemp = null;
 	private Float _lastDefaultTemp = null;
 	private String _mqttTopic;
-	
+
 	private DbManager _dbManager = null;
 	private SMSGammuService _gammuService = null;
 
@@ -36,7 +37,7 @@ public class Room {
 	public List<Heater> getHeaterList() {
 		return _heaterList;
 	}
-	
+
 	public String getLastSensorUpdate() {
 		return _sensor.getLastSensorUpdate();
 	}
@@ -60,36 +61,36 @@ public class Room {
 	public boolean isSensorOperational() {
 		return _sensor.isOperational();
 	}
-	
+
 	public Float getActualHumidity() {
-		
+
 		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
 			return hdc1080_sensor.getHumidity();
 		}
-		
+
 		return null;
 	}
-	
+
 	public Float getBatteryVoltage() {
-		
+
 		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
 			return hdc1080_sensor.getBatteryVoltage();
 		}
-		
+
 		return null;
 	}
-	
+
 	public Float getRssi() {
 		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor)_sensor;
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
 			return hdc1080_sensor.getRssi();
 		}
-		
+
 		return null;
 	}
-	
+
 	public Float getActualTemp() {
 		return _sensor.getTemperature();
 	}
@@ -100,8 +101,8 @@ public class Room {
 	public String NextChangeDefaultTemp() {
 
 		String result = "NA";
-		
-		//No heater...so...no next change default temp
+
+		// No heater...so...no next change default temp
 		if (!HasHeater())
 			return result;
 
@@ -156,8 +157,6 @@ public class Room {
 		return result;
 	}
 
-	
-
 	public Float getWantedTemp() {
 		return _userWantedTemp; // Peut etre null
 	}
@@ -177,9 +176,9 @@ public class Room {
 		return false;
 	}
 
-	/*public boolean IsSensorResponding() {
-		return !_sensor.HasTimeoutOccured();
-	}*/
+	/*
+	 * public boolean IsSensorResponding() { return !_sensor.HasTimeoutOccured(); }
+	 */
 
 	public boolean IsOffForced() {
 		for (Heater h : _heaterList) {
@@ -263,24 +262,24 @@ public class Room {
 	private boolean HasHeater() {
 		return !_heaterList.isEmpty();
 	}
-	
+
 	private Float GetDefaultTempByDayAndTime() {
-		
+
 		Float defaultTemp = null;
-	
+
 		try {
-		
-			//Do not try to get default temp for this room if no heater has been defined for this room!
-			if (HasHeater()) {	
+
+			// Do not try to get default temp for this room if no heater has been defined
+			// for this room!
+			if (HasHeater()) {
 				defaultTemp = _dbManager.GetDefaultTempByRoom(_id);
-		
+
 				if (defaultTemp == null) {
 					_logger.warn("Impossible de déterminer la température par défaut pour les pièces : " + _name
 							+ ".Le radiateur ne va pas etre controler correctement...");
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			_logger.error("Erreur lors de la récupération de la température par défaut", e);
 			SMSDto sms = new SMSDto("d72e4b20-7774-45a0-8122-0388c629e811");
 			sms.setMessage("Error occured in room class, review error log for more details");
@@ -292,12 +291,12 @@ public class Room {
 
 	// Arret du service RoomService
 	public void StopService() {
-		
-		//Turn heater off when exiting...
+
+		// Turn heater off when exiting...
 		for (Heater h : _heaterList) {
 			h.SetOff();
 		}
-		
+
 		_sensor.Stop();
 	}
 
@@ -309,33 +308,36 @@ public class Room {
 		_gammuService = gammuService;
 
 		_dbManager = new DbManager();
-		
+
 		try {
-		
+
 			SensorDto sensorDto = _dbManager.getSensorById(dto.idSensor);
-			
-			//Cave / Basement
-			if (dto.idSensor == 15) {
+
+			switch (Long.toString(dto.idSensor)) {
+			// Garage
+			case "13":
+				_sensor = BMP085_Sensor.LoadFromDto(sensorDto, gammuService);
+				break;
+			// Cave / Basement
+			case "15":
 				_sensor = DHT22_Sensor.LoadFromDto(sensorDto, gammuService);
+				break;
+			default:
+				_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);
 			}
-			else {
-				//It could be another sensor type but let's say it is always a HDC1080 :)
-				_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);	
-			}
-			
+
 			ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);
 			for (HeaterDto heaterDto : heaterDtoList) {
-	
+
 				Heater heater = Heater.LoadFromDto(heaterDto, this, gammuService);
 				_heaterList.add(heater);
 			}
-		
+
 			_lastDefaultTemp = GetDefaultTempByDayAndTime();
 			_userWantedTemp = _lastDefaultTemp; // temperature par defaut et
 												// temperature utilisateur identique
 												// au demarrage
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			_logger.error("Erreur dans le constructeur de la class room", e);
 			SMSDto sms = new SMSDto("16577983-79d1-4e0f-be20-80f8f731a23a");
 			sms.setMessage("Error occured in room class, review error log for more details");
@@ -348,5 +350,4 @@ public class Room {
 		return new Room(dto, gammuService);
 	}
 
-	
 }
