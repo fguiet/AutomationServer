@@ -8,7 +8,7 @@
  * Version            : 1.1
  * History            : 1.0 - First version
  *                      1.1 - Add deep sleep mode (so that temp sensor is not altered by ESP8266 self warm)
- *                      1.2 - Add debug_mode, update mqtt_topic, push message in JSon format
+ *                      1.2 - Add debug_mode, update mqtt_topic, push message in JSon format, change to esp32 board because esp8266 with ds18b20 does not work anymore
  *
  * Note               : Don't forget to change MQTT_MAX_PACKET_SIZE to 256 in PubSubClient.h (increase mqtt message length) - D:\Documents\guiet\Arduino\libraries
  */
@@ -21,20 +21,22 @@
 //Light Mqtt library
 #include <PubSubClient.h>
 //Wifi library
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <ArduinoJson.h>
 
 Adafruit_BMP085 bmp;
 
-OneWire  oneWire(D4);
+
+
+OneWire  oneWire(4);
 DallasTemperature DS18B20(&oneWire);
 
-const int sclPin = D6;
-const int sdaPin = D5;
+//const int sclPin = 17;
+//const int sdaPin = 5;
 
 //Mqtt settings
 #define mqtt_server "192.168.1.25"
-#define DEBUG 0
+#define DEBUG 1
 //#define mqtt_user ""
 //#define mqtt_password ""
 //#define mqtt_topic_bmp085 "guiet/garage/sensor/13"
@@ -55,6 +57,7 @@ const char* password = "frederic";
 
 #define MQTT_CLIENT_ID "GarageOutsideSensor"
 #define MAX_RETRY 50
+#define LED_PIN 2
 long sleepInMinute = 1;
 
 long previousMillis = 0;   
@@ -83,7 +86,7 @@ void setup() {
   
   delay(100);
 
-  pinMode(LED_BUILTIN, OUTPUT); 
+  pinMode(LED_PIN, OUTPUT); 
 
   delay(100);
 
@@ -93,7 +96,7 @@ void setup() {
   
   debug_message("Starting outside monitoring...", true);
   
-  Wire.begin(sdaPin, sclPin);
+  //Wire.begin(sdaPin, sclPin);
 
   if (!bmp.begin()) {
     debug_message("BMP180 / BMP085 introuvable ! Verifier le branchement ", true);    
@@ -123,9 +126,9 @@ void debug_message(String message, bool doReturnLine) {
 void makeLedBlink(int blinkTimes, int millisecond) {
 
   for (int x = 0; x < blinkTimes; x++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_PIN, HIGH);
     delay(millisecond);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_PIN, LOW);
     delay(millisecond);
   } 
 }
@@ -262,7 +265,7 @@ boolean reconnect() {
 
 boolean connectToWifi() {
 
-  WiFi.forceSleepWake();
+ // WiFi.forceSleepWake();
   WiFi.mode(WIFI_STA);
   
   int retry = 0;
