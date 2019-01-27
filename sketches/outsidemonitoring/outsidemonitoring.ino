@@ -26,8 +26,6 @@
 
 Adafruit_BMP085 bmp;
 
-
-
 OneWire  oneWire(4);
 DallasTemperature DS18B20(&oneWire);
 
@@ -36,7 +34,7 @@ DallasTemperature DS18B20(&oneWire);
 
 //Mqtt settings
 #define mqtt_server "192.168.1.25"
-#define DEBUG 1
+#define DEBUG 0
 //#define mqtt_user ""
 //#define mqtt_password ""
 //#define mqtt_topic_bmp085 "guiet/garage/sensor/13"
