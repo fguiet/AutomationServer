@@ -2,7 +2,6 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 

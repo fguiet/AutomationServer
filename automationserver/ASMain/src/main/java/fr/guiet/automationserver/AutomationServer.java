@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.helper.GpioHelper;
-import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.business.service.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
@@ -46,7 +45,7 @@ public class AutomationServer implements Daemon {
 	private Print3DService _print3DService = null;
 	private OutsideEnvironmentalService _outsideEnvService = null;
 	private SMSGammuService _smsGammuService = null;
-	private MqttService _mqttHelper = null;
+	private MqttService _mqttService = null;
 	
 	// Logger
 	private static Logger _logger = Logger.getLogger(AutomationServer.class);	
@@ -80,17 +79,20 @@ public class AutomationServer implements Daemon {
 												
 					_logger.info("Starting automation server...");
 					
-					//Starts system sanity checks
-					DoSystemSanityChecks();					
-					
 					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
 					
 					//SMS Service
 					_smsGammuService = new SMSGammuService();
 					
+					//MqttService
+					_mqttService = new MqttService(_smsGammuService);
+					
+					//Starts system sanity checks
+					DoSystemSanityChecks();	
+					
 					// Starting rain gauge service
-					_rainGaugeService = new RainGaugeService(_smsGammuService);
+					_rainGaugeService = new RainGaugeService(_smsGammuService, _mqttService);
 					_rainGaugeServiceThread = new Thread(_rainGaugeService);
 					_rainGaugeServiceThread.start();
 
@@ -105,7 +107,7 @@ public class AutomationServer implements Daemon {
 					_waterHeaterServiceThread.start();								
 					
 					//Start Rollershutter service
-					_rollerShutterService = new RollerShutterService(_smsGammuService);
+					_rollerShutterService = new RollerShutterService(_smsGammuService, _mqttService);
 					_rollerShutterServiceThread = new Thread(_rollerShutterService);
 					_rollerShutterServiceThread.start();
 					
@@ -121,13 +123,13 @@ public class AutomationServer implements Daemon {
 					//_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
 					
 					//Start 3D Print service
-					_print3DService = new Print3DService(_smsGammuService);
+					_print3DService = new Print3DService(_smsGammuService, _mqttService);
 					
 					//Start Outside Environmental service
 					_outsideEnvService = new OutsideEnvironmentalService("Outside Environmental",_smsGammuService);
 					
 					// Starting room service
-					_roomService = new RoomService(_teleInfoService, _smsGammuService);
+					_roomService = new RoomService(_teleInfoService, _smsGammuService, _mqttService);
 					_roomServiceThread = new Thread(_roomService);
 					_roomServiceThread.start();
 					
@@ -136,14 +138,19 @@ public class AutomationServer implements Daemon {
 						Thread.sleep(1000);
 					}
 					
-					_mqttHelper = new MqttService(_smsGammuService, _roomService, _teleInfoService, _waterHeater, 
-							_alarmService, _rollerShutterService);
-					_mqttHelper.addClient(_BLEHubService);
-					_mqttHelper.addClient(_print3DService);
-					_mqttHelper.addClients(_roomService.getMqttableClients());
-					_mqttHelper.addClients(_outsideEnvService.getMqttableClients());
+					//TODO : Remove that horror when service will be IMqttable
+					_mqttService.setRoomService(_roomService);
+					_mqttService.setTeleInfoService(_teleInfoService);
+					_mqttService.setWaterHeaterService(_waterHeater);
+					_mqttService.setRollerShutterService(_rollerShutterService);
+					_mqttService.setAlarmService(_alarmService);
 					
-					_mqttHelper.connectAndSubscribe();
+					_mqttService.addClient(_BLEHubService);
+					_mqttService.addClient(_print3DService);
+					_mqttService.addClients(_roomService.getMqttableClients());
+					_mqttService.addClients(_outsideEnvService.getMqttableClients());
+					
+					_mqttService.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto("ba92bca9-a67f-4945-a6ee-51bf44bfaed5");
 					sms.setMessage("Automation server has started...");
@@ -155,7 +162,7 @@ public class AutomationServer implements Daemon {
 						Thread.sleep(10000);
 						
 						//TODO : please remove that!!!
-						_mqttHelper.PublishInfoToMqttBroker();
+						_mqttService.PublishInfoToMqttBroker();
 												
 					}					
 				} catch (Exception e) {
@@ -173,7 +180,7 @@ public class AutomationServer implements Daemon {
 	private void DoSystemSanityChecks() {
 		
 		DbManager dbManager = new DbManager();
-		MqttClientHelper mqttClient = new MqttClientHelper("SanityCheck");
+		//MqttClientHelper mqttClient = new MqttClientHelper("SanityCheck");
 		
 		_logger.info("Starting system sanity check...");
 		
@@ -223,7 +230,7 @@ public class AutomationServer implements Daemon {
 		_logger.info("Check for Mosquitto instance availability...");
 				
 		checkCounter = 0;
-		while(!mqttClient.IsMqttServerAvailable()) {
+		while(!_mqttService.IsMqttServerAvailable()) {
 			checkCounter++;
 			_logger.info("Attempt : "+checkCounter+" - Mqtt instance not available...will check again in 10s...");
 			
@@ -258,7 +265,6 @@ public class AutomationServer implements Daemon {
 		
 		
 		dbManager = null;		
-		mqttClient = null;
 		
 		_logger.info("System sanity check done...let's roll!");
 	}
@@ -305,7 +311,7 @@ public class AutomationServer implements Daemon {
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
-			_mqttHelper.disconnect();			
+			_mqttService.disconnect();			
 			
 			SMSDto sms = new SMSDto("773ad55b-1007-4e3e-a325-0f568816ba68");
 			sms.setMessage("Automation server has stopped...");
@@ -336,7 +342,7 @@ public class AutomationServer implements Daemon {
 		_teleInfoService = null;
 		_roomService = null;
 		_waterHeater = null;
-		_mqttHelper = null;
+		_mqttService = null;
 		_alarmService = null;		
 	}
 

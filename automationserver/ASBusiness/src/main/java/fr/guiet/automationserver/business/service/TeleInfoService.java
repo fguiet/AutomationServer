@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.helper.DateUtils;

@@ -26,15 +26,16 @@
 
 Adafruit_BMP085 bmp;
 
-OneWire  oneWire(D4);
+OneWire  oneWire(D2);
 DallasTemperature DS18B20(&oneWire);
+DeviceAddress sensorDeviceAddress;
 
 const int sclPin = D6;
 const int sdaPin = D5;
 
 //Mqtt settings
 #define mqtt_server "192.168.1.25"
-#define DEBUG 0
+#define DEBUG 1
 //#define mqtt_user ""
 //#define mqtt_password ""
 //#define mqtt_topic_bmp085 "guiet/garage/sensor/13"
@@ -92,14 +93,22 @@ void setup() {
   makeLedBlink(2,500);
   
   debug_message("Starting outside monitoring...", true);
-  
-  Wire.begin(sdaPin, sclPin);
 
-  if (!bmp.begin()) {
+ /*if (!bmp.begin()) {
     debug_message("BMP180 / BMP085 introuvable ! Verifier le branchement ", true);    
     makeLedBlink(5,200);  
     goDeepSleep();       
-  }
+  }*/
+
+  DS18B20.begin(); //Activation des capteurs
+  DS18B20.getAddress(sensorDeviceAddress, 0); //Demande l'adresse du capteur à l'index 0 du bus
+  DS18B20.setResolution(sensorDeviceAddress, 12); //Possible resolution : 9,10,11,12
+
+  // locate devices on the bus
+  debug_message("Locating devices...", true);
+  debug_message("Found ", false);
+  debug_message(String(DS18B20.getDeviceCount()), false);
+  debug_message(" devices.", true);
 
   client.setServer(mqtt_server, 1883); 
   
@@ -108,6 +117,8 @@ void setup() {
   connectToWifi();
   
   debug_message("ready!", true);
+
+  //Wire.begin(sdaPin, sclPin);
 }
 
 void debug_message(String message, bool doReturnLine) {
@@ -148,7 +159,7 @@ void loop() {
 
     delay(500);
 
-    debug_message("Temperature garage = ", false);
+    /*debug_message("Temperature garage = ", false);
     float temp = bmp.readTemperature();
     debug_message(String(temp,2), false);
     debug_message(" *C", true);
@@ -161,22 +172,21 @@ void loop() {
     debug_message("Altitude = ", false);
     float altitude = bmp.readAltitude();
     debug_message(String(altitude,2), false);
-    debug_message(" metres", true);
+    debug_message(" metres", true);*/
   
     DS18B20.requestTemperatures();
     
     float outsideTemp = DS18B20.getTempCByIndex(0);
     debug_message("Temp DS18B20 : " + String(outsideTemp,2), true);
 
-    String mess = ConvertToJSon(String(temp,2), String(pressure,2), String(altitude,2));
+    /*String mess = ConvertToJSon(String(temp,2), String(pressure,2), String(altitude,2));
     debug_message("JSON Sensor BMP085 : " + mess + ", topic : " +sensors[0].Mqtt_topic, true);
     mess.toCharArray(message_buff, mess.length()+1);
-    
-    client.publish(sensors[0].Mqtt_topic.c_str(),message_buff);
+    client.publish(sensors[0].Mqtt_topic.c_str(),message_buff);*/
 
     delay(100);
 
-    mess = ConvertToJSon1(String(outsideTemp,2));
+    String mess = ConvertToJSon1(String(outsideTemp,2));
     mess.toCharArray(message_buff, mess.length()+1);   
     debug_message("JSON Sensor DS18B20 : " + mess, true);
     client.publish(sensors[1].Mqtt_topic.c_str(),message_buff);

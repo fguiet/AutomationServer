@@ -116,6 +116,7 @@ void loop() {
   t = getTemperature();
 
   String mess = "SETINSIDEINFO;"+String(SENSORID)+";"+String(t,2)+";"+String(h,2)+";"+String(CURRENT_FIRMWARE_VERSION);
+  Serial.println(mess);
   mess.toCharArray(message_buff, mess.length()+1);
   client.publish(MQTT_TOPIC,message_buff);
 

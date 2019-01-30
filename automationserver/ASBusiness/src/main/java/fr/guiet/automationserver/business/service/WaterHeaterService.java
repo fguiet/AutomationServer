@@ -11,7 +11,6 @@ import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 
 import org.apache.log4j.Logger;
 import java.util.Date;
-import java.util.UUID;
 
 public class WaterHeaterService implements Runnable {
 

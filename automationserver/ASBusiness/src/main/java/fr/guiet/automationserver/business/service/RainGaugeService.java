@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.log4j.Logger;
 
 import com.pi4j.io.serial.Baud;
@@ -20,7 +18,6 @@ import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 
-import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -32,13 +29,14 @@ public class RainGaugeService implements Runnable {
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
-	private static String _mqttClientId = "rainGaugeCliendId";
-	private MqttClientHelper _mqttClient = null;
+	//private static String _mqttClientId = "rainGaugeCliendId";
+	private MqttService _mqttService = null;
 	private String _pub_topic ="/guiet/automationserver/raingauge";
 
-	public RainGaugeService(SMSGammuService smsGammuService) {
+	public RainGaugeService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
-		_mqttClient = new MqttClientHelper(_mqttClientId);
+		_mqttService = mqttService;
+		//_mqttClient = new MqttClientHelper(_mqttClientId);
 		_dbManager = new DbManager();
 	}
 
@@ -190,7 +188,7 @@ public class RainGaugeService implements Runnable {
 					   	case "SETRAINGAUGEINFO":
 							float vcc = Float.parseFloat(messageContent[1]);
 							String flipflop = messageContent[2];					   	
-					   		_mqttClient.SendMsg(_pub_topic, dataSZ);
+							_mqttService.SendMsg(_pub_topic, dataSZ);
 					   		
 					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);
 					}

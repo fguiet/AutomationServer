@@ -5,10 +5,9 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-//import org.json.JSONObject;
 
 import fr.guiet.automationserver.business.helper.DateUtils;
-import fr.guiet.automationserver.business.helper.MqttClientHelper;
+import fr.guiet.automationserver.business.service.MqttService;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -20,23 +19,23 @@ public class RollerShutter {
 	private int _id = -1;
 	//private String _apikey = null;	
 	private String _name = null;
-	private MqttClientHelper _mqttClient;
+	private MqttService _mqttService;
 	
 	private boolean _alertSent5 = false;
 	private boolean _alertSent10 = false;
 	private boolean _alertSentMore = false;
 	
 	private Date _lastStateReceived = null;
-	private static String _mqttClientId = "rollerShutterCliendId";
+	//private static String _mqttClientId = "rollerShutterCliendId";
 	
 	private SMSGammuService _smsGammuService = null;
 	private String _pub_topic ="/guiet/automationserver/rollershutter";
 	
-	public RollerShutter(int id, String name, SMSGammuService smsGammuService) {
+	public RollerShutter(int id, String name, SMSGammuService smsGammuService, MqttService mqttService) {
 		_id = id;	
 		_name = name;
-					
-		_mqttClient = new MqttClientHelper(_mqttClientId + _id);
+		_mqttService = mqttService;			
+		//_mqttClient = new MqttClientHelper(_mqttClientId + _id);
 		_smsGammuService = smsGammuService;
 	}
 	
@@ -157,21 +156,21 @@ public class RollerShutter {
 	}
 	
 	public void Open() {
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";UP");		
+		_mqttService.SendMsg(_pub_topic, "SETACTION;" + _id + ";UP");		
 	}
 	
 	public void Close() {
 		
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
+		_mqttService.SendMsg(_pub_topic, "SETACTION;" + _id + ";DOWN");
 	}
 		
 	public void Stop() {
 		
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");		
+		_mqttService.SendMsg(_pub_topic, "SETACTION;" + _id + ";STOP");		
 	}
 	
 	public void RequestState() {		
-		_mqttClient.SendMsg(_pub_topic, "SETACTION;" + _id + ";STATE");		
+		_mqttService.SendMsg(_pub_topic, "SETACTION;" + _id + ";STATE");		
 	}
 		
 	public RollerShutterState getPreviousState() {		

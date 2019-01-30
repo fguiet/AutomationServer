@@ -1,7 +1,5 @@
 package fr.guiet.automationserver.business.service;
 
-import java.util.UUID;
-
 import org.apache.log4j.Logger;
 import com.pi4j.io.gpio.RaspiPin;
 
