@@ -33,7 +33,7 @@ public class MqttService implements MqttCallbackExtended {
 	private TeleInfoService _teleInfoService = null;
 	private WaterHeaterService _waterHeaterService = null;
 	// private Print3DService _print3DService = null;
-	private AlarmService _alarmService = null;
+	//private AlarmService _alarmService = null;
 	// private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
 	// private BLEHubService _BLEHubService = null;
@@ -324,7 +324,7 @@ public class MqttService implements MqttCallbackExtended {
 				}
 				break;
 
-			case "SETALARMMGT":
+			/*case "SETALARMMGT":
 				String automaticAlarmManagement = messageContent[1];
 
 				if (automaticAlarmManagement.equals("ON")) {
@@ -333,7 +333,7 @@ public class MqttService implements MqttCallbackExtended {
 					_alarmService.SetAutomaticModeOff();
 				}
 				break;
-
+*/
 			/*
 			 * case "SETHOMEMODE": String homeMode = messageContent[1];
 			 * //_scenariiManager.SetHomeModeState(homeMode); break;
@@ -345,7 +345,7 @@ public class MqttService implements MqttCallbackExtended {
 					_roomService.SetAwayModeOn();
 					_waterHeaterService.SetAwayModeOn();
 					_rollerShutterService.SetAutomaticManagementOff();
-					_alarmService.SetAutomaticModeOff();
+					//_alarmService.SetAutomaticModeOff();
 					// _scenariiManager.SetHomeModeState("NOTACTIVATED");
 				} else {
 					_roomService.SetAwayModeOff();
@@ -527,7 +527,10 @@ public class MqttService implements MqttCallbackExtended {
 		String automaticManagementStatus = _rollerShutterService.GetAutomaticManagementStatus();
 		String westRSState = _rollerShutterService.getWestRSState();
 		String northRSState = _rollerShutterService.getNorthRSState();
-		String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
+		
+		//TODO : A quoi ca sert ce truc
+		String alarmAutomaticManagementStatus = "NA";
+		//String alarmAutomaticManagementStatus = _alarmService.GetAutomaticModeStatus();
 		// String homeModeStatus = _scenariiManager.GetHomeModeStatus();
 
 		// Boiler Ino
