@@ -143,8 +143,9 @@ public class AutomationServer implements Daemon {
 					_mqttService.setTeleInfoService(_teleInfoService);
 					_mqttService.setWaterHeaterService(_waterHeater);
 					_mqttService.setRollerShutterService(_rollerShutterService);
-					_mqttService.setAlarmService(_alarmService);
+					//_mqttService.setAlarmService(_alarmService);
 					
+					_mqttService.addClient(_alarmService);
 					_mqttService.addClient(_BLEHubService);
 					_mqttService.addClient(_print3DService);
 					_mqttService.addClients(_roomService.getMqttableClients());

@@ -69,19 +69,10 @@ public class MqttService implements MqttCallbackExtended {
 		_waterHeaterService = waterHeaterService;
 	}
 
-	// TODO : when alarmService will be IMqttable...please remove that horror
-	public void setAlarmService(AlarmService alarmService) {
-		_alarmService = alarmService;
-	}
-
 	// TODO : when rollerShutterService will be IMqttable...please remove that horror
 	public void setRollerShutterService(RollerShutterService rollerShutterService) {
 		_rollerShutterService = rollerShutterService;
 	}
-
-	/*
-	 * public Date GetLastBasementMessage() { return _lastBasementMessage; }
-	 */
 
 	public MqttService(SMSGammuService gammuService) {
 
@@ -307,14 +298,14 @@ public class MqttService implements MqttCallbackExtended {
 			String action = messageContent[0];
 
 			switch (action) {
-			case "SETALARM":
+			/*case "SETALARM":
 				String mode = messageContent[1];
 				if (mode.equals("ON")) {
 					_alarmService.SetOn();
 				} else {
 					_alarmService.SetOff();
 				}
-				break;
+				break;*/
 			case "SETNEWSERIE":
 				String serie = messageContent[1];
 				String mess1 = "Hey! you got a new serie to watch : " + serie;
