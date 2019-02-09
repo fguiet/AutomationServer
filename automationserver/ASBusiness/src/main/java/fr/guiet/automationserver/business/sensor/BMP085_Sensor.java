@@ -2,6 +2,7 @@ package fr.guiet.automationserver.business.sensor;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -140,9 +141,12 @@ public class BMP085_Sensor extends EnvironmentalSensor {
 				}
 			}
 		};
+		
+		Random rand = new Random(); 
+		int value = rand.nextInt(10000);
 
 		_saveToDbTaskTimer = new Timer(true);
-		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000, 60000);
+		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000 + value, 60000);
 
 		_logger.info("Save to db sensor info task has been created.");
 		

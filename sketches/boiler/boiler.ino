@@ -138,6 +138,7 @@ void connectToMqtt() {
       Serial.println("connected to MQTT Broker...");
     }
     else {
+      retry++;
       delay(500);
       Serial.print(".");
     }

@@ -1,9 +1,5 @@
 package fr.guiet.automationserver.business.service;
 
-
-import java.util.UUID;
-
-//import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
 import fr.guiet.automationserver.business.RollerShutter;
@@ -35,6 +31,7 @@ public class RollerShutterService implements Runnable {
 	private boolean _automaticManagementStatus = true; //By default
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
+	private MqttService _mqttService = null;
 		
 	private RollerShutter _rsWest = null;
 	private RollerShutter _rsNorth = null;
@@ -42,9 +39,10 @@ public class RollerShutterService implements Runnable {
 	private int ROLLERSHUTTER_WEST_ID = 7;
 	private int ROLLERSHUTTER_NORTH_ID = 8;
 		
-	public RollerShutterService(SMSGammuService smsGammuService) {
+	public RollerShutterService(SMSGammuService smsGammuService, MqttService mqttService) {
 		
 		_smsGammuService = smsGammuService;
+		_mqttService = mqttService;
 	}
 	
 	public String GetAutomaticManagementStatus() {
@@ -70,8 +68,8 @@ public class RollerShutterService implements Runnable {
 		
 		_logger.info("Starting rollershutters management...");		
 		
-		_rsWest = new RollerShutter(ROLLERSHUTTER_WEST_ID, "Volet roulant Ouest", _smsGammuService);
-		_rsNorth = new RollerShutter(ROLLERSHUTTER_NORTH_ID,"Volet roulant Nord", _smsGammuService);
+		_rsWest = new RollerShutter(ROLLERSHUTTER_WEST_ID, "Volet roulant Ouest", _smsGammuService, _mqttService);
+		_rsNorth = new RollerShutter(ROLLERSHUTTER_NORTH_ID,"Volet roulant Nord", _smsGammuService, _mqttService);
 	
 		//CRON pattern
 		//minute hour day of month (1-31) month (1-12) day of week (0 sunday, 6 saturday)

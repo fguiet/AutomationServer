@@ -2,9 +2,10 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import org.apache.log4j.Logger;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.Heater;
 import fr.guiet.automationserver.business.Room;
-import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class RoomService implements Runnable {
@@ -44,8 +44,8 @@ public class RoomService implements Runnable {
 	private Float _awayTemp = null;
 	private boolean _awayModeStatus = false;
 	private boolean _verboseLogEnable = false;
-	private static String MQTT_CLIENT_ID = "roomServiceCliendId";
-	private MqttClientHelper _mqttClient = null;
+	//private static String MQTT_CLIENT_ID = "roomServiceCliendId";
+	private MqttService _mqttService = null;
 	private boolean _roomListLoaded = false;
 
 	// Constructeur
@@ -54,7 +54,7 @@ public class RoomService implements Runnable {
 	 * 
 	 * @param teleInfoService
 	 */
-	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
+	public RoomService(TeleInfoService teleInfoService, SMSGammuService smsGammuService, MqttService mqttService) {
 
 		InputStream is = null;
 		try {
@@ -105,7 +105,8 @@ public class RoomService implements Runnable {
 
 		_teleInfoService = teleInfoService;
 		_smsGammuService = smsGammuService;
-		_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
+		_mqttService = mqttService;
+		//_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
 		_dbManager = new DbManager();
 	}
 
@@ -347,7 +348,7 @@ public class RoomService implements Runnable {
 						
 						if (room.getMqttTopic() != null) {
 							String message = FormatRoomInfoMessage(room);
-							_mqttClient.SendMsg(room.getMqttTopic(), message);
+							_mqttService.SendMsg(room.getMqttTopic(), message);
 						}
 					}
 				}
@@ -357,9 +358,12 @@ public class RoomService implements Runnable {
 			}
 		};
 
+		Random rand = new Random(); 
+		int value = rand.nextInt(10000);
+		
 		_timer2 = new Timer(true);
 		//Publish room information every 10s
-		_timer2.schedule(publishMqttRoomInfo, 5000, 10000);
+		_timer2.schedule(publishMqttRoomInfo, 5000 + value, 10000);
 		
 		_logger.info("Publish mqtt room info task has been created.");
 	}

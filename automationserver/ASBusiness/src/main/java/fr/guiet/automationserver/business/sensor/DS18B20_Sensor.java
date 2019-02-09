@@ -3,6 +3,7 @@ package fr.guiet.automationserver.business.sensor;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -79,16 +80,30 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 
 			isOk = false;
 		}
-		
-		//Check temp = -127
+
+		// Check temp = -127
 		BigDecimal a = new BigDecimal(temperature);
 		BigDecimal b = new BigDecimal("-127.00");
 		if (a.compareTo(b) == 0) {
-			
-			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "+temperature;
-			
+
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "
+					+ temperature;
+
 			_logger.info(mess);
-			
+
+			isOk = false;
+		}
+
+		// Check temp = 85
+		a = new BigDecimal(temperature);
+		b = new BigDecimal("85.00");
+		if (a.compareTo(b) == 0) {
+
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect temperature : "
+					+ temperature;
+
+			_logger.info(mess);
+
 			isOk = false;
 		}
 
@@ -121,8 +136,12 @@ public class DS18B20_Sensor extends EnvironmentalSensor {
 			}
 		};
 
+		//So all save to db task does not start at the same time...
+		Random rand = new Random(); 
+		int value = rand.nextInt(10000); 
+		
 		_saveToDbTaskTimer = new Timer(true);
-		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000, 60000);
+		_saveToDbTaskTimer.schedule(sensorSavingToDbTask, 5000 + value, 60000);
 
 		_logger.info("Save to db sensor info task has been created.");
 

@@ -2,11 +2,8 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
-
-import fr.guiet.automationserver.business.helper.MqttClientHelper;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class Print3DService implements IMqttable {
@@ -18,14 +15,15 @@ public class Print3DService implements IMqttable {
 	private static String MQTT_TOPIC_TURN_PRINTER_OFF="cmnd/sonoff-CR10S/power";
 	private static String MQTT_MESSAGE_TURN_PRINTER_OFF="off";
 	private Date _startTime;
-	private static String MQTT_CLIENT_ID = "print3DServiceCliendId";
-	private MqttClientHelper _mqttClient = null;
+	//private static String MQTT_CLIENT_ID = "print3DServiceCliendId";
+	private MqttService _mqttService = null;
 	private ArrayList<String> _mqttTopics = new ArrayList<String>();
 	
-	public Print3DService (SMSGammuService smsGammuService) {
+	public Print3DService (SMSGammuService smsGammuService, MqttService mqttService) {
 
-		_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
+		//_mqttClient = new MqttClientHelper(MQTT_CLIENT_ID);
 	 	_smsGammuService = smsGammuService;
+	 	_mqttService = mqttService;
 	 	
 	 	//add topics processed by this service
 	 	_mqttTopics.add(MQTT_TOPIC_PRINT_STARTED);
@@ -61,7 +59,7 @@ public class Print3DService implements IMqttable {
 			
 			_logger.info("Sending message to turn off 3D printer now...Bye bye...");
 			
-			_mqttClient.SendMsg(MQTT_TOPIC_TURN_PRINTER_OFF, MQTT_MESSAGE_TURN_PRINTER_OFF);
+			_mqttService.SendMsg(MQTT_TOPIC_TURN_PRINTER_OFF, MQTT_MESSAGE_TURN_PRINTER_OFF);
 		}
 		
 		return messageProcessed;

@@ -61,7 +61,8 @@ struct Sensor {
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 2
+#define SENSORS_COUNT 4
+
 Sensor sensors[SENSORS_COUNT];
 
 void InitSensors() {

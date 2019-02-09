@@ -2,7 +2,6 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 
-//import fr.guiet.automationserver.business.sensor.BMP085_Sensor;
 import fr.guiet.automationserver.business.sensor.DS18B20_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
 import fr.guiet.automationserver.dataaccess.DbManager;
