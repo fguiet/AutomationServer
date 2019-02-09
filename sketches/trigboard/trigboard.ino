@@ -25,6 +25,7 @@
 #define LED_PIN 2 //ESP-12-E led pin
 #define DONE_PIN 4
 #define EXTWAKE_PIN 5 //To check whether it is an external wake up or a tpl5111 timer wake up
+#define ADC_PIN 0 //To read battery voltage
 
 // WiFi settings
 const char* ssid = "DUMBLEDORE";
@@ -92,12 +93,40 @@ void weAreDone() {
   }
 }
 
+float readVoltage() {
+
+  //R1 = 33kOhm
+  //R2 = 7.5kOhm
+
+  float sensorValue = 0.0f;
+  float R1 = 32800;
+  float R2 =  7460;
+  float vmes = 0.0f;
+  float vin = 0.f;
+    
+  sensorValue = analogRead(ADC_PIN);
+
+  debug_message("Analog value : " + String(sensorValue,2), true);
+
+  //ADC between 0 and 1v...maybe ajusted a little
+  //1.1v is a little lower than expected...
+  vmes = (sensorValue * 1.15) / 1024;
+
+  //Calcul issue du pont diviseur
+  vin = vmes / (R2 / (R1 + R2));
+
+  debug_message("Battery voltage : " + String(vin,2), true);
+
+  return vin;  
+}
+
 void setup() {
 
   //Initialise PINS
   pinMode(EXTWAKE_PIN, INPUT);
   pinMode(DONE_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(ADC_PIN, OUTPUT);
 
   //Turn off LED
   digitalWrite(LED_PIN, HIGH);
@@ -227,8 +256,11 @@ void loop() {
       weAreDone();
     }
   }
+
+  //Read battery voltage
+  float vin = readVoltage();
   
-  String mess = ConvertToJSon("3.7");
+  String mess = ConvertToJSon(String(vin,2));
   debug_message("JSON Sensor Mailbox : " + mess + ", topic : " +sensors[0].Mqtt_topic, true);
   mess.toCharArray(message_buff, mess.length()+1);
     
