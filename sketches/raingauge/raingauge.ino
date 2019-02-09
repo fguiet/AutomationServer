@@ -28,12 +28,12 @@
 //#include <avr/interrupt.h>        // Library to use interrupt
 //#include <avr/sleep.h>            // Library for putting our arduino into sleep modes
 
-const int M0_PIN = 11; //D11
-const int M1_PIN = 12; //D12
+const int M0_PIN = 10; //D11
+const int M1_PIN = 11; //D12
 const int REED_SWITCH_INTERRUPT = 0; //interrupt 0 at arduino nano pin D2
 const int REED_SWITCH_PIN = 2; //pin 32 at arduino nano pin D2
 const int LED_PIN = 13;            // external LED or relay connected to pin 13
-const int SENSOR_PIN = A0;
+const int SENSOR_PIN = A1;
 
 volatile bool wakeUpByFlipFlop = false;
 long debouncing_time = 150; //Debouncing Time in Milliseconds
@@ -129,6 +129,9 @@ void wakeUpNow(){                  // Interrupt service routine or ISR
 }
 
 float ReadVoltage() {
+
+  //R1 = 33kOhm
+  //R2 = 7.5kOhm
 
   float sensorValue = 0.0f;
   float R1 = 32800;
