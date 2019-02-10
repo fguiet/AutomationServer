@@ -97,7 +97,7 @@ public class AutomationServer implements Daemon {
 					_rainGaugeServiceThread.start();
 
 					// Starting teleinfo service
-					_teleInfoService = new TeleInfoService(_smsGammuService);
+					_teleInfoService = new TeleInfoService(_smsGammuService, _mqttService);
 					_teleInfoServiceThread = new Thread(_teleInfoService);
 					_teleInfoServiceThread.start();	
 					
@@ -140,7 +140,7 @@ public class AutomationServer implements Daemon {
 					
 					//TODO : Remove that horror when service will be IMqttable
 					_mqttService.setRoomService(_roomService);
-					_mqttService.setTeleInfoService(_teleInfoService);
+					//_mqttService.setTeleInfoService(_teleInfoService);
 					_mqttService.setWaterHeaterService(_waterHeater);
 					_mqttService.setRollerShutterService(_rollerShutterService);
 					//_mqttService.setAlarmService(_alarmService);

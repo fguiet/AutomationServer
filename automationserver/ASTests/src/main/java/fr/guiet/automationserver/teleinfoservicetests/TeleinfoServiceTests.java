@@ -1,8 +1,6 @@
 package fr.guiet.automationserver.teleinfoservicetests;
 
-import java.util.Date;
-
-import fr.guiet.automationserver.business.helper.DateUtils;
+import fr.guiet.automationserver.business.service.MqttService;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.service.TeleInfoService;
 
@@ -11,7 +9,9 @@ public class TeleinfoServiceTests {
 		
 		SMSGammuService gammuService = new SMSGammuService();
 		
-		TeleInfoService teleInfoService = new TeleInfoService(gammuService);
+		MqttService mqttService = new MqttService(gammuService);
+		
+		TeleInfoService teleInfoService = new TeleInfoService(gammuService, mqttService);
 		Thread teleInfoServiceThread = new Thread(teleInfoService);
 		teleInfoServiceThread.start();
 		
@@ -25,10 +25,10 @@ public class TeleinfoServiceTests {
 		}*/
 		
 		//Date date = DateUtils.getDateWithoutTime(new Date());
-		Date date = teleInfoService.getLastBillDate();
-		Date dateTo = DateUtils.addDays(date,6);
+		//Date date = teleInfoService.getLastBillDate();
+		//Date dateTo = DateUtils.addDays(date,6);
 		
-		System.out.println(teleInfoService.GetNextElectricityBillCost());
+		//System.out.println(teleInfoService.GetMonthElectricityCost());
 		
 	}
 }

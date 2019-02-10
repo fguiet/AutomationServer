@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business.service;
 
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
@@ -13,17 +14,13 @@ import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialDataEvent;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -36,11 +33,6 @@ public class TeleInfoService implements Runnable {
 	// Logger
 	private static Logger _logger = Logger.getLogger(TeleInfoService.class);
 	private boolean _isStopped = false; // Service arrete?
-	// create an instance of the serial communications class
-	// final Serial _serial = SerialFactory.createInstance();
-	// serial data listener
-	// private SerialDataEventListener _sdl = null;
-	// private SerialDataListener _sdl = null;
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	private boolean _beginTrameDetected = false;
@@ -51,7 +43,10 @@ public class TeleInfoService implements Runnable {
 	private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private Timer _timer2 = null;
+	private Timer _timer3 = null;
+	private Timer _timer4 = null;
 	private SMSGammuService _smsGammuService = null;
+	private MqttService _mqttService = null;
 	private DbManager _dbManager = null;
 	private float _hpCost = 0;
 	private float _hcCost = 0;
@@ -59,20 +54,19 @@ public class TeleInfoService implements Runnable {
 	private float _ctaCost = 0;
 	private float _cspeCost = 0;
 	private float _tcfeCost = 0;
-	// TODO : reload date without restarting automation server
-	private Date _lastBillDate;
-	private Date _nextBillDate;
+	
+	private String _electricityCostPerCurrentDay = "NA";
+	private String _electricityCostPerCurrentMonth = "NA";
+
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
 	private Serial _serial = null;
 	private boolean _alertMessageSent = false;
 
-	public TeleInfoService(SMSGammuService smsGammuService) {
+	private static String MQTT_TOPIC_ELECTRICITY_INFO = "guiet/automationserver/electricity";
+
+	public TeleInfoService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
-	}
-
-	public Date getLastBillDate() {
-		return _lastBillDate;
 	}
 
 	private void CreateSerialInstance() {
@@ -126,26 +120,6 @@ public class TeleInfoService implements Runnable {
 			prop.load(is);
 
 			_defaultDevice = prop.getProperty("teleinfo.usbdevice");
-
-			String lastBillDate = prop.getProperty("lastbill.date");
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			try {
-				_lastBillDate = formatter.parse(lastBillDate);
-			} catch (ParseException e) {
-				Calendar cal = Calendar.getInstance();
-				_lastBillDate = cal.getTime();
-				_logger.warn("Bad lastbill.date defined in config file !, set to actual date by default", e);
-			}
-
-			String nextBillDate = prop.getProperty("nextbill.date");
-			// SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			try {
-				_nextBillDate = formatter.parse(nextBillDate);
-			} catch (ParseException e) {
-				Calendar cal = Calendar.getInstance();
-				_nextBillDate = cal.getTime();
-				_logger.warn("Bad nextbill.date defined in config file !, set to actual date by default", e);
-			}
 
 			try {
 				String hpCost = prop.getProperty("hp.cost");
@@ -229,7 +203,9 @@ public class TeleInfoService implements Runnable {
 
 		CreateSerialInstance();
 
-		// CreateSerialListener();
+		CreatePublishElectricityInfoTask();
+		
+		CreateGetElectrictyCostInfoTask();
 
 		// Création de la tâche de sauvegarde en bdd
 		CreateSaveToDBTask();
@@ -269,16 +245,64 @@ public class TeleInfoService implements Runnable {
 
 	}
 
-	private static Date getTomorrowMorning1AM() {
+	private void CreateGetElectrictyCostInfoTask() {
 
-		Calendar c1 = Calendar.getInstance();
+		TimerTask getElectricyCostInfoTask = new TimerTask() {
+			@Override
+			public void run() {
+				
+				_logger.info("Computing electricity cost per current day and month...");
+				
+				_electricityCostPerCurrentMonth = Float.toString(getElectricityCostPerCurrentMonth());
+				_electricityCostPerCurrentDay = Float.toString(getElectricityCostPerCurrentDay());
+				
+				_logger.info("Eletricity cost computing done !");
+			}
+		};
 
-		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);
-		c1.set(Calendar.HOUR_OF_DAY, 2);
-		c1.set(Calendar.MINUTE, 0);
-		c1.set(Calendar.SECOND, 0);
+		_logger.info("Creating electricity cost info task");
 
-		return c1.getTime();
+		_timer4 = new Timer(true);
+		// Every one hour
+		_timer4.scheduleAtFixedRate(getElectricyCostInfoTask, 5000, 60000 * 60);
+
+	}
+
+	private void CreatePublishElectricityInfoTask() {
+
+		TimerTask publishElectricyInfoTask = new TimerTask() {
+			@Override
+			public void run() {
+
+				String hchc = "NA";
+				String hchp = "NA";
+				String papp = "NA";
+
+				if (_lastTeleInfoTrameReceived != null) {
+					hchc = Integer.toString(_lastTeleInfoTrameReceived.HCHC);
+					hchp = Integer.toString(_lastTeleInfoTrameReceived.HCHP);
+					papp = Integer.toString(_lastTeleInfoTrameReceived.PAPP);
+				}
+
+				JSONObject obj = new JSONObject();
+
+				obj.put("index_hc", hchc);
+				obj.put("index_hp", hchp);
+				obj.put("conso_inst", papp);
+				obj.put("today_cost", _electricityCostPerCurrentDay);
+				obj.put("month_cost", _electricityCostPerCurrentMonth);
+
+				_mqttService.SendMsg(MQTT_TOPIC_ELECTRICITY_INFO, obj.toString());
+
+			}
+		};
+
+		_logger.info("Creating electricity publish info task");
+
+		_timer3 = new Timer(true);
+		// Every 10 s
+		_timer3.scheduleAtFixedRate(publishElectricyInfoTask, 5000, 10000);
+
 	}
 
 	// Création de la tache de sauvegarde en bdd
@@ -309,11 +333,11 @@ public class TeleInfoService implements Runnable {
 		};
 
 		_logger.info("Creating database saving electricity cost task, first execution will occur at : "
-				+ DateUtils.getDateToString(getTomorrowMorning1AM()));
+				+ DateUtils.getDateToString(DateUtils.getTomorrowMorning1AM()));
 
 		_timer2 = new Timer(true);
 		// Toutes les minutes on enregistre une trame
-		_timer2.scheduleAtFixedRate(saveElecTask, getTomorrowMorning1AM(), ONCE_PER_DAY);
+		_timer2.scheduleAtFixedRate(saveElecTask, DateUtils.getTomorrowMorning1AM(), ONCE_PER_DAY);
 
 	}
 
@@ -355,6 +379,14 @@ public class TeleInfoService implements Runnable {
 		if (_timer2 != null) {
 			_timer2.cancel();
 		}
+		
+		if (_timer3 != null) {
+			_timer3.cancel();
+		}
+		
+		if (_timer4 != null) {
+			_timer4.cancel();
+		}
 
 		try {
 			if (_serial.isOpen()) {
@@ -390,13 +422,7 @@ public class TeleInfoService implements Runnable {
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		// _dbManager.SaveTeleInfoTrame(teleInfoTrame);
-		// _logger.info("Sauvegarde de la trame teleinfo en base de données");
-
-		// if (System.getProperty("SaveToInfluxDB").equals("TRUE")) {
 		_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
-		// _logger.info("Sauvegarde de la trame teleinfo dans InfluxDB");
-		// }
 	}
 
 	private String convert(byte[] data) {
@@ -587,33 +613,92 @@ public class TeleInfoService implements Runnable {
 		// }
 	}
 
-	public float GetNextElectricityBillCost() {
+	private float getElectricityCostPerCurrentMonth() {
 
 		float hc_cost = 0;
 		float hp_cost = 0;
 		float other_cost = 0;
 
-		_logger.info("Computing next electricity bill cost");
+		_logger.info("Computing month's electricity cost");
 
 		try {
-			// HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate,
-			// DateUtils.addDays(_lastBillDate, 59));
-			HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate, _nextBillDate);
+
+			// Date today = DateUtils.getDateWithoutTime(new Date());
+
+			Date firstDateOfMonth = DateUtils.getFirstDateOfCurrentMonth();
+
+			HashMap<String, Float> info = GetElectricityBillInfo(firstDateOfMonth, new Date());
 
 			hc_cost = info.get("hc_cost");
 			hp_cost = info.get("hp_cost");
 			other_cost = info.get("other_cost");
+
 		} catch (Exception e) {
 			_logger.error(
-					"Error occured while getting electricity bill info...cannot compute next electricity bill cost, returning 0 euros",
+					"Error occured while getting electricity info...cannot compute today's electricity cost, returning 0 euros",
 					e);
 		}
 
 		return hc_cost + hp_cost + other_cost;
-
 	}
 
-	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) throws Exception {
+	private float getElectricityCostPerCurrentDay() {
+
+		float hc_cost = 0;
+		float hp_cost = 0;
+		float other_cost = 0;
+
+		_logger.info("Computing today's electricity cost");
+
+		try {
+
+			Date today = DateUtils.getDateWithoutTime(new Date());
+
+			HashMap<String, Float> info = GetElectricityBillInfo(today, new Date());
+
+			hc_cost = info.get("hc_cost");
+			hp_cost = info.get("hp_cost");
+			other_cost = info.get("other_cost");
+
+		} catch (Exception e) {
+			_logger.error(
+					"Error occured while getting electricity info...cannot compute today's electricity cost, returning 0 euros",
+					e);
+		}
+
+		return hc_cost + hp_cost + other_cost;
+	}
+
+	/*
+	 * public float GetNextElectricityBillCost() {
+	 * 
+	 * float hc_cost = 0; float hp_cost = 0; float other_cost = 0;
+	 * 
+	 * _logger.info("Computing next electricity bill cost");
+	 * 
+	 * try { // HashMap<String, Float> info = GetElectricityBillInfo(_lastBillDate,
+	 * // DateUtils.addDays(_lastBillDate, 59));
+	 * 
+	 * //yyyy-MM-dd Date beginDate = DateUtils.parseDate("2018-12-21"); Date endDate
+	 * = DateUtils.parseDate("2019-01-12");
+	 * 
+	 * HashMap<String, Float> info = GetElectricityBillInfo(beginDate, endDate);
+	 * 
+	 * hc_cost = info.get("hc_cost"); hp_cost = info.get("hp_cost"); other_cost =
+	 * info.get("other_cost");
+	 * 
+	 * } catch (Exception e) { _logger.error(
+	 * "Error occured while getting electricity bill info...cannot compute next electricity bill cost, returning 0 euros"
+	 * , e); }
+	 * 
+	 * return hc_cost + hp_cost + other_cost;
+	 * 
+	 * }
+	 */
+
+	// public
+
+	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
 
 		float hcConsoTTC = 0;
 		float hpConsoTTC = 0;
@@ -678,10 +763,7 @@ public class TeleInfoService implements Runnable {
 			returns.put("other_cost", aboCostTTC + ctaTTC + cspeTTC + tcfeTTC);
 
 		} catch (Exception e) {
-
 			_logger.error("Error occured when computing next electricity bill", e);
-
-			throw e;
 		}
 
 		return returns;
@@ -702,7 +784,7 @@ public class TeleInfoService implements Runnable {
 	// Décodage de la trame recue
 	private TeleInfoTrameDto DecodeTrame(String trame) {
 
-		//boolean invalidChecksum = false;
+		// boolean invalidChecksum = false;
 
 		// \r : CR
 		// \n : LF
@@ -823,16 +905,16 @@ public class TeleInfoService implements Runnable {
 					break;
 				}
 			} else {
-				_logger.info("Checksum invalide pour l'etiquette : "+etiquette+", valeur : "+valeur);
-				//Bad checksum ! process ends here!
+				_logger.info("Checksum invalide pour l'etiquette : " + etiquette + ", valeur : " + valeur);
+				// Bad checksum ! process ends here!
 				return null;
-				
-			}
-		} //End of for (String g : groupes) 
 
-		/*if (invalidChecksum)
-			return null;
-		else*/
+			}
+		} // End of for (String g : groupes)
+
+		/*
+		 * if (invalidChecksum) return null; else
+		 */
 		return teleInfoTrame;
 	}
 

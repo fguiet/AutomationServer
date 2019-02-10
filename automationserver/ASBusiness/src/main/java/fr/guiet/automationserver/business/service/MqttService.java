@@ -30,7 +30,7 @@ public class MqttService implements MqttCallbackExtended {
 	private MqttClient _client = null;
 	private String[] _topics = null;
 	private RoomService _roomService = null;
-	private TeleInfoService _teleInfoService = null;
+	//private TeleInfoService _teleInfoService = null;
 	private WaterHeaterService _waterHeaterService = null;
 	// private Print3DService _print3DService = null;
 	//private AlarmService _alarmService = null;
@@ -41,8 +41,8 @@ public class MqttService implements MqttCallbackExtended {
 	private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
 	// private Date _lastBasementMessage = new Date();
-	private Date _lastComputeBillCost = null;
-	private String _electricityBill = "NA";
+	//private Date _lastComputeBillCost = null;
+	//private String _electricityBill = "NA";
 
 	private ArrayList<IMqttable> _mqttClients = new ArrayList<IMqttable>();
 
@@ -57,11 +57,6 @@ public class MqttService implements MqttCallbackExtended {
 	// TODO : when RoomService will be IMqttable...please remove that horror
 	public void setRoomService(RoomService roomService) {
 		_roomService = roomService;
-	}
-
-	// TODO : when teleInfoService will be IMqttable...please remove that horror
-	public void setTeleInfoService(TeleInfoService teleInfoService) {
-		_teleInfoService = teleInfoService;
 	}
 
 	// TODO : when waterHeaterService will be IMqttable...please remove that horror
@@ -503,25 +498,26 @@ public class MqttService implements MqttCallbackExtended {
 		long diffMinutes = 0;
 
 		// TODO : Creer un message mqtt /guiet/home/info
-		if (_teleInfoService.GetLastTrame() != null) {
+		/*if (_teleInfoService.GetLastTrame() != null) {
 			hchc = Integer.toString(_teleInfoService.GetLastTrame().HCHC);
 			hchp = Integer.toString(_teleInfoService.GetLastTrame().HCHP);
 			papp = Integer.toString(_teleInfoService.GetLastTrame().PAPP);
-		}
+		}*/
 
-		if (_lastComputeBillCost != null) {
+/*		if (_lastComputeBillCost != null) {
 			Date currentDate = new Date();
 			long diff = currentDate.getTime() - _lastComputeBillCost.getTime();
 			diffMinutes = diff / (60 * 1000);
 		} else {
 			diffMinutes = 61;
-		}
+		}*/
 
 		// Compute Bill Cost every one hour
-		if (diffMinutes >= 60) {
-			_electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
-			_lastComputeBillCost = new Date();
-		}
+	//	if (diffMinutes >= 60) {
+			//Todo : Change that
+			//_electricityBill = Float.toString(_teleInfoService.GetNextElectricityBillCost());
+		//	_lastComputeBillCost = new Date();
+	//	}
 
 		String awayModeStatus = _roomService.GetAwayModeStatus();
 		String automaticManagementStatus = _rollerShutterService.GetAutomaticManagementStatus();
@@ -544,7 +540,9 @@ public class MqttService implements MqttCallbackExtended {
 			actualBoilerTemp = String.format("%.2f", _waterHeaterService.getActualTemp());
 		}
 
-		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + _electricityBill + ";"
+		String electricityBill = "NA";
+		
+		String message = hchc + ";" + hchp + ";" + papp + ";" + awayModeStatus + ";" + electricityBill + ";"
 				+ automaticManagementStatus + ";" + westRSState + ";" + alarmAutomaticManagementStatus;
 		message = message + ";" + "NA" + ";" + "NA";
 		message = message + ";" + northRSState + ";" + "NA" + ";" + lastBoilerInfoReceveid + ";" + lastBoilerOnDuration

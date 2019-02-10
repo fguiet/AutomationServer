@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class DateUtils {
-	
+
 	public static Date addDays(Date date, int days) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -18,6 +18,34 @@ public class DateUtils {
 		return cal.getTime();
 	}
 	
+	public static Date getTomorrowMorning1AM() {
+
+		Calendar c1 = Calendar.getInstance();
+
+		c1.add(GregorianCalendar.DAY_OF_MONTH, 1);
+		c1.set(Calendar.HOUR_OF_DAY, 2);
+		c1.set(Calendar.MINUTE, 0);
+		c1.set(Calendar.SECOND, 0);
+
+		return c1.getTime();
+	}
+
+	public static Date getFirstDateOfCurrentMonth() {
+		// Create a Calendar instance
+		// and set it to the date of interest
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(getDateWithoutTime(new Date()));
+
+		// Set the day of the month to the first day of the month
+
+		cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+
+		// Extract the Date from the Calendar instance
+
+		return cal.getTime();
+	}
+
 	public static String GetDayName(int day) {
 
 		String dayString = "NA";
@@ -54,42 +82,43 @@ public class DateUtils {
 
 		return dayString;
 	}
-	
-	public static boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime) throws ParseException {
-        String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$";
-        if (initialTime.matches(reg) && finalTime.matches(reg) && currentTime.matches(reg)) {
-            boolean valid = false;
-            //Start Time
-            java.util.Date inTime = new SimpleDateFormat("HH:mm:ss").parse(initialTime);
-            Calendar calendar1 = Calendar.getInstance();
-            calendar1.setTime(inTime);
 
-            //Current Time
-            java.util.Date checkTime = new SimpleDateFormat("HH:mm:ss").parse(currentTime);
-            Calendar calendar3 = Calendar.getInstance();
-            calendar3.setTime(checkTime);
+	public static boolean isTimeBetweenTwoTime(String initialTime, String finalTime, String currentTime)
+			throws ParseException {
+		String reg = "^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$";
+		if (initialTime.matches(reg) && finalTime.matches(reg) && currentTime.matches(reg)) {
+			boolean valid = false;
+			// Start Time
+			java.util.Date inTime = new SimpleDateFormat("HH:mm:ss").parse(initialTime);
+			Calendar calendar1 = Calendar.getInstance();
+			calendar1.setTime(inTime);
 
-            //End Time
-            java.util.Date finTime = new SimpleDateFormat("HH:mm:ss").parse(finalTime);
-            Calendar calendar2 = Calendar.getInstance();
-            calendar2.setTime(finTime);
+			// Current Time
+			java.util.Date checkTime = new SimpleDateFormat("HH:mm:ss").parse(currentTime);
+			Calendar calendar3 = Calendar.getInstance();
+			calendar3.setTime(checkTime);
 
-            if (finalTime.compareTo(initialTime) < 0) {
-                calendar2.add(Calendar.DATE, 1);
-                calendar3.add(Calendar.DATE, 1);
-            }
+			// End Time
+			java.util.Date finTime = new SimpleDateFormat("HH:mm:ss").parse(finalTime);
+			Calendar calendar2 = Calendar.getInstance();
+			calendar2.setTime(finTime);
 
-            java.util.Date actualTime = calendar3.getTime();
-            if ((actualTime.after(calendar1.getTime()) || actualTime.compareTo(calendar1.getTime()) == 0) 
-                    && actualTime.before(calendar2.getTime())) {
-                valid = true;
-            }
-            return valid;
-        } else {
-            throw new IllegalArgumentException("Not a valid time, expecting HH:MM:SS format");
-        }
+			if (finalTime.compareTo(initialTime) < 0) {
+				calendar2.add(Calendar.DATE, 1);
+				calendar3.add(Calendar.DATE, 1);
+			}
 
-    }
+			java.util.Date actualTime = calendar3.getTime();
+			if ((actualTime.after(calendar1.getTime()) || actualTime.compareTo(calendar1.getTime()) == 0)
+					&& actualTime.before(calendar2.getTime())) {
+				valid = true;
+			}
+			return valid;
+		} else {
+			throw new IllegalArgumentException("Not a valid time, expecting HH:MM:SS format");
+		}
+
+	}
 
 	public static String getDateToString(Date date) {
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy à HH:mm:ss");
@@ -99,11 +128,11 @@ public class DateUtils {
 	public static Long betweenDates(Date firstDate, Date secondDate) throws IOException {
 		return ChronoUnit.DAYS.between(firstDate.toInstant(), secondDate.toInstant());
 	}
-	
+
 	public static Long minutesBetweenDate(Date firstDate, Date secondDate) {
 		return ChronoUnit.MINUTES.between(firstDate.toInstant(), secondDate.toInstant());
 	}
-	
+
 	public static Date parseDate(String date) {
 		try {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(date);
@@ -125,21 +154,21 @@ public class DateUtils {
 		}
 		return date1;
 	}
-	
+
 	public static String getTimeFromCurrentDate() {
 
-		//String result = "error";
+		// String result = "error";
 		DateFormat df = new SimpleDateFormat("HH:mm:ss");
 		Date dateobj = new Date();
-		
-		//try {
+
+		// try {
 		return df.format(dateobj);
 
-		//} catch (ParseException e) {
-			
-		//}
-		
-		//return result;
+		// } catch (ParseException e) {
+
+		// }
+
+		// return result;
 	}
 
 	public static int getCurrentHour() {
