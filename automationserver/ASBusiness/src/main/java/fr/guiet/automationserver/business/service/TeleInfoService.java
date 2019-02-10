@@ -67,6 +67,7 @@ public class TeleInfoService implements Runnable {
 	public TeleInfoService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
+		_mqttService = mqttService;
 	}
 
 	private void CreateSerialInstance() {
