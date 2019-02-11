@@ -81,15 +81,15 @@ public class RollerShutterService implements Runnable {
 
 			try {
 												
-				// Sleep for 2 minutes
-				Thread.sleep(120000);
+				// Sleep for 30s
+				Thread.sleep(30000);
 				
 				//Check state here and send message if not responding!!
 				
 				_rsNorth.HasTimeoutOccured();
 				_rsWest.HasTimeoutOccured();
 				
-				//Ask State to roller shutter every two minutes
+				//Ask State to roller shutter every 30s minutes
 				_rsNorth.RequestState();
 				_rsWest.RequestState();
 				

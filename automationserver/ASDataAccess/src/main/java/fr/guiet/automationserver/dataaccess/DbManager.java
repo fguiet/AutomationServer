@@ -61,12 +61,12 @@ public class DbManager {
 	private static String _passwordInfluxDB = null; // "raspberry";
 	private static String _influxdbEnable = null;
 	private static String _retentionPolicy = null;
-	
-	//Cache
+
+	// Cache
 	private static Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
 	private static Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
 	private static List<RoomDto> _roomDtoList = new ArrayList<RoomDto>();
-	
+
 	/**
 	 * Constructor
 	 */
@@ -116,57 +116,54 @@ public class DbManager {
 					e);
 		}
 	}
-	
+
 	/*
 	 * Check whether Postgresql is up and running !
 	 */
 	public boolean IsPostgreSQLAvailable() {
-		
+
 		Connection con = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
-		
+
 		if (con == null) {
 			return false;
-		}
-		else {
+		} else {
 			try {
-				//Connection is not actually closed, just returned to the pool
+				// Connection is not actually closed, just returned to the pool
 				con.close();
-			}
-			catch(Exception e) {
-				_logger.error("Error while closing PG connection",e);
+			} catch (Exception e) {
+				_logger.error("Error while closing PG connection", e);
 			}
 			return true;
-		}		
+		}
 	}
-	
+
 	public boolean IsInfluxDbAvailable() {
-				
+
 		boolean isInfluxDbStarted = false;
-		
-		try {			
+
+		try {
 			InfluxDB influxDb = GetInfluxDbConnection();
-			
+
 			Pong response;
-			
+
 			response = influxDb.ping();
-			
+
 			if (response.isGood()) {
 				influxDb.close();
 				influxDb = null;
 				isInfluxDbStarted = true;
 			}
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			_logger.error("Could not connect to InfluxDb...Instance is gone?", e);
 		}
-		
-		return isInfluxDbStarted;		
+
+		return isInfluxDbStarted;
 	}
 
 	public void SaveElectricityCost(Date date, int hc, int hp, float costHC, float costHP, float other) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
@@ -174,12 +171,12 @@ public class DbManager {
 			long ms = date.getTime();
 
 			DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-			String ds = df.format(date);			
-		
+			String ds = df.format(date);
+
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Saving electricity cost for day : " + ds);
-				
+
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
@@ -194,16 +191,13 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
-			
-			
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
 					influxDb = null;
@@ -217,26 +211,26 @@ public class DbManager {
 
 	private InfluxDB GetInfluxDbConnection() {
 		InfluxDB influxDb = null;
-		
-		 //_logger.info("InfluxDB connecting...");
-		 
-		 influxDb = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
-		
-		//_logger.info("InfluxDB connected...");
-		
+
+		// _logger.info("InfluxDB connecting...");
+
+		influxDb = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+
+		// _logger.info("InfluxDB connected...");
+
 		return influxDb;
 	}
-	
+
 	public void SaveRainGaugeInfo(float vcc, String flipflop) {
-		
+
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;			
-			
+				return;
+
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Saving RainGauge info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
@@ -244,7 +238,7 @@ public class DbManager {
 					.build();
 
 			Point point1 = Point.measurement("raingauge").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("vcc", vcc).addField("flipflop", flipflop) .build();
+					.addField("vcc", vcc).addField("flipflop", flipflop).build();
 
 			batchPoints.point(point1);
 
@@ -252,17 +246,16 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					
+
 					influxDb = null;
 				}
 
@@ -271,65 +264,55 @@ public class DbManager {
 			}
 		}
 	}
-	
-	
-	
-	/*public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float pressure, float altitude) {
-		
-		InfluxDB influxDb = null;
-				
-		try {
-			if (!_influxdbEnable.equals("true"))
-				return;			
 
-			influxDb = GetInfluxDbConnection();
-			
-			_logger.info("Saving outside info to InfluxDB");
-
-			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
-					// .consistency(ConsistencyLevel.ALL)
-					.build();
-
-			Point point1 = Point.measurement("outside").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("outside_temp", outsideTemp).addField("garage_temp", garageTemp)
-					.addField("pressure", pressure).addField("altitude", altitude).build();
-
-			batchPoints.point(point1);
-
-			// _logger.info("InfluxDB writing...");
-			influxDb.write(batchPoints);
-			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
-			// _logger.info("InfluxDB written...");
-			//influxDb.close();
-
-		} catch (Exception e) {
-			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
-
-			try {			
-				if (influxDb != null) {					
-					influxDb.close();
-					influxDb = null;
-				}
-
-			} catch (Exception ex) {
-				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
-			}
-		}
-
-	}*/
+	/*
+	 * public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float
+	 * pressure, float altitude) {
+	 * 
+	 * InfluxDB influxDb = null;
+	 * 
+	 * try { if (!_influxdbEnable.equals("true")) return;
+	 * 
+	 * influxDb = GetInfluxDbConnection();
+	 * 
+	 * _logger.info("Saving outside info to InfluxDB");
+	 * 
+	 * BatchPoints batchPoints =
+	 * BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy) //
+	 * .consistency(ConsistencyLevel.ALL) .build();
+	 * 
+	 * Point point1 = Point.measurement("outside").time(System.currentTimeMillis(),
+	 * TimeUnit.MILLISECONDS) .addField("outside_temp",
+	 * outsideTemp).addField("garage_temp", garageTemp) .addField("pressure",
+	 * pressure).addField("altitude", altitude).build();
+	 * 
+	 * batchPoints.point(point1);
+	 * 
+	 * // _logger.info("InfluxDB writing..."); influxDb.write(batchPoints); //
+	 * influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie); //
+	 * _logger.info("InfluxDB written..."); //influxDb.close();
+	 * 
+	 * } catch (Exception e) {
+	 * _logger.error("Erreur lors de l'écriture dans InfluxDB", e); } finally {
+	 * 
+	 * try { if (influxDb != null) { influxDb.close(); influxDb = null; }
+	 * 
+	 * } catch (Exception ex) {
+	 * _logger.error("Erreur lors de la fermeture de InfluxDb", ex); } }
+	 * 
+	 * }
+	 */
 
 	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
-		
+
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;			
+				return;
 
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Saving mailbox info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
@@ -345,14 +328,13 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
 					influxDb = null;
@@ -363,53 +345,51 @@ public class DbManager {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * @param influxDbMeasurementName
 	 * @param temperature
 	 * @param pressure
 	 * @param altitude
 	 */
-	public void saveSensorInfoInfluxDB2(String influxDbMeasurementName, float temperature, float pressure, float altitude) {
+	public void saveSensorInfoInfluxDB2(String influxDbMeasurementName, float temperature, float pressure,
+			float altitude) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-						
+
 			influxDb = GetInfluxDbConnection();
-			
-			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
+
+			// _logger.info("Saving sensor info " + influxDbMeasurementName + " to
+			// InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("temperature", temperature)
-					.addField("pressure", pressure)
-					.addField("altitude", altitude)
-					.build();
-					
+			Point point1 = Point.measurement(influxDbMeasurementName)
+					.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS).addField("temperature", temperature)
+					.addField("pressure", pressure).addField("altitude", altitude).build();
+
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb= null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -425,41 +405,40 @@ public class DbManager {
 	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature, float humidity) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-						
+
 			influxDb = GetInfluxDbConnection();
-			
-			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
+
+			// _logger.info("Saving sensor info " + influxDbMeasurementName + " to
+			// InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("temperature", temperature)
-					.addField("humidity", humidity)
-					.build();
-					
+			Point point1 = Point.measurement(influxDbMeasurementName)
+					.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS).addField("temperature", temperature)
+					.addField("humidity", humidity).build();
+
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb= null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -467,7 +446,7 @@ public class DbManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param influxDbMeasurementName
 	 * @param temperature
@@ -475,39 +454,40 @@ public class DbManager {
 	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-						
+
 			influxDb = GetInfluxDbConnection();
-			
-			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
+
+			// _logger.info("Saving sensor info " + influxDbMeasurementName + " to
+			// InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("temperature", temperature).build();
-					
+			Point point1 = Point.measurement(influxDbMeasurementName)
+					.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS).addField("temperature", temperature)
+					.build();
+
 			batchPoints.point(point1);
 
 			// _logger.info("InfluxDB writing...");
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb= null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -522,26 +502,27 @@ public class DbManager {
 	 * @param humidity
 	 * @param battery
 	 */
-	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature, float humidity, float battery_voltage) {
+	public void saveSensorInfoInfluxDB(String influxDbMeasurementName, float temperature, float humidity,
+			float battery_voltage) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-						
+
 			influxDb = GetInfluxDbConnection();
-			
-			//_logger.info("Saving sensor info " + influxDbMeasurementName + " to InfluxDB");
+
+			// _logger.info("Saving sensor info " + influxDbMeasurementName + " to
+			// InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement(influxDbMeasurementName).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("temperature", temperature)
-					.addField("humidity", humidity)
-					.addField("battery_voltage", battery_voltage).build();
+			Point point1 = Point.measurement(influxDbMeasurementName)
+					.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS).addField("temperature", temperature)
+					.addField("humidity", humidity).addField("battery_voltage", battery_voltage).build();
 
 			batchPoints.point(point1);
 
@@ -549,17 +530,16 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb= null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -567,18 +547,18 @@ public class DbManager {
 			}
 		}
 	}
-	
+
 	public void SaveBoilerTemp(float temp) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
 				return;
-						
+
 			influxDb = GetInfluxDbConnection();
-			
-			_logger.info("Saving boiler temp : "+temp+" to InfluxDB");
+
+			_logger.info("Saving boiler temp : " + temp + " to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
 					// .consistency(ConsistencyLevel.ALL)
@@ -588,18 +568,17 @@ public class DbManager {
 					.addField("temp", temp).build();
 
 			batchPoints.point(point1);
-			
+
 			influxDb.write(batchPoints);
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb= null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -611,13 +590,13 @@ public class DbManager {
 	public void SaveCaveInfoToInfluxDb(Float temp, Float humidity, String extractorState) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 			if (!_influxdbEnable.equals("true"))
-				return;			
+				return;
 
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Saving cave info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
@@ -634,17 +613,16 @@ public class DbManager {
 			influxDb.write(batchPoints);
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb =null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -657,18 +635,18 @@ public class DbManager {
 	 * Saves teleinfo framework into InfluxDB
 	 * 
 	 * @param teleInfoTrameDto
-	 */	
+	 */
 	public void SaveTeleInfoTrameToInfluxDb(TeleInfoTrameDto teleInfoTrameDto) {
 
 		InfluxDB influxDb = null;
-		
+
 		try {
 
 			if (!_influxdbEnable.equals("true"))
 				return;
 
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Saving TeleInfo info to InfluxDB");
 
 			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
@@ -690,18 +668,17 @@ public class DbManager {
 			// _logger.info("InfluxDB writing...");
 			influxDb.write(batchPoints);
 
-			//influxDb.close();
+			// influxDb.close();
 			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
 			// _logger.info("InfluxDB written...");
 		} catch (Exception e) {
 			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
-					influxDb=null;
+					influxDb = null;
 				}
 
 			} catch (Exception ex) {
@@ -718,59 +695,48 @@ public class DbManager {
 	 * @param wantedTemp
 	 * @param humidity
 	 */
-	//Plus utiliser depuis le 20171107
-	/*public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp, float humidity) {
-
-		// TODO : revoir le modèle de données de la base Postgres
-
-		Connection connection = null;
-		PreparedStatement pst = null;
-
-		try {
-
-			if (!_postgresqlEnable.equals("true"))
-				return;
-
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
-
-			String stm = "INSERT INTO automation.sensor_entry("
-					+ "id_sensor, actual_temp, wanted_temp, humidity, received_date)" + "VALUES (?, ?, ?, ?, ?);";
-
-			pst = connection.prepareStatement(stm);
-
-			pst.setLong(1, idSensor);
-			pst.setFloat(2, actualTemp);
-			if (wantedTemp == null)
-				pst.setNull(3, java.sql.Types.FLOAT);
-			else
-				pst.setFloat(3, wantedTemp);
-			pst.setFloat(4, humidity);
-			Calendar cal = Calendar.getInstance();
-			Timestamp timestamp = new Timestamp(cal.getTimeInMillis());
-			pst.setTimestamp(5, timestamp);
-
-			pst.executeUpdate();
-
-		} catch (SQLException e) {
-			_logger.error("Erreur lors de l'enregistrement en base de donnees", e);
-		} finally {
-
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-				if (connection != null) {
-					connection.close();
-				}
-
-			} catch (SQLException ex) {
-				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
-			}
-		}
-
-	}*/
-	
-	
+	// Plus utiliser depuis le 20171107
+	/*
+	 * public void SaveSensorInfo(long idSensor, Float actualTemp, Float wantedTemp,
+	 * float humidity) {
+	 * 
+	 * // TODO : revoir le modèle de données de la base Postgres
+	 * 
+	 * Connection connection = null; PreparedStatement pst = null;
+	 * 
+	 * try {
+	 * 
+	 * if (!_postgresqlEnable.equals("true")) return;
+	 * 
+	 * connection = DriverManager.getConnection(_postgresqlConnectionString,
+	 * _userName, _password);
+	 * 
+	 * String stm = "INSERT INTO automation.sensor_entry(" +
+	 * "id_sensor, actual_temp, wanted_temp, humidity, received_date)" +
+	 * "VALUES (?, ?, ?, ?, ?);";
+	 * 
+	 * pst = connection.prepareStatement(stm);
+	 * 
+	 * pst.setLong(1, idSensor); pst.setFloat(2, actualTemp); if (wantedTemp ==
+	 * null) pst.setNull(3, java.sql.Types.FLOAT); else pst.setFloat(3, wantedTemp);
+	 * pst.setFloat(4, humidity); Calendar cal = Calendar.getInstance(); Timestamp
+	 * timestamp = new Timestamp(cal.getTimeInMillis()); pst.setTimestamp(5,
+	 * timestamp);
+	 * 
+	 * pst.executeUpdate();
+	 * 
+	 * } catch (SQLException e) {
+	 * _logger.error("Erreur lors de l'enregistrement en base de donnees", e); }
+	 * finally {
+	 * 
+	 * try { if (pst != null) { pst.close(); } if (connection != null) {
+	 * connection.close(); }
+	 * 
+	 * } catch (SQLException ex) {
+	 * _logger.error("Erreur lors de la fermeture de la base de donnees", ex); } }
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Gets list of heaters dto associated with a room
@@ -780,22 +746,21 @@ public class DbManager {
 	 */
 	public ArrayList<HeaterDto> GetHeatersByRoomId(long roomId) throws Exception {
 
-		//Use cache!
+		// Use cache!
 		if (_heaterDtoList.containsKey(roomId)) {
-			_logger.info("Using cache for heaters of room : "+roomId);
+			_logger.info("Using cache for heaters of room : " + roomId);
 			return _heaterDtoList.get(roomId);
 		}
-		
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		ArrayList<HeaterDto> dtoList = new ArrayList<HeaterDto>();
 
 		try {
-			
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
-			
+
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
+
 			String query = "select b.name, b.id_heater, current_consumption, phase, raspberry_pin from automation.room_heater a, automation.heater b "
 					+ "where a.id_heater = b.id_heater and a.id_room=?";
 
@@ -817,7 +782,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération des radiateurs dans la base de données", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -831,12 +796,12 @@ public class DbManager {
 			} catch (SQLException ex) {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
 			}
-		}		
-		
-		//Add to cache
+		}
+
+		// Add to cache
 		_heaterDtoList.put(roomId, dtoList);
-		_logger.info("Adding heaters of room : "+roomId+" to cache");
-		
+		_logger.info("Adding heaters of room : " + roomId + " to cache");
+
 		return dtoList;
 	}
 
@@ -846,22 +811,21 @@ public class DbManager {
 	 * @param sensorId
 	 * @return
 	 */
-	public SensorDto getSensorById(long sensorId)  {
+	public SensorDto getSensorById(long sensorId) {
 
-		//Use cache!
+		// Use cache!
 		if (_sensorDtoList.containsKey(sensorId)) {
-			_logger.info("Using cache for sensor : "+sensorId);
+			_logger.info("Using cache for sensor : " + sensorId);
 			return _sensorDtoList.get(sensorId);
 		}
-		
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		SensorDto dto = null;
 
 		try {
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
@@ -882,7 +846,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
-			//throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			// throw new Exception ("Gros problème d'accès à la base PG !!",e);
 		} finally {
 
 			try {
@@ -898,10 +862,10 @@ public class DbManager {
 			}
 		}
 
-		//Add to cache
-		_sensorDtoList.put(sensorId, dto);		
-		_logger.info("Adding sensor : "+sensorId+" to cache");
-		
+		// Add to cache
+		_sensorDtoList.put(sensorId, dto);
+		_logger.info("Adding sensor : " + sensorId + " to cache");
+
 		return dto;
 	}
 
@@ -916,8 +880,7 @@ public class DbManager {
 
 		try {
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String query = "select temp from automation.temp_schedule where id_room=? and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -930,7 +893,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getDefaultTempByRoom)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -965,8 +928,7 @@ public class DbManager {
 
 		try {
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String query = "select priority from automation.priority_schedule where id_heater=1 and day_of_week=date_part('dow',now())+1 and (date_trunc('second', now()::timestamp))::time without time zone between hour_begin and hour_end";
 
@@ -979,7 +941,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (GetCurrentPriorityByHeaterId)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -1008,12 +970,12 @@ public class DbManager {
 	 ***/
 	public List<RoomDto> GetRooms() throws Exception {
 
-		//Use cache when possible
+		// Use cache when possible
 		if (!_roomDtoList.isEmpty()) {
 			_logger.info("Using cache for fetching room list");
 			return _roomDtoList;
 		}
-		
+
 		List<RoomDto> roomList = null;
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -1021,8 +983,7 @@ public class DbManager {
 		ResultSet rs = null;
 
 		try {
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic FROM automation.room a ";
 
@@ -1041,9 +1002,9 @@ public class DbManager {
 				roomList.add(r);
 			}
 		} catch (SQLException e) {
-			_logger.error("Erreur lors de la lecture des pièces dans la base de données", e);			
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
-			
+			_logger.error("Erreur lors de la lecture des pièces dans la base de données", e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
+
 		} finally {
 			try {
 				if (pst != null) {
@@ -1058,12 +1019,12 @@ public class DbManager {
 
 			} catch (SQLException ex) {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
-			}					
+			}
 		}
-		
+
 		_roomDtoList = roomList;
 		_logger.info("Adding room list to cache");
-		
+
 		return roomList;
 	}
 
@@ -1081,8 +1042,7 @@ public class DbManager {
 		TempScheduleDto ts = null;
 
 		try {
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			if (dayOfWeek == dow) {
 
@@ -1123,7 +1083,7 @@ public class DbManager {
 			}
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getNextDefaultTempByRoom)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -1168,13 +1128,14 @@ public class DbManager {
 			results = new HashMap<>();
 
 			// _logger.info("InfluxDB connecting..");
-			//_influxDB = InfluxDBFactory.connect(_influxdbConnectionString, _userNameInfluxDB, _passwordInfluxDB);
+			// _influxDB = InfluxDBFactory.connect(_influxdbConnectionString,
+			// _userNameInfluxDB, _passwordInfluxDB);
 			// _logger.info("InfluxDB Connected");
 
 			influxDb = GetInfluxDbConnection();
-			
+
 			_logger.info("Getting Electricity consumption info from InfluxDB");
-			
+
 			// Convert Date in UTC
 			Date fromDate1 = convertDate(fromDate, "Europe/Paris", "UTC");
 			Date toDate1 = convertDate(toDate, "Europe/Paris", "UTC");
@@ -1202,24 +1163,49 @@ public class DbManager {
 			String max_hchc = Long.toString(
 					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
 
-			min_hchp = min_hchp.substring(0, 5);
-			min_hchc = min_hchc.substring(0, 5);
-			max_hchp = max_hchp.substring(0, 5);
-			max_hchc = max_hchc.substring(0, 5);
+			if (min_hchp.length() >= 5)
+				min_hchp = min_hchp.substring(0, 5);
+			else {
+				min_hchp = "0";
+				_logger.warn("Valeur incorrecte pour min_hchp....");
+			}
+
+			if (min_hchc.length() >= 5)
+				min_hchc = min_hchc.substring(0, 5);
+			else
+			{
+				min_hchc = "0";
+				_logger.warn("Valeur incorrecte pour min_hchc....");
+			}
+
+			if (max_hchp.length() >= 5)
+				max_hchp = max_hchp.substring(0, 5);
+			else
+			{
+				max_hchp = "0";
+				_logger.warn("Valeur incorrecte pour max_hchp....");
+			}
+
+			if (max_hchc.length() >= 5)
+				max_hchc = max_hchc.substring(0, 5);
+			else
+			{
+				max_hchc = "0";
+				_logger.warn("Valeur incorrecte pour max_hchc....");
+			}
 
 			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
 			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
 
-			//influxDb.close();
+			// influxDb.close();
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la lecture dans InfluxDB", e);
 
 			throw e;
-		}
-		finally {
+		} finally {
 
-			try {			
+			try {
 				if (influxDb != null) {
 					influxDb.close();
 					influxDb = null;
@@ -1236,69 +1222,55 @@ public class DbManager {
 	/***
 	 * /* /* Sauvegarde de la trame en bdd /*
 	 ***/
-	//20171107 - No more data saved in PG
-	/*public void SaveTeleInfoTrame(TeleInfoTrameDto teleInfoTrameDto) {
-
-		Connection connection = null;
-		PreparedStatement pst = null;
-
-		try {
-
-			if (!_postgresqlEnable.equals("true"))
-				return;
-
-			connection = DriverManager.getConnection(_postgresqlConnectionString, _userName, _password);
-
-			String stm = "INSERT INTO automation.trame_teleinfo("
-					+ "date_reception, adco, optarif, isousc, hchc, hchp, ptec, iinst1, "
-					+ "iinst2, iinst3, imax1, imax2, imax3, pmax, papp, hhphc, motdetat, " + "ppot)"
-					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-
-			pst = connection.prepareStatement(stm);
-
-			Calendar cal = Calendar.getInstance();
-			Timestamp timestamp = new Timestamp(cal.getTimeInMillis());
-			pst.setTimestamp(1, timestamp);
-
-			pst.setString(2, teleInfoTrameDto.ADCO);
-			pst.setString(3, teleInfoTrameDto.OPTARIF);
-			pst.setShort(4, teleInfoTrameDto.ISOUSC);
-			pst.setInt(5, teleInfoTrameDto.HCHC);
-			pst.setInt(6, teleInfoTrameDto.HCHP);
-			// System.out.println("PTEC : "+teleInfoTrameDto.PTEC);
-			pst.setString(7, teleInfoTrameDto.PTEC);
-			pst.setShort(8, teleInfoTrameDto.IINST1);
-			pst.setShort(9, teleInfoTrameDto.IINST2);
-			pst.setShort(10, teleInfoTrameDto.IINST3);
-			pst.setShort(11, teleInfoTrameDto.IMAX1);
-			pst.setShort(12, teleInfoTrameDto.IMAX2);
-			pst.setShort(13, teleInfoTrameDto.IMAX3);
-			pst.setInt(14, teleInfoTrameDto.PMAX);
-			pst.setInt(15, teleInfoTrameDto.PAPP);
-			pst.setString(16, teleInfoTrameDto.HHPHC);
-			pst.setString(17, teleInfoTrameDto.MOTDETAT);
-			// System.out.println("PPOT : "+teleInfoTrameDto.PPOT);
-			pst.setString(18, teleInfoTrameDto.PPOT);
-
-			pst.executeUpdate();
-
-		} catch (SQLException e) {
-			_logger.error("Erreur lors de l'enregistrement de la trame teleinfo en base de données", e);
-		} finally {
-
-			try {
-				if (pst != null) {
-					pst.close();
-				}
-				if (connection != null) {
-					connection.close();
-				}
-
-			} catch (SQLException ex) {
-				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
-			}
-		}
-	}*/
+	// 20171107 - No more data saved in PG
+	/*
+	 * public void SaveTeleInfoTrame(TeleInfoTrameDto teleInfoTrameDto) {
+	 * 
+	 * Connection connection = null; PreparedStatement pst = null;
+	 * 
+	 * try {
+	 * 
+	 * if (!_postgresqlEnable.equals("true")) return;
+	 * 
+	 * connection = DriverManager.getConnection(_postgresqlConnectionString,
+	 * _userName, _password);
+	 * 
+	 * String stm = "INSERT INTO automation.trame_teleinfo(" +
+	 * "date_reception, adco, optarif, isousc, hchc, hchp, ptec, iinst1, " +
+	 * "iinst2, iinst3, imax1, imax2, imax3, pmax, papp, hhphc, motdetat, " +
+	 * "ppot)" + "VALUES (?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	 * 
+	 * pst = connection.prepareStatement(stm);
+	 * 
+	 * Calendar cal = Calendar.getInstance(); Timestamp timestamp = new
+	 * Timestamp(cal.getTimeInMillis()); pst.setTimestamp(1, timestamp);
+	 * 
+	 * pst.setString(2, teleInfoTrameDto.ADCO); pst.setString(3,
+	 * teleInfoTrameDto.OPTARIF); pst.setShort(4, teleInfoTrameDto.ISOUSC);
+	 * pst.setInt(5, teleInfoTrameDto.HCHC); pst.setInt(6, teleInfoTrameDto.HCHP);
+	 * // System.out.println("PTEC : "+teleInfoTrameDto.PTEC); pst.setString(7,
+	 * teleInfoTrameDto.PTEC); pst.setShort(8, teleInfoTrameDto.IINST1);
+	 * pst.setShort(9, teleInfoTrameDto.IINST2); pst.setShort(10,
+	 * teleInfoTrameDto.IINST3); pst.setShort(11, teleInfoTrameDto.IMAX1);
+	 * pst.setShort(12, teleInfoTrameDto.IMAX2); pst.setShort(13,
+	 * teleInfoTrameDto.IMAX3); pst.setInt(14, teleInfoTrameDto.PMAX);
+	 * pst.setInt(15, teleInfoTrameDto.PAPP); pst.setString(16,
+	 * teleInfoTrameDto.HHPHC); pst.setString(17, teleInfoTrameDto.MOTDETAT); //
+	 * System.out.println("PPOT : "+teleInfoTrameDto.PPOT); pst.setString(18,
+	 * teleInfoTrameDto.PPOT);
+	 * 
+	 * pst.executeUpdate();
+	 * 
+	 * } catch (SQLException e) { _logger.
+	 * error("Erreur lors de l'enregistrement de la trame teleinfo en base de données"
+	 * , e); } finally {
+	 * 
+	 * try { if (pst != null) { pst.close(); } if (connection != null) {
+	 * connection.close(); }
+	 * 
+	 * } catch (SQLException ex) {
+	 * _logger.error("Erreur lors de la fermeture de la base de donnees", ex); } } }
+	 */
 
 	/*
 	 * Returns temperature schedule for all room
@@ -1316,8 +1288,7 @@ public class DbManager {
 				return dtoList;
 			}
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			// String query = "select json_agg(f.*) " + "from " + "(select
 			// id_room::text as resource, id_temp_schedule as id, temp::text as
@@ -1376,7 +1347,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la lecture en base de donnees (getHeaterScheduleForRoom)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -1407,8 +1378,7 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String stm = "DELETE FROM automation.temp_schedule where id_temp_schedule=?";
 
@@ -1419,7 +1389,7 @@ public class DbManager {
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (deleteTempScheduleById)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
@@ -1442,14 +1412,13 @@ public class DbManager {
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-		
+
 		try {
 
 			if (!_postgresqlEnable.equals("true"))
 				return null;
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String stm = "INSERT INTO automation.temp_schedule(temp,id_room,day_of_week,hour_begin,hour_end) values (?,?,?,?,?)";
 
@@ -1472,27 +1441,26 @@ public class DbManager {
 
 			pst.executeUpdate();
 			pst.close();
-			
+
 			stm = "SELECT MAX(id_temp_schedule) as id from automation.temp_schedule";
 			pst = connection.prepareStatement(stm);
 			rs = pst.executeQuery();
 
 			rs.next();
-			
+
 			dto.setId(rs.getInt("id"));
-			
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (createTempScheduleById)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {
 				if (pst != null) {
 					pst.close();
 				}
-				
-				if (rs!=null) {
+
+				if (rs != null) {
 					rs.close();
 				}
 
@@ -1504,7 +1472,7 @@ public class DbManager {
 				_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
 			}
 		}
-		
+
 		return dto;
 	}
 
@@ -1517,8 +1485,7 @@ public class DbManager {
 			if (!_postgresqlEnable.equals("true"))
 				return;
 
-			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password)
-		            .getConnection();
+			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
 			String stm = "UPDATE automation.temp_schedule set temp=?, id_room=?, day_of_week=?, hour_begin=?, hour_end=? where id_temp_schedule=?";
 
@@ -1543,7 +1510,7 @@ public class DbManager {
 
 		} catch (Exception e) {
 			_logger.error("Erreur lors de la suppression en base de donnees (updateTempScheduleById)", e);
-			throw new Exception ("Gros problème d'accès à la base PG !!",e);
+			throw new Exception("Gros problème d'accès à la base PG !!", e);
 		} finally {
 
 			try {

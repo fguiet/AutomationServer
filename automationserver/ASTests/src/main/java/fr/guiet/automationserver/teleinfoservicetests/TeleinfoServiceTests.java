@@ -28,7 +28,7 @@ public class TeleinfoServiceTests {
 		//Date date = teleInfoService.getLastBillDate();
 		//Date dateTo = DateUtils.addDays(date,6);
 		
-		//System.out.println(teleInfoService.GetMonthElectricityCost());
+		//System.out.println(teleInfoService.getElectricityCostPerCurrentMonth());
 		
 	}
 }

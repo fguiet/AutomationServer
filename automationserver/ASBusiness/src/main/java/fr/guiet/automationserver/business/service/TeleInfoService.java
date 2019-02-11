@@ -636,7 +636,7 @@ public class TeleInfoService implements Runnable {
 
 		} catch (Exception e) {
 			_logger.error(
-					"Error occured while getting electricity info...cannot compute today's electricity cost, returning 0 euros",
+					"Error occured while getting electricity info...cannot compute month's electricity cost, returning 0 euros",
 					e);
 		}
 
