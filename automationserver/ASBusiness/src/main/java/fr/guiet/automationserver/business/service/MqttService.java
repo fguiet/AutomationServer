@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
+//import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -18,7 +18,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import fr.guiet.automationserver.business.RollerShutterState;
 
-import fr.guiet.automationserver.dataaccess.DbManager;
+//import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class MqttService implements MqttCallbackExtended {
@@ -37,8 +37,8 @@ public class MqttService implements MqttCallbackExtended {
 	// private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
 	// private BLEHubService _BLEHubService = null;
-	private DbManager _dbManager = null;
-	private Date _lastGotMailMessage = null;
+	//private DbManager _dbManager = null;
+	//private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
 	// private Date _lastBasementMessage = new Date();
 	//private Date _lastComputeBillCost = null;
@@ -93,7 +93,7 @@ public class MqttService implements MqttCallbackExtended {
 			// _scenariiManager = scenariiManager;
 			// _print3DService = print3DService;
 			// _BLEHubService = BLEHubService;
-			_dbManager = new DbManager();
+			//_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
 			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
@@ -348,7 +348,7 @@ public class MqttService implements MqttCallbackExtended {
 				}
 
 				break;
-			case "SETGOTMAIL":
+			/*case "SETGOTMAIL":
 				try {
 
 					long diffMinutes = 0;
@@ -366,7 +366,7 @@ public class MqttService implements MqttCallbackExtended {
 
 						float vcc = Float.parseFloat(messageContent[1]);
 
-						_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
+						//_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
 
 						String mess = "Hey! you got mail ! by the way, vcc sensor is " + vcc;
 						/*
@@ -374,17 +374,17 @@ public class MqttService implements MqttCallbackExtended {
 						 * mailService.SendMailSSL("Hey! you got mail", mess);
 						 */
 
-						SMSDto sms = new SMSDto("fdaed23f-92d6-4334-8aec-bf39be62f3aa");
-						sms.setMessage(mess);
-						_smsGammuService.sendMessage(sms, true);
-					}
+					//	SMSDto sms = new SMSDto("fdaed23f-92d6-4334-8aec-bf39be62f3aa");
+					//	sms.setMessage(mess);
+					//	_smsGammuService.sendMessage(sms, true);
+					//}
 
-					_lastGotMailMessage = new Date();
+					//_lastGotMailMessage = new Date();
 
-				} catch (Exception e) {
-					_logger.error("Could not read or save information received from mailbox", e);
-				}
-				break;
+				//} catch (Exception e) {
+				///	_logger.error("Could not read or save information received from mailbox", e);
+				//}
+				//break;
 
 			case "SETROOMTEMP":
 				long roomId = Long.parseLong(messageContent[1]);
@@ -495,7 +495,7 @@ public class MqttService implements MqttCallbackExtended {
 		String papp = "NA";
 		String hchc = "NA";
 		String hchp = "NA";
-		long diffMinutes = 0;
+		//long diffMinutes = 0;
 
 		// TODO : Creer un message mqtt /guiet/home/info
 		/*if (_teleInfoService.GetLastTrame() != null) {

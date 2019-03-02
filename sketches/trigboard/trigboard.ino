@@ -23,7 +23,7 @@
 #define DEBUG 1
 
 #define LED_PIN 2 //ESP-12-E led pin
-#define DONE_PIN 4
+#define DONE_PIN 12
 #define EXTWAKE_PIN 5 //To check whether it is an external wake up or a tpl5111 timer wake up
 #define ADC_PIN 0 //To read battery voltage
 
@@ -43,6 +43,7 @@ struct Sensor {
     String Name;    
     String SensorId;
     String Mqtt_topic;
+    String External_wakeup;
 };
 
 #define SENSORS_COUNT 1
@@ -50,11 +51,16 @@ Sensor sensors[SENSORS_COUNT];
 
 char message_buff[200];
 
-void InitSensors() {
+void InitSensors(bool externalWakeUp) {
   
-  sensors[0].Name = "Reedswitch - Mailbox";
-  sensors[0].SensorId = "XX";
-  sensors[0].Mqtt_topic = "guiet/mailbox/sensor/XX";
+  sensors[0].Name = "Trigboard - Mailbox";
+  sensors[0].SensorId = "6";
+  sensors[0].Mqtt_topic = "guiet/mailbox/sensor/6";
+
+  if (externalWakeUp)
+     sensors[0].External_wakeup = "oui";
+  else
+     sensors[0].External_wakeup = "non";
 }
 
 /*
@@ -110,7 +116,7 @@ float readVoltage() {
 
   //ADC between 0 and 1v...maybe ajusted a little
   //1.1v is a little lower than expected...
-  vmes = (sensorValue * 1.15) / 1024;
+  vmes = (sensorValue) / 1024;
 
   //Calcul issue du pont diviseur
   vin = vmes / (R2 / (R1 + R2));
@@ -135,21 +141,26 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
+  bool externalWakeUp = true;
+
   //External or TPL5111 wake up?
   if (!isExternalWakeUp()) {
 
     debug_message("TPL5111 woke me up! leave me alone...", true);
     
     makeLedBlink(3,200);
-    //Go to sleep immediatly
-     weAreDone();
 
-     return;
+   externalWakeUp = false;
+
+    //TO REACTIVATE!!
+    //Go to sleep immediatly
+    //weAreDone();
+    //return;
   }
 
   debug_message("Something in the maibox, time to send a message!...", true);
 
-  InitSensors();
+  InitSensors(externalWakeUp);
 }
 
 void disconnectMqtt() {
@@ -235,6 +246,8 @@ String ConvertToJSon(String battery) {
     root["name"] = sensors[0].Name;
     root["firmware"]  = FIRMWARE_VERSION;
     root["battery"] = battery;
+    root["externalwakeup"] = sensors[0].External_wakeup; 
+    
    
     String result;
     root.printTo(result);

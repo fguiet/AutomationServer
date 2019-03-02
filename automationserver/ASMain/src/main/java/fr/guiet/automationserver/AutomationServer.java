@@ -43,6 +43,7 @@ public class AutomationServer implements Daemon {
 	private Thread _rollerShutterServiceThread = null;
 	private Thread _BLEHubServiceThread = null;
 	private Print3DService _print3DService = null;
+	private MailboxService _mailboxService = null;
 	private OutsideEnvironmentalService _outsideEnvService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttService _mqttService = null;
@@ -122,6 +123,9 @@ public class AutomationServer implements Daemon {
 					//Start scenarii service
 					//_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
 					
+					//Start Mailbox service
+					_mailboxService = new MailboxService(_smsGammuService);
+					
 					//Start 3D Print service
 					_print3DService = new Print3DService(_smsGammuService, _mqttService);
 					
@@ -145,6 +149,7 @@ public class AutomationServer implements Daemon {
 					_mqttService.setRollerShutterService(_rollerShutterService);
 					//_mqttService.setAlarmService(_alarmService);
 					
+					_mqttService.addClient(_mailboxService);
 					_mqttService.addClient(_alarmService);
 					_mqttService.addClient(_BLEHubService);
 					_mqttService.addClient(_print3DService);
