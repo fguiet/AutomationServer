@@ -63,6 +63,7 @@ public class DbManager {
 	private static String _retentionPolicy = null;
 
 	// Cache
+	private static Map<Long, ArrayList<SensorDto>> _roomSensorsDtoList = new HashMap<Long, ArrayList<SensorDto>>();
 	private static Map<Long, ArrayList<HeaterDto>> _heaterDtoList = new HashMap<Long, ArrayList<HeaterDto>>();
 	private static Map<Long, SensorDto> _sensorDtoList = new HashMap<Long, SensorDto>();
 	private static List<RoomDto> _roomDtoList = new ArrayList<RoomDto>();
@@ -804,9 +805,66 @@ public class DbManager {
 
 		return dtoList;
 	}
+	
+	public ArrayList<SensorDto> getSensorsByRoomId(Long roomId) {
+		
+		// Use cache!
+			if (_roomSensorsDtoList.containsKey(roomId)) {
+				_logger.info("Using cache for sensors of room : " + roomId);
+				return _roomSensorsDtoList.get(roomId);
+			}
+
+			Connection connection = null;
+			PreparedStatement pst = null;
+			ResultSet rs = null;
+			ArrayList<SensorDto> dtoList = new ArrayList<SensorDto>();
+
+			try {
+
+				connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
+
+				String query = "select a.id_sensor  from automation.sensor a "
+							  + "where a.id_room=?";
+
+				pst = connection.prepareStatement(query);
+				pst.setLong(1, roomId);
+
+				rs = pst.executeQuery();
+
+				while (rs.next()) {
+					SensorDto dto = getSensorById(rs.getLong("id_sensor"));
+
+					dtoList.add(dto);
+				}
+
+			} catch (SQLException e) {
+				_logger.error("Erreur lors de la récupération des capteurs dans la base de données", e);
+				//throw new Exception("Gros problème d'accès à la base PG !!", e);
+			} finally {
+
+				try {
+					if (pst != null) {
+						pst.close();
+					}
+					if (connection != null) {
+						connection.close();
+					}
+
+				} catch (SQLException ex) {
+					_logger.error("Erreur lors de la fermeture de la base de donnees", ex);
+				}
+			}
+
+			// Add to cache
+			_roomSensorsDtoList.put(roomId, dtoList);
+			_logger.info("Adding sensors of room : " + roomId + " to cache");
+
+			return dtoList;
+		
+	}
 
 	/**
-	 * Returns sensor dto associated with a room
+	 * Returns sensors dto associated with a room
 	 * 
 	 * @param sensorId
 	 * @return
@@ -827,7 +885,7 @@ public class DbManager {
 		try {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
-			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement FROM automation.sensor c "
+			String query = "SELECT c.id_sensor, c.sensor_address, c.name, c.firmware_version, c.mqtt_topic, c.influxdbmeasurement, c.id_room FROM automation.sensor c "
 					+ "where c.id_sensor = ? ";
 
 			pst = connection.prepareStatement(query);
@@ -843,6 +901,7 @@ public class DbManager {
 			dto.firmware_version = rs.getInt("firmware_version");
 			dto.mqtt_topic = rs.getString("mqtt_topic");
 			dto.influxDbMeasurement = rs.getString("influxdbmeasurement");
+			dto.roomId = rs.getLong("id_room");
 
 		} catch (SQLException e) {
 			_logger.error("Erreur lors de la récupération du capteur dans la base de données", e);
@@ -996,7 +1055,7 @@ public class DbManager {
 				RoomDto r = new RoomDto();
 				r.id = rs.getLong("id_room");
 				r.name = rs.getString("name");
-				r.idSensor = rs.getLong("id_sensor");
+				//r.idSensor = rs.getLong("id_sensor");
 				r.mqttTopic = rs.getString("mqtt_topic");
 
 				roomList.add(r);

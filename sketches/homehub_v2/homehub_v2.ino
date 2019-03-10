@@ -3,12 +3,13 @@
  * 
  * F. Guiet 
  * Creation           : End of 2018
- * Last modification  : 20190126
+ * Last modification  : 20190310
  * 
- * Version            : 1.2
+ * Version            : 1.3
  * 
  * History            : Huge refactoring - add mqtt toppic for each sensor
  *                      Remove first / in topic, fix bug in mqtt connect (possible infinite loop), improve debug_message function
+ *                      20190310 - Add main entry door reedswitch sensor
  *                      
  */
 
@@ -25,13 +26,13 @@
 #define MQTT_SERVER "192.168.1.25"
 
 //*** CHANGE IT
-#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
-//#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
-#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
-//#define MQTT_HUB_TOPIC "guiet/downstairs/hub"
-#define FIRMWARE_VERSION "1.2"
-//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
-#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
+//#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
+#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
+//#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
+#define MQTT_HUB_TOPIC "guiet/downstairs/hub"
+#define FIRMWARE_VERSION "1.3"
+#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+//#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -58,10 +59,12 @@ struct Sensor {
     String Battery;
     String Rssi;
     String Mqtt_topic;
+    String State;
+    String Type;
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 4
+#define SENSORS_COUNT 3
 
 Sensor sensors[SENSORS_COUNT];
 
@@ -74,38 +77,49 @@ void InitSensors() {
   //String SENSORID =  "5"; //Parents
   //String SENSORID =  "12"; //Bathroom (upstairs)
   
+  /*
   sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
   sensors[0].Mqtt_topic = "guiet/upstairs/room_manon/sensor/4";
+  sensors[0].Type = "Environmental";
   
   sensors[1].Address = "c7:b9:43:94:24:3a";
   sensors[1].Name = "Nohé";
   sensors[1].SensorId = "3";
   sensors[1].Mqtt_topic = "guiet/upstairs/room_nohe/sensor/3";
+  sensors[1].Type = "Environmental";
   
   sensors[2].Address = "e9:3d:63:97:39:5e";
   sensors[2].Name = "Parents";
   sensors[2].SensorId = "5";
   sensors[2].Mqtt_topic = "guiet/upstairs/room_parents/sensor/5";
+  sensors[2].Type = "Environmental";
 
   sensors[3].Address = "d8:15:dc:ff:2c:4d";
   sensors[3].Name = "Bathroom";
   sensors[3].SensorId = "12";
   sensors[3].Mqtt_topic = "guiet/upstairs/bathroom/sensor/12";
+  sensors[3].Type = "Environmental";
+  */
   
-  
-  /*
   sensors[0].Address = "d4:a6:6d:1d:ef:8b";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
   sensors[0].Mqtt_topic = "guiet/downstairs/office/sensor/1";
+  sensors[0].Type = "Environmental";
 
   sensors[1].Address = "f4:a4:c6:6f:d8:6a";
   sensors[1].Name = "Salon";
   sensors[1].SensorId = "2";
   sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
-  */
+  sensors[1].Type = "Environmental";
+
+  sensors[2].Address = "c5:f7:7b:9b:24:46";
+  sensors[2].Name = "Reedswitch - porte entrée";
+  sensors[2].SensorId = "16";
+  sensors[2].Mqtt_topic = "guiet/downstairs/livingroom/sensor/16";
+  sensors[2].Type = "Reedswitch";
 }
 
 
@@ -168,6 +182,24 @@ int readline(int readch, char *buffer, int len)
   return -1;
 }
 
+String ConvertToJSon(Sensor sensor) {
+    //Create JSon object
+    DynamicJsonBuffer  jsonBuffer(200);
+    JsonObject& root = jsonBuffer.createObject();
+    
+    root["sensorid"] = sensor.SensorId;
+    root["name"] = sensor.Name;
+    root["firmware"]  = FIRMWARE_VERSION;
+    root["rssi"] = sensor.Rssi;
+    root["battery"] = sensor.Battery;
+    root["state"] = sensor.State;
+
+    String result;
+    root.printTo(result);
+
+    return result;
+}
+
 void jsonParser(char *buffer) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& jsonObj = jsonBuffer.parseObject(buffer);
@@ -178,19 +210,38 @@ void jsonParser(char *buffer) {
     int val = getSensorByAddress(jsonObj["Address"].as<String>(), sensor);
 
     if (val != 0) {
-    
-      sensor.Temperature = jsonObj["Temperature"].as<String>();
-      sensor.Battery = jsonObj["Battery"].as<String>();
-      sensor.Humidity = jsonObj["Humidity"].as<String>();
-      sensor.Rssi = jsonObj["Rssi"].as<String>();
-  
-      String mess = "SETINSIDEINFO;"+sensor.SensorId+";"+sensor.Temperature+";"+sensor.Humidity+";"+sensor.Battery+";"+sensor.Rssi;
-  
-      debug_message("Publishing : " + mess, true);
-                  
-      mess.toCharArray(message_buff, mess.length()+1);
+
+      if (sensor.Type == "Reedswitch") {
       
-      client.publish(sensor.Mqtt_topic.c_str() ,message_buff);    
+          sensor.Battery = jsonObj["Battery"].as<String>();
+          sensor.State = jsonObj["State"].as<String>();
+          sensor.Rssi = jsonObj["Rssi"].as<String>();
+
+          String mess = ConvertToJSon(sensor);
+      
+          debug_message("Publishing : " + mess, true);
+                      
+          mess.toCharArray(message_buff, mess.length()+1);
+          
+          client.publish(sensor.Mqtt_topic.c_str() ,message_buff);
+        
+      }
+
+      if (sensor.Type == "Environmental") {
+      
+          sensor.Temperature = jsonObj["Temperature"].as<String>();
+          sensor.Battery = jsonObj["Battery"].as<String>();
+          sensor.Humidity = jsonObj["Humidity"].as<String>();
+          sensor.Rssi = jsonObj["Rssi"].as<String>();
+      
+          String mess = "SETINSIDEINFO;"+sensor.SensorId+";"+sensor.Temperature+";"+sensor.Humidity+";"+sensor.Battery+";"+sensor.Rssi;
+      
+          debug_message("Publishing : " + mess, true);
+                      
+          mess.toCharArray(message_buff, mess.length()+1);
+          
+          client.publish(sensor.Mqtt_topic.c_str() ,message_buff);
+      }    
     }
   }
 }
@@ -230,6 +281,7 @@ void loop() {
 
   unsigned long currentMillis = millis();
   if (((unsigned long)(currentMillis - previousMillis) >= INTERVAL) || ((unsigned long)(millis() - previousMillis) < 0)) {
+    
     //Publish alive topic every 30s
     String mess = String(MQTT_HUB_MESSAGE) + ";" + String(FIRMWARE_VERSION) + ";" + String(ESP.getFreeHeap()); 
     mess.toCharArray(message_buff, mess.length()+1);

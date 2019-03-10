@@ -2,9 +2,10 @@ package fr.guiet.automationserver.business.sensor;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
+
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +18,7 @@ import fr.guiet.automationserver.dto.SMSDto;
  * @author guiet
  *
  */
-abstract class Sensor {
+public abstract class Sensor {
 
 	// Logger
 	protected static Logger _logger = Logger.getLogger(Sensor.class);
@@ -103,6 +104,8 @@ abstract class Sensor {
 	}
 
 	protected abstract void createSaveToDBTask();
+	
+	protected abstract boolean sanityCheck(HashMap<String, String> values);
 	
 	private void createTimeoutCheckTask() {
 

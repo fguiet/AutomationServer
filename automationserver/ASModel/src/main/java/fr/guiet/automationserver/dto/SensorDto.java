@@ -14,4 +14,6 @@ public class SensorDto {
 	public int firmware_version;
 	public String mqtt_topic;
 	public String influxDbMeasurement;
+	//Room linked to this sensor
+	public long roomId;
 }

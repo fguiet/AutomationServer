@@ -32,7 +32,7 @@ const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
 
 #define MQTT_CLIENT_ID "TrigBoardMailboxSensor"
-#define MAX_RETRY 50
+#define MAX_RETRY 100
 #define FIRMWARE_VERSION "1.0"
 
 WiFiClient espClient;
@@ -150,12 +150,11 @@ void setup() {
     
     makeLedBlink(3,200);
 
-   externalWakeUp = false;
+    externalWakeUp = false;
 
-    //TO REACTIVATE!!
     //Go to sleep immediatly
-    //weAreDone();
-    //return;
+    weAreDone();
+    return;
   }
 
   debug_message("Something in the maibox, time to send a message!...", true);
@@ -212,8 +211,9 @@ boolean connectToMqtt() {
 
 boolean connectToWifi() {
 
- // WiFi.forceSleepWake();
-  //WiFi.mode(WIFI_STA);
+  // WiFi.forceSleepWake();
+  WiFi.mode(WIFI_STA);
+  WiFi.setOutputPower(20.5); // this sets wifi to highest power 
   
   int retry = 0;
   WiFi.begin(ssid, password);

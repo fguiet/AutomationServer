@@ -175,111 +175,12 @@ public class RoomService implements Runnable {
 		
 		ArrayList<IMqttable> m = new ArrayList<IMqttable>();
 		for (Room r : _roomList) {
-			m.add(r.getSensor());
+			m.add(r.getEnvSensor());
+			m.addAll(r.getReedswitchSensorList());	
 		}
 		
 		return m;
 	}
-
-	/*public boolean isSensorOperational(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.isSensorOperational();
-		} else {
-			return false;
-		}
-	}
-
-	public String getLastSensorUpdate(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getLastSensorUpdate();
-		} else {
-			return "NA";
-		}
-	}
-
-	// Retourne la t° programmée
-	public Float GetTempProg(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.GetTempProg();
-		} else {
-			return null;
-		}
-	}
-
-	public boolean AtLeastOneHeaterOn(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.AtLeastOneHeaterOn();
-		} else {
-			return false;
-		}
-	}
-
-	public Float GetWantedTemp(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getWantedTemp();
-		} else {
-			return null;
-		}
-	}/*
-
-	/*public Float GetBattery(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getBatteryVoltage();
-		} else {
-			return null;
-		}
-	}
-	
-	public Float GetRssi(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getRssi();
-		} else {
-			return null;
-		}
-	}
- 	
-	public Float GetActualTemp(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getActualTemp();
-		} else {
-			return null;
-		}
-	}*/
-
-	/*public boolean IsOffForced(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.IsOffForced();
-		}
-
-		return false;
-	}
-
-	public String NextChangeDefaultTemp(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.NextChangeDefaultTemp();
-		}
-
-		return "NA";
-	}
-
-	public Float GetActualHumidity(long roomId) {
-		Room r = GetRoomById(roomId);
-		if (r != null) {
-			return r.getActualHumidity();
-		} else {
-			return null;
-		}
-	}*/
 
 	// Définit la temperature desiree pour une piece
 	public void SetWantedTemp(long roomId, float wantedTemp) {
@@ -404,11 +305,11 @@ public class RoomService implements Runnable {
 		}
 	
 		String sensorKO = "SENSORKO";
-		if (room.isSensorOperational()) {
+		if (room.isEnvSensorOperational()) {
 			sensorKO = "SENSOROK";
 		}
 	
-		String lastSensorUpdate = room.getLastSensorUpdate();
+		String lastSensorUpdate = room.getLastEnvSensorUpdate();
 	
 		// Battery
 		String battery = "NA";

@@ -1,7 +1,6 @@
 package fr.guiet.automationserver.business;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Calendar;
 import org.apache.log4j.Logger;
@@ -12,6 +11,8 @@ import fr.guiet.automationserver.business.sensor.BMP085_Sensor;
 import fr.guiet.automationserver.business.sensor.DHT22_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
 import fr.guiet.automationserver.business.sensor.HDC1080_Sensor;
+import fr.guiet.automationserver.business.sensor.ReedswitchSensor;
+//import fr.guiet.automationserver.business.sensor.Sensor;
 import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class Room {
@@ -22,8 +23,10 @@ public class Room {
 
 	private String _name;
 
-	private EnvironmentalSensor _sensor = null;
-
+	private List<EnvironmentalSensor> _envSensorList = new ArrayList<EnvironmentalSensor>();
+	
+	private List<ReedswitchSensor> _reedswitchSensorList = new ArrayList<ReedswitchSensor>();
+	
 	private ArrayList<Heater> _heaterList = new ArrayList<Heater>();
 
 	private Float _userWantedTemp = null;
@@ -37,13 +40,17 @@ public class Room {
 	public List<Heater> getHeaterList() {
 		return _heaterList;
 	}
-
-	public String getLastSensorUpdate() {
-		return _sensor.getLastSensorUpdate();
+	
+	public List<ReedswitchSensor> getReedswitchSensorList() {
+		return _reedswitchSensorList;
 	}
 
-	public EnvironmentalSensor getSensor() {
-		return _sensor;
+	public String getLastEnvSensorUpdate() {
+		return getEnvironmentalSensor().getLastSensorUpdate();
+	}
+
+	public EnvironmentalSensor getEnvSensor() {
+		return getEnvironmentalSensor();
 	}
 
 	public long getRoomId() {
@@ -57,15 +64,15 @@ public class Room {
 	public String getName() {
 		return _name;
 	}
-
-	public boolean isSensorOperational() {
-		return _sensor.isOperational();
+	
+	public boolean isEnvSensorOperational() {
+		return getEnvironmentalSensor().isOperational();
 	}
 
 	public Float getActualHumidity() {
 
-		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
+		if (getEnvironmentalSensor() instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) getEnvironmentalSensor();
 			return hdc1080_sensor.getHumidity();
 		}
 
@@ -74,8 +81,8 @@ public class Room {
 
 	public Float getBatteryVoltage() {
 
-		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
+		if (getEnvironmentalSensor() instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) getEnvironmentalSensor();
 			return hdc1080_sensor.getBatteryVoltage();
 		}
 
@@ -83,8 +90,8 @@ public class Room {
 	}
 
 	public Float getRssi() {
-		if (_sensor instanceof HDC1080_Sensor) {
-			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) _sensor;
+		if (getEnvironmentalSensor() instanceof HDC1080_Sensor) {
+			HDC1080_Sensor hdc1080_sensor = (HDC1080_Sensor) getEnvironmentalSensor();
 			return hdc1080_sensor.getRssi();
 		}
 
@@ -92,7 +99,7 @@ public class Room {
 	}
 
 	public Float getActualTemp() {
-		return _sensor.getTemperature();
+		return getEnvironmentalSensor().getTemperature();
 	}
 
 	/**
@@ -297,9 +304,16 @@ public class Room {
 			h.SetOff();
 		}
 
-		_sensor.Stop();
+		getEnvironmentalSensor().Stop();
 	}
 
+	//At the moment...only one env sensor by room but it will change
+	private EnvironmentalSensor getEnvironmentalSensor() {
+		
+		//TODO : may change in the future
+		return _envSensorList.get(0);
+	}
+	
 	private Room(RoomDto dto, SMSGammuService gammuService) {
 
 		_id = dto.id;
@@ -311,19 +325,31 @@ public class Room {
 
 		try {
 
-			SensorDto sensorDto = _dbManager.getSensorById(dto.idSensor);
+			//TODO : Add sensor type in database
+			
+			ArrayList<SensorDto> sensorList = _dbManager.getSensorsByRoomId(dto.id);
+			
+			//SensorDto sensorDto = _dbManager.getSensorById(dto.idSensor);
 
-			switch (Long.toString(dto.idSensor)) {
-			// Garage
-			case "13":
-				_sensor = BMP085_Sensor.LoadFromDto(sensorDto, gammuService);
-				break;
-			// Cave / Basement
-			case "15":
-				_sensor = DHT22_Sensor.LoadFromDto(sensorDto, gammuService);
-				break;
-			default:
-				_sensor = HDC1080_Sensor.LoadFromDto(sensorDto, gammuService);
+			for (SensorDto sensorDto : sensorList) {
+			
+				switch (Long.toString(sensorDto.sensorId)) {
+				// Garage
+				case "13":
+					_envSensorList.add(BMP085_Sensor.LoadFromDto(sensorDto, gammuService));				
+					break;
+				// Cave / Basement
+				case "15":
+					_envSensorList.add(DHT22_Sensor.LoadFromDto(sensorDto, gammuService));
+					break;
+					//Reedswith porte entrée
+				case "16":
+					_reedswitchSensorList.add(ReedswitchSensor.LoadFromDto(sensorDto, gammuService));
+					break;
+					
+				default:
+					_envSensorList.add(HDC1080_Sensor.LoadFromDto(sensorDto, gammuService));
+				}
 			}
 
 			ArrayList<HeaterDto> heaterDtoList = _dbManager.GetHeatersByRoomId(dto.id);

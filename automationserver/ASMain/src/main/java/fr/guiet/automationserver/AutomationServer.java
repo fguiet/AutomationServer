@@ -7,7 +7,6 @@ import org.apache.commons.daemon.DaemonInitException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.helper.GpioHelper;
