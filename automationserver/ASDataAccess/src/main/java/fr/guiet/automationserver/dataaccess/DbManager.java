@@ -1044,7 +1044,7 @@ public class DbManager {
 		try {
 			connection = C3P0DataSource.getInstance(_postgresqlConnectionString, _userName, _password).getConnection();
 
-			String query = "SELECT a.id_room, a.name, a.id_sensor, a.mqtt_topic FROM automation.room a ";
+			String query = "SELECT a.id_room, a.name, a.mqtt_topic FROM automation.room a ";
 
 			pst = connection.prepareStatement(query);
 
