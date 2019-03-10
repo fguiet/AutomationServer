@@ -69,14 +69,14 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 				
 				ReedswitchState updateState = ReedswitchState.VOID;
 				
-				if (state.equals("0"))
+				if (state.equals("1"))
 					updateState = ReedswitchState.CLOSE;
 				
-				if (state.equals("1"))
+				if (state.equals("0"))
 					updateState = ReedswitchState.OPEN;
 				
 				if (updateState != _state) {
-					_logger.info("Sensor : " + getName() + " (id : " + getId() + "), state changed from : " + _state.name() + " to : " + updateState.name());
+					_logger.info("Sensor : " + getName() + " (id : " + getId() + "), state changed from " + _state.name() + " to " + updateState.name());
 				}
 				
 				_state = updateState;
