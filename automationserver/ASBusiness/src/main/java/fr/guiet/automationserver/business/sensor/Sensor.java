@@ -39,7 +39,7 @@ public abstract class Sensor {
 	// Last sensor update
 	protected Date _lastSensorUpdate = null;
 
-	private SMSGammuService _smsGammuService = null;
+	protected SMSGammuService _smsGammuService = null;
 	
 	private String _influxDbMeasurement;
 

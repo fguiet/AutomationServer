@@ -1,10 +1,12 @@
 package fr.guiet.automationserver.business.sensor;
 
 import fr.guiet.automationserver.business.service.SMSGammuService;
+import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.SensorDto;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.json.JSONObject;
 
@@ -76,7 +78,15 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 					updateState = ReedswitchState.OPEN;
 				
 				if (updateState != _state) {
-					_logger.info("Sensor : " + getName() + " (id : " + getId() + "), state changed from " + _state.name() + " to " + updateState.name());
+					
+					String mess = "Sensor : " + getName() + " (id : " + getId() + "), state changed from " + _state.name() + " to " + updateState.name(); 
+					
+					_logger.info(mess);
+					
+					//Wanna be alerted each time, state change !
+					SMSDto sms = new SMSDto(UUID.randomUUID().toString());					
+					sms.setMessage(mess);
+					_smsGammuService.sendMessage(sms, true);
 				}
 				
 				_state = updateState;
