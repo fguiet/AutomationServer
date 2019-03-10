@@ -53,11 +53,11 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 
 				JSONObject json = new JSONObject(message);
 				String rssi = json.getString("rssi");
-				String batteryVoltage = json.getString("batteryVoltage");
+				String batteryVoltage = json.getString("battery");
 				String state = json.getString("state");
 
 				hm.put("rssi", rssi);
-				hm.put("batteryVoltage", batteryVoltage);
+				hm.put("battery", batteryVoltage);
 				hm.put("state", state);
 
 				// return message process, but do not update sensor value!
