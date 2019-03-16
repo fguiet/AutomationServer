@@ -149,6 +149,7 @@ public class AutomationServer implements Daemon {
 					//_mqttService.setTeleInfoService(_teleInfoService);
 					_mqttService.setWaterHeaterService(_waterHeater);
 					_mqttService.setRollerShutterService(_rollerShutterService);
+					
 					//_mqttService.setAlarmService(_alarmService);
 					
 					_mqttService.addClient(_mailboxService);
@@ -157,6 +158,7 @@ public class AutomationServer implements Daemon {
 					_mqttService.addClient(_print3DService);
 					_mqttService.addClients(_roomService.getMqttableClients());
 					_mqttService.addClients(_outsideEnvService.getMqttableClients());
+					_mqttService.addClient(_smsGammuService);
 					
 					_mqttService.connectAndSubscribe();
 

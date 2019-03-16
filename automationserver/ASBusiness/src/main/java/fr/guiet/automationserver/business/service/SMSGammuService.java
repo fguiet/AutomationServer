@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +20,8 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
+
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -31,7 +34,7 @@ import fr.guiet.automationserver.dto.SMSDto;
  *         thread...
  *
  */
-public class SMSGammuService implements Runnable {
+public class SMSGammuService implements Runnable, IMqttable {
 
 	private static Logger _logger = Logger.getLogger(SMSGammuService.class);
 	private String[] _configRecipientList = null;
@@ -41,6 +44,8 @@ public class SMSGammuService implements Runnable {
 	private boolean _isStopped = false; // Service arrete?
 	ConcurrentLinkedQueue<SMSDto> _queue = new ConcurrentLinkedQueue<SMSDto>();
 	private boolean _smsSendingInProgress = false;
+	private static String MQTT_TOPIC_SMS_SERVICE = "guiet/automationserver/smsservice";
+	private ArrayList<String> _mqttTopics = new ArrayList<String>();
 
 	public SMSGammuService() {
 
@@ -57,6 +62,8 @@ public class SMSGammuService implements Runnable {
 			_configGammu = prop.getProperty("gammu.config");
 
 			CreateSmsFloodproofTask();
+
+			_mqttTopics.add(MQTT_TOPIC_SMS_SERVICE);
 
 		} catch (FileNotFoundException e) {
 			_logger.error(
@@ -160,7 +167,7 @@ public class SMSGammuService implements Runnable {
 	}
 
 	private void SendSMS(SMSDto sms) {
-		
+
 		_smsSendingInProgress = true;
 
 		MyResultHandler drh = new MyResultHandler(sms);
@@ -201,7 +208,7 @@ public class SMSGammuService implements Runnable {
 			super.onProcessComplete(exitValue);
 
 			_smsSendingInProgress = false;
-			
+
 			_logger.info(String.format("SMS sent successfully ! Recipient : %s; Message : %s", _sms.getRecipient(),
 					_sms.getMessage()));
 		}
@@ -209,7 +216,7 @@ public class SMSGammuService implements Runnable {
 		@Override
 		public void onProcessFailed(final ExecuteException e) {
 			super.onProcessFailed(e);
-			
+
 			_smsSendingInProgress = false;
 
 			String mess = String.format("Error occured while sending SMS ! Recipient : %s; Message : %s",
@@ -254,7 +261,7 @@ public class SMSGammuService implements Runnable {
 						// message already sent one time?
 						if (CheckSmsFlooding(sms))
 							continue;
-						
+
 						// if (useRecipientInConfig) {
 						for (String recipient : _configRecipientList) {
 							sms.setRecipient(recipient);
@@ -275,6 +282,33 @@ public class SMSGammuService implements Runnable {
 			}
 		}
 
+	}
+
+	@Override
+	public boolean ProcessMqttMessage(String topic, String message) {
+		
+		boolean messageProcessed = false;
+
+		if (topic.equals(MQTT_TOPIC_SMS_SERVICE)) {
+
+			messageProcessed = true;
+			
+			JSONObject json = new JSONObject(message);
+			String messageId = json.getString("messageid");
+			String messageTxt = json.getString("messagetext");
+			
+			SMSDto sms = new SMSDto(messageId);
+			sms.setMessage(messageTxt);
+			
+			sendMessage(sms);
+		}
+
+		return messageProcessed;
+	}
+
+	@Override
+	public ArrayList<String> getTopics() {
+		return _mqttTopics;
 	}
 
 }
