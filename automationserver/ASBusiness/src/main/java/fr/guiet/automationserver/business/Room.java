@@ -158,7 +158,7 @@ public class Room {
 			_logger.error("Erreur lors de la récupération du prochain changement de température", e);
 			SMSDto sms = new SMSDto("d3678188-8f55-4c6b-9076-bf5f56905ede");
 			sms.setMessage("Error occured in room class, review error log for more details");
-			_gammuService.sendMessage(sms, true);
+			_gammuService.sendMessage(sms);
 		}
 
 		return result;
@@ -290,7 +290,7 @@ public class Room {
 			_logger.error("Erreur lors de la récupération de la température par défaut", e);
 			SMSDto sms = new SMSDto("d72e4b20-7774-45a0-8122-0388c629e811");
 			sms.setMessage("Error occured in room class, review error log for more details");
-			_gammuService.sendMessage(sms, true);
+			_gammuService.sendMessage(sms);
 		}
 
 		return defaultTemp;
@@ -367,7 +367,7 @@ public class Room {
 			_logger.error("Erreur dans le constructeur de la class room", e);
 			SMSDto sms = new SMSDto("16577983-79d1-4e0f-be20-80f8f731a23a");
 			sms.setMessage("Error occured in room class, review error log for more details");
-			_gammuService.sendMessage(sms, true);
+			_gammuService.sendMessage(sms);
 		}
 	}
 

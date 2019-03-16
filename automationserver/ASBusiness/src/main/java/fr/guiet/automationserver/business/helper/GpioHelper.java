@@ -53,7 +53,7 @@ public class GpioHelper {
 			
 			SMSDto sms = new SMSDto("0966fb53-a8fe-4f0f-8b55-ac5d50ce140e");
 			sms.setMessage("Cannot change pin state : "+gpioPinNumber.getAddress());
-			smsService.sendMessage(sms, true);
+			smsService.sendMessage(sms);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class GpioHelper {
 			
 			SMSDto sms = new SMSDto("ed1b236f-3e1c-4d96-8c9a-73283d1db7a0");
 			sms.setMessage("Cannot provision pin : "+gpioPinNumber.getAddress());
-			smsService.sendMessage(sms, true);
+			smsService.sendMessage(sms);
 		}
 
 	}

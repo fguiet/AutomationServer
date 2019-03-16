@@ -354,7 +354,7 @@ public class RoomService implements Runnable {
 
 			SMSDto sms = new SMSDto("c4b3b685-992f-4973-8cb8-6522add19edb");
 			sms.setMessage("Error occured in room Service, review error log for more details");
-			_smsGammuService.sendMessage(sms, true);
+			_smsGammuService.sendMessage(sms);
 		}
 
 		_logger.info("Activating Room Service...");
@@ -380,7 +380,7 @@ public class RoomService implements Runnable {
 
 				SMSDto sms = new SMSDto("d9dfbe55-03a4-4fba-977c-ec07e9eb8477");
 				sms.setMessage("Error occured in room Service, review error log for more details");
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms);
 			}
 		}
 
@@ -562,7 +562,7 @@ public class RoomService implements Runnable {
 			_logger.error("Erreur lors de la récupération de la liste des pièces");
 			SMSDto sms = new SMSDto("91d7b078-3d5b-4890-9951-f01cf0c1ed5f");
 			sms.setMessage("Error occured in room Service, review error log for more details");
-			_smsGammuService.sendMessage(sms, true);
+			_smsGammuService.sendMessage(sms);
 		}		
 	}
 

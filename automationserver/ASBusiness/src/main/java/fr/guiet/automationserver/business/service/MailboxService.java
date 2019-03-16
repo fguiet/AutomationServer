@@ -35,7 +35,7 @@ public class MailboxService implements IMqttable {
 			
 			SMSDto sms = new SMSDto("45eab206-21de-41c4-8598-759d1bfe198b");
 			sms.setMessage("Receveid message from mailbox. Battery voltage : " + battery+ "v. External wakeup : " + externalWakeUp);
-			_smsGammuService.sendMessage(sms, true);
+			_smsGammuService.sendMessage(sms);
 			
 			_logger.info("Receveid message from mailbox. Battery voltage : " + battery+ "v. External wakeup : " + externalWakeUp);
 			

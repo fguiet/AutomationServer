@@ -59,7 +59,7 @@ public class BLEHubService implements Runnable, IMqttable {
 						
 						SMSDto sms = new SMSDto("bdafdfcf-775a-4b8e-af4d-02c0e6254bbd");
 						sms.setMessage(message);
-						_smsGammuService.sendMessage(sms, true);
+						_smsGammuService.sendMessage(sms);
 					}
 				}
 				
@@ -74,7 +74,7 @@ public class BLEHubService implements Runnable, IMqttable {
 						
 						SMSDto sms = new SMSDto("19332bf7-9a73-4ab3-87a9-edb894358483");
 						sms.setMessage(message);
-						_smsGammuService.sendMessage(sms, true);
+						_smsGammuService.sendMessage(sms);
 					}
 				}
 
@@ -85,7 +85,7 @@ public class BLEHubService implements Runnable, IMqttable {
 
 				SMSDto sms = new SMSDto("f134a988-5edb-40b7-b343-e313d4b3b150");
 				sms.setMessage("Error occured in BLE Hub Service, review error log for more details : "+ e.getMessage());
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms);
 			}
      	}
 		

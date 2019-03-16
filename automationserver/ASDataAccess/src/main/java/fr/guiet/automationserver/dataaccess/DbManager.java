@@ -1466,6 +1466,13 @@ public class DbManager {
 		}
 
 	}
+	
+	public static Date addSeconds(Date date, int seconds) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.SECOND, seconds); // minus number would decrement the days
+		return cal.getTime();
+	}
 
 	public TempScheduleDto createTempScheduleById(TempScheduleDto dto) throws Exception {
 		Connection connection = null;
@@ -1488,8 +1495,10 @@ public class DbManager {
 
 			Date fromDate1 = convertDate(dto.getHourBegin(), "Europe/Paris", "UTC");
 			Date toDate1 = convertDate(dto.getHourEnd(), "Europe/Paris", "UTC");
-			toDate1.setSeconds(toDate1.getSeconds() - 1);
-
+			
+			toDate1 = DbManager.addSeconds(toDate1, -1);
+			
+			
 			// Timestamp timestamp = new Timestamp(
 			Timestamp hourBegin = new Timestamp(fromDate1.getTime());
 			Timestamp hourEnd = new Timestamp(toDate1.getTime());
@@ -1555,7 +1564,7 @@ public class DbManager {
 
 			Date fromDate1 = convertDate(dto.getHourBegin(), "Europe/Paris", "UTC");
 			Date toDate1 = convertDate(dto.getHourEnd(), "Europe/Paris", "UTC");
-			toDate1.setSeconds(toDate1.getSeconds() - 1);
+			toDate1 = DbManager.addSeconds(toDate1, -1);
 
 			// Timestamp timestamp = new Timestamp(
 			Timestamp hourBegin = new Timestamp(fromDate1.getTime());

@@ -136,7 +136,7 @@ public abstract class Sensor {
 									"No updates received from sensor : %s (id : %s) within least 5 minutes", _name,
 									_id);
 							sms.setMessage(message);
-							_smsGammuService.sendMessage(sms, true);
+							_smsGammuService.sendMessage(sms);
 
 							_alertSent5 = true;
 						}
@@ -154,7 +154,7 @@ public abstract class Sensor {
 									"No updates received from sensor : %s (id : %s) within at least 10 minutes", _name,
 									_id);
 							sms.setMessage(message);
-							_smsGammuService.sendMessage(sms, true);
+							_smsGammuService.sendMessage(sms);
 
 							_alertSent10 = true;
 						}
@@ -172,7 +172,7 @@ public abstract class Sensor {
 									"No updates received from sensor : %s (id : %s) within least 20 minutes", _name,
 									_id);
 							sms.setMessage(message);
-							_smsGammuService.sendMessage(sms, true);
+							_smsGammuService.sendMessage(sms);
 
 							_alertSentMore = true;
 						}

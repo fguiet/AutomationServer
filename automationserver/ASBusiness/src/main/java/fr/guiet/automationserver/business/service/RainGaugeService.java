@@ -81,7 +81,7 @@ public class RainGaugeService implements Runnable {
 
 				SMSDto sms = new SMSDto("918b2ed7-ac74-4e0b-8a3c-2cdfb5c92274");
 				sms.setMessage("Error occured in RainGauge services service, review error log for more details");
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms);
 			}
 		}
 

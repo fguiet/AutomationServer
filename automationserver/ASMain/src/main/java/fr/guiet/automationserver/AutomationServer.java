@@ -26,7 +26,7 @@ public class AutomationServer implements Daemon {
 
 	private Thread _mainThread = null; // Thread principal
 	private AlarmService _alarmService = null; //Alarm service
-	//private ScenariiManager _scenariiManager = null;
+	
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
 	private RainGaugeService _rainGaugeService = null; //service raingauge
 	private RoomService _roomService = null; // service de room service
@@ -41,6 +41,7 @@ public class AutomationServer implements Daemon {
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
 	private Thread _BLEHubServiceThread = null;
+	private Thread _smsGammuServiceThread = null;
 	private Print3DService _print3DService = null;
 	private MailboxService _mailboxService = null;
 	private OutsideEnvironmentalService _outsideEnvService = null;
@@ -84,6 +85,8 @@ public class AutomationServer implements Daemon {
 					
 					//SMS Service
 					_smsGammuService = new SMSGammuService();
+					_smsGammuServiceThread = new Thread(_smsGammuService);
+					_smsGammuServiceThread.start();
 					
 					//MqttService
 					_mqttService = new MqttService(_smsGammuService);
@@ -159,7 +162,7 @@ public class AutomationServer implements Daemon {
 
 					SMSDto sms = new SMSDto("ba92bca9-a67f-4945-a6ee-51bf44bfaed5");
 					sms.setMessage("Automation server has started...");
-					_smsGammuService.sendMessage(sms, true);
+					_smsGammuService.sendMessage(sms);
 					
 					while (!_isStopped) {
 
@@ -175,7 +178,7 @@ public class AutomationServer implements Daemon {
 					
 					SMSDto sms = new SMSDto("6b81daa5-eca5-49c4-bc58-53fa9cd192a6");
 					sms.setMessage("Error occured in main loop !");
-					_smsGammuService.sendMessage(sms, true);
+					_smsGammuService.sendMessage(sms);
 
 				}
 			}
@@ -311,6 +314,7 @@ public class AutomationServer implements Daemon {
 			_BLEHubService.StopService();
 			_rainGaugeService.StopService();
 			_alarmService.StopService();
+			_smsGammuService.StopService();
 			//_scenariiManager.StopScenariiManager();
 			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
@@ -320,7 +324,7 @@ public class AutomationServer implements Daemon {
 			
 			SMSDto sms = new SMSDto("773ad55b-1007-4e3e-a325-0f568816ba68");
 			sms.setMessage("Automation server has stopped...");
-			_smsGammuService.sendMessage(sms, true);
+			_smsGammuService.sendMessage(sms);
 			
 			//On attends 5 seconds pour l'envoi du sms
 			//Thread.sleep(5000);

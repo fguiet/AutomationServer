@@ -55,7 +55,7 @@ public class Print3DService implements IMqttable {
 			
 			SMSDto sms = new SMSDto("1ad22dfa-918f-4acc-af84-3187da0352be");
 			sms.setMessage("Impression 3D terminée en "+GetPrintDuration()+" minutes");
-			_smsGammuService.sendMessage(sms, true);
+			_smsGammuService.sendMessage(sms);
 			
 			_logger.info("Sending message to turn off 3D printer now...Bye bye...");
 			

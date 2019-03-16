@@ -105,7 +105,7 @@ public class WaterHeaterService implements Runnable {
 
 				SMSDto sms = new SMSDto("14cab02b-7407-41d8-b085-16d3fab14876");
 				sms.setMessage("Error occured in water heater management service, review error log for more details");
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms);
 			}
 		}
 	}

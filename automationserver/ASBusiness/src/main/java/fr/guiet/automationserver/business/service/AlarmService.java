@@ -11,8 +11,6 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class AlarmService implements IMqttable {
 
-	// private final String PIN_ALARM_NAME_GPIO_06 = "PIN_ALARM_NAME_GPIO_06";
-	// private final String PIN_ALARM_NAME_GPIO_25 = "PIN_ALARM_NAME_GPIO_25";
 	private static Logger _logger = Logger.getLogger(AlarmService.class);
 	private RollerShutterService _rollerShutterService = null;
 	private SMSGammuService _smsGammuService = null;
@@ -75,7 +73,7 @@ public class AlarmService implements IMqttable {
 
 		SMSDto sms = new SMSDto("f26a0589-402a-4326-8e7a-5a5387068b39");
 		sms.setMessage("L'alarme vient d'être automatiquement activée. Bonne et douce journée Maître");
-		_smsGammuService.sendMessage(sms, true);
+		_smsGammuService.sendMessage(sms);
 	}
 
 	public void SetOn() {
@@ -110,7 +108,7 @@ public class AlarmService implements IMqttable {
 
 		SMSDto sms = new SMSDto("7610f1fb-c1f0-40da-b8ee-70b514453ef7");
 		sms.setMessage("L'alarme vient d'être automatiquement désactivée.");
-		_smsGammuService.sendMessage(sms, true);
+		_smsGammuService.sendMessage(sms);
 	}
 
 	public void SetOff() {

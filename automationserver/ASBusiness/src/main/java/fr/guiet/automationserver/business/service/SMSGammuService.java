@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -30,13 +31,16 @@ import fr.guiet.automationserver.dto.SMSDto;
  *         thread...
  *
  */
-public class SMSGammuService {
+public class SMSGammuService implements Runnable {
 
 	private static Logger _logger = Logger.getLogger(SMSGammuService.class);
 	private String[] _configRecipientList = null;
 	private String _configGammu = null;
 	private HashMap<String, Date> _messageMap = new HashMap<String, Date>();
 	private Timer _timer = null;
+	private boolean _isStopped = false; // Service arrete?
+	ConcurrentLinkedQueue<SMSDto> _queue = new ConcurrentLinkedQueue<SMSDto>();
+	private boolean _smsSendingInProgress = false;
 
 	public SMSGammuService() {
 
@@ -51,7 +55,7 @@ public class SMSGammuService {
 
 			_configRecipientList = prop.getProperty("sms.recipients").split(",");
 			_configGammu = prop.getProperty("gammu.config");
-			
+
 			CreateSmsFloodproofTask();
 
 		} catch (FileNotFoundException e) {
@@ -71,21 +75,11 @@ public class SMSGammuService {
 	 * @param sms
 	 * @param useRecipientInConfig
 	 */
-	public synchronized void sendMessage(SMSDto sms, boolean useRecipientInConfig) {
+	public void sendMessage(SMSDto sms) {
 
-		// message already sent one time?
-		if (CheckSmsFlooding(sms))
-			return;
+		// Enqueue SMS to send
+		_queue.add(sms);
 
-		if (useRecipientInConfig) {
-			for (String recipient : _configRecipientList) {
-				sms.setRecipient(recipient);
-				SendSMS(sms);
-			}
-		} else {
-			// Not useful in my case but...
-			SendSMS(sms);
-		}
 	}
 
 	// Création de la tache de sauvegarde en bdd
@@ -105,15 +99,16 @@ public class SMSGammuService {
 					// Iterate over all the elements
 					while (entryIt.hasNext()) {
 						Entry<String, Date> entry = entryIt.next();
-					
+
 						Date lastMessageDate = entry.getValue();
 
 						Long elapsedTime = DateUtils.minutesBetweenDate(lastMessageDate, currentDate);
-						//_logger.info("Flood Task, processing mess : " + entry.getKey().toString() + ", elapsedtime : " + elapsedTime);
+						// _logger.info("Flood Task, processing mess : " + entry.getKey().toString() +
+						// ", elapsedtime : " + elapsedTime);
 
 						// Purge messages older than 10 minutes
 						if (elapsedTime > 10) {
-							_logger.info("Removing SMS message UUID from cache : "+entry.getKey().toString());
+							_logger.info("Removing SMS message UUID from cache : " + entry.getKey().toString());
 							entryIt.remove();
 						}
 
@@ -136,7 +131,7 @@ public class SMSGammuService {
 		String messId = smsDto.getId();
 
 		if (!_messageMap.containsKey(messId)) {
-			_logger.info("Adding SMS message UUID to cache : "+messId.toString());
+			_logger.info("Adding SMS message UUID to cache : " + messId.toString());
 			_messageMap.put(messId, new Date());
 			return false;
 		} else {
@@ -164,7 +159,9 @@ public class SMSGammuService {
 		return commandLine;
 	}
 
-	private synchronized void SendSMS(SMSDto sms) {
+	private void SendSMS(SMSDto sms) {
+		
+		_smsSendingInProgress = true;
 
 		MyResultHandler drh = new MyResultHandler(sms);
 
@@ -203,6 +200,8 @@ public class SMSGammuService {
 		public void onProcessComplete(final int exitValue) {
 			super.onProcessComplete(exitValue);
 
+			_smsSendingInProgress = false;
+			
 			_logger.info(String.format("SMS sent successfully ! Recipient : %s; Message : %s", _sms.getRecipient(),
 					_sms.getMessage()));
 		}
@@ -210,6 +209,8 @@ public class SMSGammuService {
 		@Override
 		public void onProcessFailed(final ExecuteException e) {
 			super.onProcessFailed(e);
+			
+			_smsSendingInProgress = false;
 
 			String mess = String.format("Error occured while sending SMS ! Recipient : %s; Message : %s",
 					_sms.getRecipient(), _sms.getMessage());
@@ -219,6 +220,61 @@ public class SMSGammuService {
 			MailService mailService = new MailService();
 			mailService.SendMailSSL("AutomationServer - Error sending SMS", mess);
 		}
+	}
+
+	/**
+	 * Stops water heater properly
+	 */
+	public void StopService() {
+
+		// TODO : Create base service class
+		_logger.info("Stopping SMS Gammu service...");
+
+		_isStopped = true;
+	}
+
+	@Override
+	public void run() {
+
+		_logger.info("Starting SMS Gammu service...");
+
+		while (!_isStopped) {
+
+			try {
+
+				// No sms sending in progress?
+				if (!_smsSendingInProgress) {
+
+					// Check if sms need to be send!
+					SMSDto sms = _queue.poll();
+
+					// Sms to send?
+					if (sms != null) {
+
+						// message already sent one time?
+						if (CheckSmsFlooding(sms))
+							continue;
+						
+						// if (useRecipientInConfig) {
+						for (String recipient : _configRecipientList) {
+							sms.setRecipient(recipient);
+							SendSMS(sms);
+						}
+						// } else {
+						// Not useful in my case but...
+						// SendSMS(sms);
+						// }
+					}
+				}
+
+				// Every 1s
+				Thread.sleep(1000);
+
+			} catch (Exception e) {
+				_logger.error("Error occured in SMS Gammu service", e);
+			}
+		}
+
 	}
 
 }

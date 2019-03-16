@@ -100,7 +100,7 @@ public class RollerShutterService implements Runnable {
 
 				SMSDto sms = new SMSDto("6b41cf93-119a-4c72-bb64-cd17689f93b9");
 				sms.setMessage("Error occured in rollershutter management service, review error log for more details");
-				_smsGammuService.sendMessage(sms, true);
+				_smsGammuService.sendMessage(sms);
 			}
 		}		
 	}	

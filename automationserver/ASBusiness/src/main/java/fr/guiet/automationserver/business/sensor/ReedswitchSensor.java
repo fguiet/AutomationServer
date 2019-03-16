@@ -21,6 +21,8 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 	
 	private Float _batteryVoltage = null;
 	private Float _rssi = null;
+	private final String OPEN_STATE = "0";
+	private final String CLOSE_STATE = "1";
 
 	/*
 	 * Constructor
@@ -71,22 +73,22 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 				
 				ReedswitchState updateState = ReedswitchState.VOID;
 				
-				if (state.equals("1"))
+				if (state.equals(CLOSE_STATE))
 					updateState = ReedswitchState.CLOSE;
 				
-				if (state.equals("0"))
+				if (state.equals(OPEN_STATE))
 					updateState = ReedswitchState.OPEN;
 				
 				if (updateState != _state) {
 					
-					String mess = "Sensor : " + getName() + " (id : " + getId() + "), state changed from " + _state.name() + " to " + updateState.name(); 
+					String mess = "Sensor (id : " + getId() + ") : " + getName() + ". State changed from : " + _state.name() + " to " + updateState.name() + ". Rssi : " + Float.toString(_rssi) + ". Battery : " + Float.toString(_batteryVoltage);
 					
 					_logger.info(mess);
 					
 					//Wanna be alerted each time, state change !
 					SMSDto sms = new SMSDto(UUID.randomUUID().toString());					
 					sms.setMessage(mess);
-					_smsGammuService.sendMessage(sms, true);
+					_smsGammuService.sendMessage(sms);
 				}
 				
 				_state = updateState;
