@@ -5,16 +5,19 @@ LABEL maintainer="fguiet@gmail.com"
 #ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/mosquitto/conf
 
 #update stretch and install wget
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get upgrade &&  apt-get install -y wget
 
 RUN groupadd --gid 9002 mosquitto
 RUN useradd  --uid 9002 --gid 9002 mosquitto
 
 RUN wget -q -O - http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -
 RUN wget -q -O /etc/apt/sources.list.d/mosquitto-stretch.list http://repo.mosquitto.org/debian/mosquitto-stretch.list
+
+RUN apt-get install -y apt-transport-https
+
 RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
 
-RUN mkdir -p /mosquitto/conf /mosquitto/data /mosquitto/log /mosquitto/data
+RUN mkdir -p /mosquitto/conf /mosquitto/data /mosquitto/log 
 
 #COPY fonctionne avec le context specifie dans docker build context (ici /home/fred/...) 
 #donc conf fait reference au repertoire $CONTEXT/conf, ici /home/fred/blah blah/conf
