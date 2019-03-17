@@ -142,7 +142,7 @@ public class RainGaugeService implements Runnable {
 		} catch(
 				IOException e)
 		{
-			_logger.error("Impossible d'ouvrir le port série");
+			_logger.error("Impossible d'ouvrir le port série",e);
 		}		
 	}
 	

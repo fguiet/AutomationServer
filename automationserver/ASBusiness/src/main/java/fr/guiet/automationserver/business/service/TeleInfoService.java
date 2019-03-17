@@ -103,7 +103,7 @@ public class TeleInfoService implements Runnable {
 			_serial.addListener(sdl);
 
 		} catch (IOException e) {
-			_logger.error("Impossible d'ouvrir le port série");
+			_logger.error("Impossible d'ouvrir le port série",e);
 		}
 	}
 
