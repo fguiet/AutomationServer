@@ -120,7 +120,7 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 		
 		String state = values.get("state");
 		
-		if (!state.equals(CLOSE_STATE) || !state.equals(OPEN_STATE)) {
+		if (!state.equals(CLOSE_STATE) && !state.equals(OPEN_STATE)) {
 			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect state : "+state;
 			
 			_logger.info(mess);
