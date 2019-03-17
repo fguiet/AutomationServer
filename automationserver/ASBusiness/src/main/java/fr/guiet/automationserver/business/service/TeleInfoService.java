@@ -413,7 +413,7 @@ public class TeleInfoService implements Runnable {
 	// Retourne null si la dernière trame recu vaut null
 	public Boolean IsHeureCreuse() {
 
-		if (_lastTeleInfoTrameReceived != null) {
+		if (_lastTeleInfoTrameReceived != null && _lastTeleInfoTrameReceived.PTEC != null) {
 			return (_lastTeleInfoTrameReceived.PTEC.equals("HC.."));
 		}
 
@@ -800,8 +800,7 @@ public class TeleInfoService implements Runnable {
 		String[] groupes = trame.split("\\r");
 
 		if (groupes.length != VALID_GROUPES_NUMBER) {
-			// _logger.warn("Reception d'une trame invalide : DEBUT"+trame+"FIN.
-			// La trame n'a pas ete prise en compte");
+			_logger.info("Trame invalide (nombre de groupe incorrect) : DEBUT_TRAME@@@"+trame+"@@@FIN_TRAME");
 			return null;
 		}
 
@@ -904,6 +903,10 @@ public class TeleInfoService implements Runnable {
 				case "PPOT":
 					teleInfoTrame.PPOT = valeur;
 					break;
+				default:
+					//No groupe found! - Bad Trame!!! here
+					_logger.info("Etiquette : "+etiquette+" inconnue. Trame invalide");
+					return null;
 				}
 			} else {
 				_logger.info("Checksum invalide pour l'etiquette : " + etiquette + ", valeur : " + valeur);
