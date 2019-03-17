@@ -8,5 +8,5 @@ docker run \
         -d \
         --restart=always \
         -p 1883:1883 \
-        guiet/mosquitto:1.4.15
+        guiet/mosquitto:1.5.8
 

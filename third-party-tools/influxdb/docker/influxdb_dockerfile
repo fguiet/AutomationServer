@@ -5,7 +5,7 @@ LABEL maintainer="fguiet@gmail.com"
 #ENV CONFIG_PATH=/home/fred/git/AutomationServer/third-party-tools/influxdb/conf
 
 #update stretch and install wget
-RUN apt-get update
+RUN apt-get update && apt-get upgrade
 
 RUN groupadd --gid 9003 influxdb
 RUN useradd  --uid 9003 --gid 9003 influxdb
