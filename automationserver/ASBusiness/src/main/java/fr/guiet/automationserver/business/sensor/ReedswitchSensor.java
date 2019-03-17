@@ -115,8 +115,21 @@ public class ReedswitchSensor extends Sensor implements IMqttable {
 	@Override
 	protected boolean sanityCheck(HashMap<String, String> values) {
 		
-		//TODO : To implement
-		return true;
+		boolean isOk = true;
+		String mess;
+		
+		String state = values.get("state");
+		
+		if (!state.equals(CLOSE_STATE) || !state.equals(OPEN_STATE)) {
+			mess = "Sanity check failed for sensor : " + getName() + " (id : " + getId() + "), incorrect state : "+state;
+			
+			_logger.info(mess);
+			
+			isOk = false;
+		}
+		
+		return isOk;
+		
 	}
 
 }

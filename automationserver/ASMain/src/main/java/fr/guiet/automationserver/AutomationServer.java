@@ -6,7 +6,10 @@ import org.apache.commons.daemon.DaemonInitException;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 import fr.guiet.automationserver.business.helper.GpioHelper;
@@ -25,15 +28,14 @@ import fr.guiet.automationserver.dto.SMSDto;
 public class AutomationServer implements Daemon {
 
 	private Thread _mainThread = null; // Thread principal
-	private AlarmService _alarmService = null; //Alarm service
-	
+	private AlarmService _alarmService = null; // Alarm service
+
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
-	private RainGaugeService _rainGaugeService = null; //service raingauge
+	private RainGaugeService _rainGaugeService = null; // service raingauge
 	private RoomService _roomService = null; // service de room service
-	private WaterHeaterService _waterHeater = null; // service de gestion du
-												// chauffe-eau
+	private WaterHeaterService _waterHeater = null; // service de gestion du chauffe-eau
 	private RollerShutterService _rollerShutterService = null;
-	private BLEHubService _BLEHubService = null;  
+	private BLEHubService _BLEHubService = null;
 	private boolean _isStopped = false;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
@@ -48,16 +50,19 @@ public class AutomationServer implements Daemon {
 	private SMSGammuService _smsGammuService = null;
 	private MqttService _mqttService = null;
 	
+	//private ArrayList<Thread> _automationServiceThreadList = new ArrayList<Thread>();
+	//private Queue<AbstractAutomationService> _automationServiceQueue = new LinkedList<AbstractAutomationService>();
+
 	// Logger
-	private static Logger _logger = Logger.getLogger(AutomationServer.class);	
-	
+	private static Logger _logger = Logger.getLogger(AutomationServer.class);
+
 	// Init deamon
 	@Override
 	public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
 		/*
-		 * Construct objects and initialize variables here. You can access the
-		 * command line arguments that would normally be passed to your main()
-		 * method as follows:
+		 * Construct objects and initialize variables here. You can access the command
+		 * line arguments that would normally be passed to your main() method as
+		 * follows:
 		 */
 		// String[] args = daemonContext.getArguments();
 
@@ -77,23 +82,23 @@ public class AutomationServer implements Daemon {
 			public void run() {
 
 				try {
-												
+
 					_logger.info("Starting automation server...");
-					
+
 					// Set local to en_GB
 					Locale.setDefault(new Locale("en", "GB"));
-					
-					//SMS Service
+
+					// SMS Service
 					_smsGammuService = new SMSGammuService();
 					_smsGammuServiceThread = new Thread(_smsGammuService);
 					_smsGammuServiceThread.start();
-					
-					//MqttService
+
+					// MqttService
 					_mqttService = new MqttService(_smsGammuService);
-					
-					//Starts system sanity checks
-					DoSystemSanityChecks();	
-					
+
+					// Starts system sanity checks
+					DoSystemSanityChecks();
+
 					// Starting rain gauge service
 					_rainGaugeService = new RainGaugeService(_smsGammuService, _mqttService);
 					_rainGaugeServiceThread = new Thread(_rainGaugeService);
@@ -102,56 +107,53 @@ public class AutomationServer implements Daemon {
 					// Starting teleinfo service
 					_teleInfoService = new TeleInfoService(_smsGammuService, _mqttService);
 					_teleInfoServiceThread = new Thread(_teleInfoService);
-					_teleInfoServiceThread.start();	
-					
+					_teleInfoServiceThread.start();
+
 					// Starting water heater
 					_waterHeater = new WaterHeaterService(_teleInfoService, _smsGammuService);
 					_waterHeaterServiceThread = new Thread(_waterHeater);
-					_waterHeaterServiceThread.start();								
-					
-					//Start Rollershutter service
+					_waterHeaterServiceThread.start();
+
+					// Start Rollershutter service
 					_rollerShutterService = new RollerShutterService(_smsGammuService, _mqttService);
 					_rollerShutterServiceThread = new Thread(_rollerShutterService);
 					_rollerShutterServiceThread.start();
-					
-					//Start BLE Hub Service
+
+					// Start BLE Hub Service
 					_BLEHubService = new BLEHubService(_smsGammuService);
 					_BLEHubServiceThread = new Thread(_BLEHubService);
 					_BLEHubServiceThread.start();
-					
-					//Start alarm service
+
+					// Start alarm service
 					_alarmService = new AlarmService(_rollerShutterService, _smsGammuService);
-					
-					//Start scenarii service
-					//_scenariiManager = new ScenariiManager(_rollerShutterService, _alarmService);
-					
-					//Start Mailbox service
+
+					// Start Mailbox service
 					_mailboxService = new MailboxService(_smsGammuService);
-					
-					//Start 3D Print service
+
+					// Start 3D Print service
 					_print3DService = new Print3DService(_smsGammuService, _mqttService);
-					
-					//Start Outside Environmental service
-					_outsideEnvService = new OutsideEnvironmentalService("Outside Environmental",_smsGammuService);
+
+					// Start Outside Environmental service
+					_outsideEnvService = new OutsideEnvironmentalService("Outside Environmental", _smsGammuService);
 					
 					// Starting room service
 					_roomService = new RoomService(_teleInfoService, _smsGammuService, _mqttService);
 					_roomServiceThread = new Thread(_roomService);
 					_roomServiceThread.start();
-					
-					while(!_roomService.isRoomListLoaded()) {
+
+					while (!_roomService.isRoomListLoaded()) {
 						_logger.info("Waiting for room list to be fully loaded !");
 						Thread.sleep(1000);
 					}
-					
-					//TODO : Remove that horror when service will be IMqttable
+
+					// TODO : Remove that horror when service will be IMqttable
 					_mqttService.setRoomService(_roomService);
-					//_mqttService.setTeleInfoService(_teleInfoService);
+					// _mqttService.setTeleInfoService(_teleInfoService);
 					_mqttService.setWaterHeaterService(_waterHeater);
 					_mqttService.setRollerShutterService(_rollerShutterService);
-					
-					//_mqttService.setAlarmService(_alarmService);
-					
+
+					// _mqttService.setAlarmService(_alarmService);
+
 					_mqttService.addClient(_mailboxService);
 					_mqttService.addClient(_alarmService);
 					_mqttService.addClient(_BLEHubService);
@@ -159,25 +161,25 @@ public class AutomationServer implements Daemon {
 					_mqttService.addClients(_roomService.getMqttableClients());
 					_mqttService.addClients(_outsideEnvService.getMqttableClients());
 					_mqttService.addClient(_smsGammuService);
-					
+
 					_mqttService.connectAndSubscribe();
 
 					SMSDto sms = new SMSDto("ba92bca9-a67f-4945-a6ee-51bf44bfaed5");
 					sms.setMessage("Automation server has started...");
 					_smsGammuService.sendMessage(sms);
-					
+
 					while (!_isStopped) {
 
-						//Publication des données toutes les 10s
+						// Publication des données toutes les 10s
 						Thread.sleep(10000);
-						
-						//TODO : please remove that!!!
+
+						// TODO : please remove that!!!
 						_mqttService.PublishInfoToMqttBroker();
-												
-					}					
+
+					}
 				} catch (Exception e) {
 					_logger.error("Error occured in automation server...", e);
-					
+
 					SMSDto sms = new SMSDto("6b81daa5-eca5-49c4-bc58-53fa9cd192a6");
 					sms.setMessage("Error occured in main loop !");
 					_smsGammuService.sendMessage(sms);
@@ -186,123 +188,119 @@ public class AutomationServer implements Daemon {
 			}
 		};
 	}
-	
+
 	private void DoSystemSanityChecks() {
-		
+
 		DbManager dbManager = new DbManager();
-		//MqttClientHelper mqttClient = new MqttClientHelper("SanityCheck");
-		
+		// MqttClientHelper mqttClient = new MqttClientHelper("SanityCheck");
+
 		_logger.info("Starting system sanity check...");
-		
+
 		/*
 		 * PostgreSQL
 		 */
 		_logger.info("Check for PostgreSQL Server availability...");
-		
+
 		int checkCounter = 0;
-		while(!dbManager.IsPostgreSQLAvailable()) {
+		while (!dbManager.IsPostgreSQLAvailable()) {
 			checkCounter++;
-			_logger.info("Attempt : "+checkCounter+" - PostgreSQL not available...will check again in 10s...");
-			
+			_logger.info("Attempt : " + checkCounter + " - PostgreSQL not available...will check again in 10s...");
+
 			try {
-				Thread.sleep(10000); //Wait for 10s
-			}
-			catch(Exception e) {
-				
+				Thread.sleep(10000); // Wait for 10s
+			} catch (Exception e) {
+
 			}
 		}
-		
+
 		_logger.info("PostgreSQL instance : OK");
-		
+
 		/*
 		 * InfluxDB
 		 */
 		_logger.info("Check for InfluxDB Server availability...");
-		
+
 		checkCounter = 0;
-		while(!dbManager.IsInfluxDbAvailable()) {
+		while (!dbManager.IsInfluxDbAvailable()) {
 			checkCounter++;
-			_logger.info("Attempt : "+checkCounter+" - InfluxDB not available...will check again in 10s...");
-			
+			_logger.info("Attempt : " + checkCounter + " - InfluxDB not available...will check again in 10s...");
+
 			try {
-				Thread.sleep(10000); //Wait for 10s
-			}
-			catch(Exception e) {
-				
+				Thread.sleep(10000); // Wait for 10s
+			} catch (Exception e) {
+
 			}
 		}
-		
+
 		_logger.info("InfluxDB instance : OK");
-		
+
 		/*
 		 * Mosquitto
 		 */
 		_logger.info("Check for Mosquitto instance availability...");
-				
+
 		checkCounter = 0;
-		while(!_mqttService.IsMqttServerAvailable()) {
+		while (!_mqttService.IsMqttServerAvailable()) {
 			checkCounter++;
-			_logger.info("Attempt : "+checkCounter+" - Mqtt instance not available...will check again in 10s...");
-			
+			_logger.info("Attempt : " + checkCounter + " - Mqtt instance not available...will check again in 10s...");
+
 			try {
-				Thread.sleep(10000); //Wait for 10s
-			}
-			catch(Exception e) {
-				
+				Thread.sleep(10000); // Wait for 10s
+			} catch (Exception e) {
+
 			}
 		}
-		
+
 		_logger.info("Mosquitto instance : OK");
-		
+
 		/*
 		 * Tomcat
 		 */
 		_logger.info("Check for Tomcat instance availability...");
-		
+
 		checkCounter = 0;
-		while(IsTomcatAvailable()) {
+		while (IsTomcatAvailable()) {
 			checkCounter++;
-			_logger.info("Attempt : "+checkCounter+" - Tomcat instance not available...will check again in 10s...");
-			
+			_logger.info("Attempt : " + checkCounter + " - Tomcat instance not available...will check again in 10s...");
+
 			try {
-				Thread.sleep(10000); //Wait for 10s
-			}
-			catch(Exception e) {
-				
+				Thread.sleep(10000); // Wait for 10s
+			} catch (Exception e) {
+
 			}
 		}
 		_logger.info("Tomcat instance : OK");
-		
-		
-		dbManager = null;		
-		
+
+		dbManager = null;
+
 		_logger.info("System sanity check done...let's roll!");
 	}
-	
+
 	private boolean IsTomcatAvailable() {
-		
+
 		try {
-			//TODO : change hard coded url
+			// TODO : change hard coded url
 			URL obj = new URL("http://192.168.1.25:8510/automation-webapp/api/firmware/getversion/1");
 			HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(5000);
-			
+
 			return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
-		}		
-		catch(Exception e) {
+		} catch (Exception e) {
 			_logger.error("Tomcat instance not ready...", e);
 			return false;
 		}
 	}
-	
+
 	// Méthode start de jsvc (Classe Deamon)
 	@Override
 	public void start() throws Exception {
 		_mainThread.start(); // Démarrage du thread principal
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.apache.commons.daemon.Daemon#stop()
 	 */
 	@Override
@@ -310,36 +308,36 @@ public class AutomationServer implements Daemon {
 
 		try {
 			_logger.info("Stopping automation server...");
-			
+
 			GpioHelper.shutdown();
 			// Stopping all services
 			_BLEHubService.StopService();
 			_rainGaugeService.StopService();
 			_alarmService.StopService();
 			_smsGammuService.StopService();
-			//_scenariiManager.StopScenariiManager();
+			// _scenariiManager.StopScenariiManager();
 			_rollerShutterService.StopService();
 			_teleInfoService.StopService();
 			_roomService.StopService();
 			_waterHeater.StopService();
-			_mqttService.disconnect();			
-			
+			_mqttService.disconnect();
+
 			SMSDto sms = new SMSDto("773ad55b-1007-4e3e-a325-0f568816ba68");
 			sms.setMessage("Automation server has stopped...");
 			_smsGammuService.sendMessage(sms);
-			
-			//On attends 5 seconds pour l'envoi du sms
-			//Thread.sleep(5000);
-			
+
+			// On attends 5 seconds pour l'envoi du sms
+			// Thread.sleep(5000);
+
 			_isStopped = true;
 
 			_mainThread.join(60000); // Attend la fin de l'exécution du Thread
-									// principal (1 minutes)
-			
+										// principal (1 minutes)
+
 			_logger.info("Bye bye automation server stopped...");
-			
+
 		} catch (Exception e) {
-			
+
 			_logger.error("Automation server has not stopped properly", e);
 		}
 	}
@@ -354,7 +352,7 @@ public class AutomationServer implements Daemon {
 		_roomService = null;
 		_waterHeater = null;
 		_mqttService = null;
-		_alarmService = null;		
+		_alarmService = null;
 	}
 
 }

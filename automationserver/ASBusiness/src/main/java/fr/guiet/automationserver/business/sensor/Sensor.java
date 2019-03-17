@@ -98,7 +98,8 @@ public abstract class Sensor {
 		}
 	}
 
-	public void Stop() {
+	//Stop sensor properly
+	public void stop() {
 		_timer.cancel();
 		_timer = null;
 	}

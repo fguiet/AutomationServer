@@ -30,8 +30,6 @@ import fr.guiet.automationserver.dto.SMSDto;
  * 
  * @author guiet
  *
- *         TODO : faire en sorte que l'on puisse faire une file de SMS dans un
- *         thread...
  *
  */
 public class SMSGammuService implements Runnable, IMqttable {
@@ -42,7 +40,7 @@ public class SMSGammuService implements Runnable, IMqttable {
 	private HashMap<String, Date> _messageMap = new HashMap<String, Date>();
 	private Timer _timer = null;
 	private boolean _isStopped = false; // Service arrete?
-	ConcurrentLinkedQueue<SMSDto> _queue = new ConcurrentLinkedQueue<SMSDto>();
+	private ConcurrentLinkedQueue<SMSDto> _queue = new ConcurrentLinkedQueue<SMSDto>();
 	private boolean _smsSendingInProgress = false;
 	private static String MQTT_TOPIC_SMS_SERVICE = "guiet/automationserver/smsservice";
 	private ArrayList<String> _mqttTopics = new ArrayList<String>();

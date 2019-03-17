@@ -183,10 +183,6 @@ public class Room {
 		return false;
 	}
 
-	/*
-	 * public boolean IsSensorResponding() { return !_sensor.HasTimeoutOccured(); }
-	 */
-
 	public boolean IsOffForced() {
 		for (Heater h : _heaterList) {
 			if (h.IsOffForced())
@@ -304,7 +300,7 @@ public class Room {
 			h.SetOff();
 		}
 
-		getEnvironmentalSensor().Stop();
+		getEnvironmentalSensor().stop();
 	}
 
 	//At the moment...only one env sensor by room but it will change

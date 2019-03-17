@@ -59,7 +59,6 @@ public class WaterHeaterService implements Runnable {
 	 */
 	public WaterHeaterService(TeleInfoService teleInfoService, SMSGammuService smsGammuService) {
 		_teleInfoService = teleInfoService;
-		// _teleInfoService.addListener(this);
 		_smsGammuService = smsGammuService;
 		
 		_dbManager = new DbManager();

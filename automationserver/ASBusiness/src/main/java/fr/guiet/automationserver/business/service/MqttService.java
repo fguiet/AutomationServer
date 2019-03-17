@@ -30,19 +30,9 @@ public class MqttService implements MqttCallbackExtended {
 	private MqttClient _client = null;
 	private String[] _topics = null;
 	private RoomService _roomService = null;
-	//private TeleInfoService _teleInfoService = null;
 	private WaterHeaterService _waterHeaterService = null;
-	// private Print3DService _print3DService = null;
-	//private AlarmService _alarmService = null;
-	// private ScenariiManager _scenariiManager = null;
 	private RollerShutterService _rollerShutterService = null;
-	// private BLEHubService _BLEHubService = null;
-	//private DbManager _dbManager = null;
-	//private Date _lastGotMailMessage = null;
 	private final String HOME_INFO_MQTT_TOPIC = "/guiet/home/info";
-	// private Date _lastBasementMessage = new Date();
-	//private Date _lastComputeBillCost = null;
-	//private String _electricityBill = "NA";
 
 	private ArrayList<IMqttable> _mqttClients = new ArrayList<IMqttable>();
 
@@ -86,14 +76,6 @@ public class MqttService implements MqttCallbackExtended {
 			_topics = prop.getProperty("mqtt.topics").split(";");
 
 			_smsGammuService = gammuService;
-
-			//_waterHeaterService = waterHeaterService;
-			//_alarmService = alarmService;
-			//_rollerShutterService = rollerShutterService;
-			// _scenariiManager = scenariiManager;
-			// _print3DService = print3DService;
-			// _BLEHubService = BLEHubService;
-			//_dbManager = new DbManager();
 
 		} catch (FileNotFoundException e) {
 			_logger.error("Cannot find configuration file in classpath_folder/config/automationserver.properties", e);
@@ -148,12 +130,12 @@ public class MqttService implements MqttCallbackExtended {
 			_client = new MqttClient(_uri, CLIENT_ID);
 
 			MqttConnectOptions options = new MqttConnectOptions();
-			options.setCleanSession(true);
+			options.setCleanSession(true); //no persistent session, see http://www.steves-internet-guide.com/mqtt-clean-sessions-example/
 			options.setKeepAliveInterval(30);
 			options.setAutomaticReconnect(true);
 
 			_client.setCallback(this);
-			_client.connect();
+			_client.connect(options);
 
 			subscribe();
 
@@ -301,13 +283,13 @@ public class MqttService implements MqttCallbackExtended {
 					_alarmService.SetOff();
 				}
 				break;*/
-			case "SETNEWSERIE":
+			/*case "SETNEWSERIE":
 				String serie = messageContent[1];
 				String mess1 = "Hey! you got a new serie to watch : " + serie;
 				SMSDto sms1 = new SMSDto("238588b4-767f-484b-8cb6-d867e267bdd6");
 				sms1.setMessage(mess1);
 				_smsGammuService.sendMessage(sms1);
-				break;
+				break;*/
 
 			case "SETROLLERSHUTTERMGT":
 				String automaticManagement = messageContent[1];
