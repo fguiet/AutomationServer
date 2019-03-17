@@ -22,4 +22,4 @@ LOG_FILE=/influxdb/logs/influxdb.log
 #fi
 
 echo "Now starting Influxdb..."
-${INFLUXDB_DAEMON_DIR} -config ${CONF_FILE} 2>&1 ${LOG_FILE}
+${INFLUXDB_DAEMON_DIR} -config ${CONF_FILE} 2>&1 >> ${LOG_FILE}
