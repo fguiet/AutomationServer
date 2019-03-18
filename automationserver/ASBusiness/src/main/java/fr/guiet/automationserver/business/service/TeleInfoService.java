@@ -490,7 +490,7 @@ public class TeleInfoService implements Runnable {
 						char receivedChar = data[i];
 						receivedChar &= 0x7F;
 
-						_logger.warn("carac recu: "+(int)receivedChar);
+						//_logger.warn("carac recu: "+(int)receivedChar);
 
 						// System.out.println("int char : "+(int)receivedChar);
 						// String decoded = String.valueOf(receivedChar);
@@ -550,7 +550,7 @@ public class TeleInfoService implements Runnable {
 
 			if (trameFullyReceived) {
 				String trameString = TeleInfoService.ArrayListToStringHelper(trame);
-				_logger.info("Trame lue : " + trameString);
+				//_logger.info("Trame lue : " + trameString);
 
 				return trameString;
 			}
@@ -767,7 +767,7 @@ public class TeleInfoService implements Runnable {
 		String[] groupes = trame.split("\\r");
 
 		if (groupes.length != VALID_GROUPES_NUMBER) {
-			_logger.info("Trame invalide (nombre de groupe incorrect) : DEBUT_TRAME@@@" + trame + "@@@FIN_TRAME");
+			//_logger.info("Trame invalide (nombre de groupe incorrect) : DEBUT_TRAME@@@" + trame + "@@@FIN_TRAME");
 			return null;
 		}
 
@@ -872,11 +872,11 @@ public class TeleInfoService implements Runnable {
 					break;
 				default:
 					// No groupe found! - Bad Trame!!! here
-					_logger.info("Etiquette : " + etiquette + " inconnue. Trame invalide");
+					//_logger.info("Etiquette : " + etiquette + " inconnue. Trame invalide");
 					return null;
 				}
 			} else {
-				_logger.info("Checksum invalide pour l'etiquette : " + etiquette + ", valeur : " + valeur);
+				//_logger.info("Checksum invalide pour l'etiquette : " + etiquette + ", valeur : " + valeur);
 				// Bad checksum ! process ends here!
 				return null;
 
@@ -887,7 +887,7 @@ public class TeleInfoService implements Runnable {
 		 * if (invalidChecksum) return null; else
 		 */
 		
-		_logger.info("Trame valide recue : " + trame);
+		_logger.info("Trame TeleInfo valide réceptionnée");
 		
 		return teleInfoTrame;
 	}
