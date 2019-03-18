@@ -38,25 +38,24 @@ public class RainGaugeService implements Runnable {
 		_smsGammuService = smsGammuService;
 		_mqttService = mqttService;
 		_dbManager = new DbManager();
+		
+		_serial = SerialFactory.createInstance();
 	}
 
 	private void CloseSerialConnection(boolean killSerialFactory) {
 
 		try {
-			if (_serial != null && _serial.isOpen()) {
+			if (_serial.isOpen()) {
 				_logger.info("Fermeture port serie pour la RainGauge");
 
 				_serial.discardInput();
 				_serial.close();
-
-				if (killSerialFactory)
-					SerialFactory.shutdown();
-
-				_serial = null;
 			}
+			
+			if (killSerialFactory)
+				SerialFactory.shutdown();
+			
 		} catch (IOException ioe) {
-
-			_serial = null;
 
 			_logger.error("Impossible de fermer le port serie pour la RainGauge", ioe);
 		}
@@ -98,9 +97,7 @@ public class RainGaugeService implements Runnable {
 
 		try {
 
-			if (_serial == null) {
-
-				_serial = SerialFactory.createInstance();
+			if (_serial.isClosed()) {
 
 				// open the default serial port provided on the GPIO header at 1200
 				// bauds

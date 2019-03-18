@@ -61,6 +61,8 @@ public class TeleInfoService implements Runnable {
 		_smsGammuService = smsGammuService;
 		_dbManager = new DbManager();
 		_mqttService = mqttService;
+		
+		_serial = SerialFactory.createInstance();
 	}
 
 	
@@ -380,20 +382,17 @@ public class TeleInfoService implements Runnable {
 	private void CloseSerialConnection(boolean killSerialFactory) {
 		
 		try {
-			if (_serial != null && _serial.isOpen()) {
+			if (_serial.isOpen()) {
 				_logger.info("Fermeture port serie pour la TeleInfo");
 				
 				_serial.discardInput();
-				_serial.close();
-
-				if (killSerialFactory)
-					SerialFactory.shutdown();
-				
-				_serial = null;
+				_serial.close();		
 			}
-		} catch (IOException ioe) {
 			
-			_serial = null;
+			if (killSerialFactory)
+				SerialFactory.shutdown();
+			
+		} catch (IOException ioe) {
 			
 			_logger.error("Impossible de fermer le port serie pour la TeleInfo", ioe);
 		}
@@ -406,9 +405,9 @@ public class TeleInfoService implements Runnable {
 
 		try {
 			
-			if (_serial == null) {
+			if (_serial.isClosed()) {
 
-				_serial = SerialFactory.createInstance();
+				//_serial = SerialFactory.createInstance();
 	
 				// open the default serial port provided on the GPIO header at 1200
 				// bauds
