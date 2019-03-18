@@ -469,7 +469,10 @@ public class TeleInfoService implements Runnable {
 				// Timeout occured?
 				Date currentDate = new Date();
 
-				Long elapsedTime = DateUtils.minutesBetweenDate(currentDate, startTime);
+				Long elapsedTime = DateUtils.minutesBetweenDate(startTime, currentDate);
+				
+				_logger.warn("Elapsed Time : " + elapsedTime);
+				
 				if (elapsedTime >= 1) {
 					timeoutOccured = true;
 				}
