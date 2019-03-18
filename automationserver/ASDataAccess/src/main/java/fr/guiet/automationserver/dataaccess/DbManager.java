@@ -1203,8 +1203,9 @@ public class DbManager {
 			String dfd = df.format(convertDate(fromDate1, "Europe/Paris", "UTC"));
 			String td = df.format(convertDate(toDate1, "Europe/Paris", "UTC"));
 
-			String sql = " where time >= '" + dfd
-					+ "' and time < '" + td + "'";
+			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo ";
+			sql = sql + "where time >= '" + dfd + "' and time < '" + td + "'";
+			
 			Query query = new Query(sql, "automation");
 			QueryResult queryResult = influxDb.query(query);
 
