@@ -12,9 +12,12 @@ export LOG_OUT="${HOME_PATH}/logs/${NAME}.out"
 export LOG_ERR="${HOME_PATH}/logs/${NAME}.err"
 export PID="${HOME_PATH}/${NAME}.pid"
 export CLASS=fr.guiet.automationserver.AutomationServer
+export TMP_FOLDER="/tmp"
 
 #rm /var/lock/LCK..ttyUSB0
 #remove pid because sometime when Raspberry reboot it is not removed and prevent automationserver from starting
 rm ${PID}
+#empty tmp directory (sometimes mqtt will not start because sometimes wrong stays in this folder)
+rm -rf ${TMP_FOLDER}
 $EXEC -nodetach -server -jvm server -java-home "$JAVA_HOME" -cwd "/applications/automationserver/bin"  -cp "$CLASS_PATH" -D"user.dir=/tmp" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" $ARGS -outfile "${LOG_OUT}" -errfile "${LOG_ERR}" -pidfile "${PID}" $1 $CLASS
 
