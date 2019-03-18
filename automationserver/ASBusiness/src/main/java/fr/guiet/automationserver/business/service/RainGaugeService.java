@@ -170,6 +170,7 @@ public class RainGaugeService implements Runnable {
 						switch (action) {
 						case "SETRAINGAUGEINFO":
 							_lastMessageReceived = new Date();
+							
 							float vcc = Float.parseFloat(messageContent[1]);
 							String flipflop = messageContent[2];
 							_mqttService.SendMsg(_pub_topic, message);
@@ -183,8 +184,8 @@ public class RainGaugeService implements Runnable {
 				
 				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
 				
-				if (elapsedTime >= 60) {
-					String mess = "Aucune nouvelle du pluviomètre depuis 1h, tentative de relance d'une instance sur le port série";
+				if (elapsedTime >= 75) {
+					String mess = "Aucune nouvelle du pluviomètre depuis 1h15, tentative de relance d'une instance sur le port série";
 
 					_logger.info(mess);
 
