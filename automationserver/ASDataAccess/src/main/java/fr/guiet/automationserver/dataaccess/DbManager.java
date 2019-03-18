@@ -1203,7 +1203,7 @@ public class DbManager {
 			String dfd = df.format(convertDate(fromDate1, "Europe/Paris", "UTC"));
 			String td = df.format(convertDate(toDate1, "Europe/Paris", "UTC"));
 
-			String sql = "select min(HCHP), min(HCHC), max(HCHP), max(HCHC) from teleinfo where time >= '" + dfd
+			String sql = " where time >= '" + dfd
 					+ "' and time < '" + td + "'";
 			Query query = new Query(sql, "automation");
 			QueryResult queryResult = influxDb.query(query);
@@ -1222,6 +1222,11 @@ public class DbManager {
 			String max_hchc = Long.toString(
 					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
 
+			//Pour trouver la valeur incorrecte
+			//select * from teleinfo where HCHC=0
+			//select * from teleinfo where HCHP=0
+			//Puis : delete from teleinfo where time=1548245774878000000;
+			
 			if (min_hchp.length() >= 5)
 				min_hchp = min_hchp.substring(0, 5);
 			else {
