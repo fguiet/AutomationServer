@@ -59,8 +59,7 @@ public class TeleInfoService implements Runnable {
 
 	private final static long ONCE_PER_DAY = 1000 * 60 * 60 * 24;
 	private Serial _serial = null;
-	private boolean _alertMessageSent = false;
-
+	
 	private static String MQTT_TOPIC_ELECTRICITY_INFO = "guiet/automationserver/electricity";
 
 	public TeleInfoService(SMSGammuService smsGammuService, MqttService mqttService) {
@@ -69,34 +68,7 @@ public class TeleInfoService implements Runnable {
 		_mqttService = mqttService;
 	}
 
-	/*
-	 * private void CreateSerialInstance() {
-	 * 
-	 * SerialDataEventListener sdl = null;
-	 * 
-	 * if (_serial != null) { if (_serial.isOpen()) try {
-	 * _logger.info("Fermeture du port série..."); _serial.close(); } catch
-	 * (Exception e) {
-	 * _logger.error("Impossible de fermer correctement le port série...", e); } }
-	 * 
-	 * _serial = SerialFactory.createInstance();
-	 * 
-	 * // open the default serial port provided on the GPIO header at 1200 // bauds
-	 * // serial.open(_defaultDevice, _defaultBaud); SerialConfig config = new
-	 * SerialConfig();
-	 * config.device(_defaultDevice).baud(Baud._1200).dataBits(DataBits._7).parity(
-	 * Parity.EVEN).stopBits(StopBits._1) .flowControl(FlowControl.NONE);
-	 * 
-	 * try { _serial.setBufferingDataReceived(false);
-	 * 
-	 * _serial.open(config); _logger.
-	 * info("Ouverture du port serie pour la TeleInfo effectué avec succès...");
-	 * 
-	 * sdl = CreateSerialListener(); _serial.addListener(sdl);
-	 * 
-	 * } catch (IOException e) {
-	 * _logger.error("Impossible d'ouvrir le port série",e); } }
-	 */
+	
 
 	@Override
 	public void run() {
@@ -911,6 +883,9 @@ public class TeleInfoService implements Runnable {
 		/*
 		 * if (invalidChecksum) return null; else
 		 */
+		
+		_logger.info("Trame valide recue : " + trame);
+		
 		return teleInfoTrame;
 	}
 
