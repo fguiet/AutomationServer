@@ -349,7 +349,7 @@ public class TeleInfoService implements Runnable {
 			_timer4.cancel();
 		}
 
-		CloseSerialConnection();
+		CloseSerialConnection(true);
 
 		_logger.info("Stopping TeleInfo service...");
 
@@ -377,15 +377,17 @@ public class TeleInfoService implements Runnable {
 		_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
 	}
 
-	private void CloseSerialConnection() {
+	private void CloseSerialConnection(boolean killSerialFactory) {
 		
 		try {
 			if (_serial != null && _serial.isOpen()) {
 				_logger.info("Fermeture port serie pour la TeleInfo");
 				
+				_serial.discardInput();
 				_serial.close();
 
-				SerialFactory.shutdown();
+				if (killSerialFactory)
+					SerialFactory.shutdown();
 				
 				_serial = null;
 			}
@@ -563,7 +565,7 @@ public class TeleInfoService implements Runnable {
 				// Reinit last received trame...
 				_lastTeleInfoTrameReceived = null;
 				
-				CloseSerialConnection();
+				CloseSerialConnection(false);
 				
 				return null;
 			}
@@ -574,7 +576,7 @@ public class TeleInfoService implements Runnable {
 		} catch (Exception e) {
 			_logger.info("Erreur while reading TeleInfoTrame", e);
 
-			CloseSerialConnection();
+			CloseSerialConnection(false);
 			
 			return null;
 		}

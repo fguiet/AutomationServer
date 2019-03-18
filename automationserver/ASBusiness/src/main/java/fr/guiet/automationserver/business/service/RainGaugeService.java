@@ -40,15 +40,17 @@ public class RainGaugeService implements Runnable {
 		_dbManager = new DbManager();
 	}
 
-	private void CloseSerialConnection() {
+	private void CloseSerialConnection(boolean killSerialFactory) {
 
 		try {
 			if (_serial != null && _serial.isOpen()) {
 				_logger.info("Fermeture port serie pour la RainGauge");
 
+				_serial.discardInput();
 				_serial.close();
 
-				SerialFactory.shutdown();
+				if (killSerialFactory)
+					SerialFactory.shutdown();
 
 				_serial = null;
 			}
@@ -83,7 +85,7 @@ public class RainGaugeService implements Runnable {
 		} catch (Exception e) {
 			_logger.info("Erreur while reading RainGauge message", e);
 
-			CloseSerialConnection();
+			CloseSerialConnection(false);
 
 			return null;
 		}
@@ -196,7 +198,7 @@ public class RainGaugeService implements Runnable {
 					//Reset
 					_lastMessageReceived = new Date();
 					
-					CloseSerialConnection();
+					CloseSerialConnection(false);
 				}
 				
 
@@ -213,7 +215,7 @@ public class RainGaugeService implements Runnable {
 	// Arret du service TeleInfoService
 	public void StopService() {
 
-		CloseSerialConnection();
+		CloseSerialConnection(true);
 
 		_logger.info("Stopping RainGauge service...");
 
