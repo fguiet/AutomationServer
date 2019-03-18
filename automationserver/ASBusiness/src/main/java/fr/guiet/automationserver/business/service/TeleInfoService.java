@@ -471,7 +471,7 @@ public class TeleInfoService implements Runnable {
 
 				Long elapsedTime = DateUtils.minutesBetweenDate(startTime, currentDate);
 				
-				//_logger.warn("Elapsed Time : " + elapsedTime);
+				_logger.warn("Elapsed Time : " + elapsedTime);
 				
 				if (elapsedTime >= 1) {
 					timeoutOccured = true;
@@ -545,7 +545,7 @@ public class TeleInfoService implements Runnable {
 				}
 
 				// Wait a little
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			}
 
 			if (trameFullyReceived) {
