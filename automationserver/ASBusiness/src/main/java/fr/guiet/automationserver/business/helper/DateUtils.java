@@ -132,6 +132,10 @@ public class DateUtils {
 	public static Long minutesBetweenDate(Date firstDate, Date secondDate) {
 		return ChronoUnit.MINUTES.between(firstDate.toInstant(), secondDate.toInstant());
 	}
+	
+	public static Long secondsBetweenDate(Date firstDate, Date secondDate) {
+		return ChronoUnit.SECONDS.between(firstDate.toInstant(), secondDate.toInstant());
+	}
 
 	public static Date parseDate(String date) {
 		try {
