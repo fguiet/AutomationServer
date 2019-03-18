@@ -569,6 +569,8 @@ public class TeleInfoService implements Runnable {
 				_lastTeleInfoTrameReceived = null;
 				
 				CloseSerialConnection();
+				
+				return null;
 			}
 
 			// May not arrived here...
