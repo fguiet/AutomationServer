@@ -515,7 +515,7 @@ public class TeleInfoService implements Runnable {
 						char receivedChar = data[i];
 						receivedChar &= 0x7F;
 
-						// _logger.warn("carac recu: "+(int)receivedChar);
+						_logger.warn("carac recu: "+(int)receivedChar);
 
 						// System.out.println("int char : "+(int)receivedChar);
 						// String decoded = String.valueOf(receivedChar);
@@ -564,6 +564,9 @@ public class TeleInfoService implements Runnable {
 							trame.add(receivedChar);
 						}
 					}
+				}
+				else {
+					_logger.warn("Rien dans le serial buffer");
 				}
 
 				// Wait a little
