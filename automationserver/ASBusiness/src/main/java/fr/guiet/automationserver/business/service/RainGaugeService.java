@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 
@@ -13,11 +14,10 @@ import com.pi4j.io.serial.FlowControl;
 import com.pi4j.io.serial.Parity;
 import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialConfig;
-import com.pi4j.io.serial.SerialDataEvent;
-import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 
+import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -29,15 +29,99 @@ public class RainGaugeService implements Runnable {
 	private boolean _isStopped = false; // Service arrete?
 	private SMSGammuService _smsGammuService = null;
 	private DbManager _dbManager = null;
-	//private static String _mqttClientId = "rainGaugeCliendId";
+	// private static String _mqttClientId = "rainGaugeCliendId";
 	private MqttService _mqttService = null;
-	private String _pub_topic ="/guiet/automationserver/raingauge";
+	private String _pub_topic = "/guiet/automationserver/raingauge";
+	private Date _lastMessageReceived = new Date();
 
 	public RainGaugeService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
 		_mqttService = mqttService;
-		//_mqttClient = new MqttClientHelper(_mqttClientId);
 		_dbManager = new DbManager();
+	}
+
+	private void CloseSerialConnection() {
+
+		try {
+			if (_serial != null && _serial.isOpen()) {
+				_logger.info("Fermeture port serie pour la RainGauge");
+
+				_serial.close();
+
+				SerialFactory.shutdown();
+
+				_serial = null;
+			}
+		} catch (IOException ioe) {
+
+			_serial = null;
+
+			_logger.error("Impossible de fermer le port serie pour la RainGauge", ioe);
+		}
+	}
+
+	private String ReadRainGaugeMessage() {
+		try {
+
+			// Check serial connection
+			if (!OpenSerialConnection())
+				return null;
+
+			// Data available in buffer ?
+			if (_serial.available() > 0) {
+
+				byte[] byteArray = _serial.read();
+
+				String serialData = new String(byteArray, "UTF-8");
+				_logger.info("Received RainGauge message : " + serialData);
+
+				return serialData;
+			}
+			
+			return null;
+
+		} catch (Exception e) {
+			_logger.info("Erreur while reading RainGauge message", e);
+
+			CloseSerialConnection();
+
+			return null;
+		}
+	}
+
+	// Opening Serial Connection
+	private boolean OpenSerialConnection() {
+
+		boolean isOk = true;
+
+		try {
+
+			if (_serial == null) {
+
+				_serial = SerialFactory.createInstance();
+
+				// open the default serial port provided on the GPIO header at 1200
+				// bauds
+				// serial.open(_defaultDevice, _defaultBaud);
+				SerialConfig config = new SerialConfig();
+				config.device(_defaultDevice).baud(Baud._9600).dataBits(DataBits._7).parity(Parity.EVEN)
+						.stopBits(StopBits._1).flowControl(FlowControl.NONE);
+
+				_serial.setBufferingDataReceived(true);
+
+				_serial.open(config);
+				_logger.info("Ouverture du port serie pour la RainGauge effectué avec succès...");
+
+			}
+
+		} catch (IOException e) {
+
+			isOk = false;
+
+			_logger.error("Impossible d'ouvrir le port série pour la RainGauge", e);
+		}
+
+		return isOk;
 	}
 
 	@Override
@@ -67,133 +151,71 @@ public class RainGaugeService implements Runnable {
 
 		_logger.info("Using serial device : " + _defaultDevice);
 
-		CreateSerialInstance();
+		// CreateSerialInstance();
 
 		while (!_isStopped) {
 
 			try {
-				
-				// Necessary otherwire, serial reader stop
+
+				String message = ReadRainGaugeMessage();
+
+				if (message != null) {
+
+					String[] messageContent = message.split(";");
+
+					if (messageContent != null && messageContent.length > 0) {
+
+						String action = messageContent[0];
+
+						switch (action) {
+						case "SETRAINGAUGEINFO":
+							_lastMessageReceived = new Date();
+							float vcc = Float.parseFloat(messageContent[1]);
+							String flipflop = messageContent[2];
+							_mqttService.SendMsg(_pub_topic, message);
+
+							_dbManager.SaveRainGaugeInfo(vcc, flipflop);
+						}
+					}
+				}
+
 				Thread.sleep(2000);
+				
+				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
+				
+				if (elapsedTime >= 60) {
+					String mess = "Aucune nouvelle du pluviomètre depuis 1h, tentative de relance d'une instance sur le port série";
+
+					_logger.info(mess);
+
+					SMSDto sms = new SMSDto("94997f96-968f-4814-ad25-1e5190d59b13");
+					sms.setMessage(mess);
+					_smsGammuService.sendMessage(sms);
+					
+					//Reset
+					_lastMessageReceived = new Date();
+					
+					CloseSerialConnection();
+				}
+				
 
 			} catch (Exception e) {
 				_logger.error("Error occured in RainGauge service...", e);
 
-				SMSDto sms = new SMSDto("918b2ed7-ac74-4e0b-8a3c-2cdfb5c92274");
+				SMSDto sms = new SMSDto("5ac9056c-599d-4e0f-8a02-3eb9b782d0ba");
 				sms.setMessage("Error occured in RainGauge services service, review error log for more details");
 				_smsGammuService.sendMessage(sms);
 			}
 		}
-
 	}
 
 	// Arret du service TeleInfoService
 	public void StopService() {
 
-		try {
-			if (_serial.isOpen()) {
-				_logger.info("Fermeture port serie");
-				_serial.close();
-			}
-		} catch (IOException ioe) {
-			_logger.error("Impossible de fermer le port serie", ioe);
-		}
-
-		SerialFactory.shutdown();
+		CloseSerialConnection();
 
 		_logger.info("Stopping RainGauge service...");
 
 		_isStopped = true;
-	}
-
-	private void CreateSerialInstance()  {
-
-		SerialDataEventListener sdl = null;
-
-		if(_serial!=null)
-		{
-			if (_serial.isOpen())
-				try {
-					_logger.info("Fermeture du port série...");
-					_serial.close();
-				} catch (Exception e) {
-					_logger.error("Impossible de fermer correctement le port série...", e);
-				}
-		}
-
-		_serial=SerialFactory.createInstance();
-
-		// open the default serial port provided on the GPIO header at 1200
-		// bauds
-		// serial.open(_defaultDevice, _defaultBaud);
-		SerialConfig config = new SerialConfig();config.device(_defaultDevice).baud(Baud._9600).dataBits(DataBits._7).parity(Parity.EVEN).stopBits(StopBits._1).flowControl(FlowControl.NONE);
-
-		try
-		{
-			_serial.setBufferingDataReceived(false);
-
-			_serial.open(config);
-			_logger.info("Ouverture du port serie pour le pluviomètre effectué avec succès...");
-
-			sdl = CreateSerialListener();
-
-			_serial.addListener(sdl);
-			
-		} catch(
-				IOException e)
-		{
-			_logger.error("Impossible d'ouvrir le port série",e);
-		}		
-	}
-	
-	private String convert(byte[] data) {
-	    StringBuilder sb = new StringBuilder(data.length);
-	    for (int i = 0; i < data.length; ++ i) {
-	    	
-	    	//_logger.info("DEBUT");
-	    	//_logger.info(data[i]);
-	    	//_logger.info("FIN");
-	    	
-        	//if (data[i] < 0) throw new IllegalArgumentException();
-	        sb.append((char) data[i]);
-	    }
-	    return sb.toString();
-	}
-
-	// Creation du listener sur le port serie
-	private SerialDataEventListener CreateSerialListener() {
-
-		return new SerialDataEventListener() {
-			
-			@Override
-			public void dataReceived(SerialDataEvent event) {
-
-				//String s = new String(bytes);
-				String dataSZ = "";
-				 try {
-					dataSZ = convert(event.getBytes());
-					_logger.info("Message du pluviomètre reçu : " + dataSZ);
-					
-				 } catch (IOException e) {
-					 _logger.error("Unable de read serial port", e);
-				}
-								 				
-				 String[] messageContent = dataSZ.split(";");
-
-				 if (messageContent != null && messageContent.length > 0) {
-					 					 					 
-				 String action = messageContent[0];
-
-					switch (action) {
-					   	case "SETRAINGAUGEINFO":
-							float vcc = Float.parseFloat(messageContent[1]);
-							String flipflop = messageContent[2];					   	
-							_mqttService.SendMsg(_pub_topic, dataSZ);
-					   		
-					   		_dbManager.SaveRainGaugeInfo(vcc, flipflop);
-					}
-				}				
-			}
-		};
 	}
 }

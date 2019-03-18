@@ -33,13 +33,8 @@ public class TeleInfoService implements Runnable {
 	private boolean _isStopped = false; // Service arrete?
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
-	/*
-	 * private boolean _beginTrameDetected = false; private boolean
-	 * _endTrameDetected = false; private boolean _trameFullyReceived = false;
-	 * private boolean _checkFirstChar = false;
-	 */
+	
 	private TeleInfoTrameDto _lastTeleInfoTrameReceived = null;
-	// private ArrayList<Character> _trame = null;
 	private Timer _timer = null;
 	private Timer _timer2 = null;
 	private Timer _timer3 = null;
@@ -579,6 +574,8 @@ public class TeleInfoService implements Runnable {
 		} catch (Exception e) {
 			_logger.info("Erreur while reading TeleInfoTrame", e);
 
+			CloseSerialConnection();
+			
 			return null;
 		}
 	}
