@@ -4,8 +4,8 @@
  
     <!-- Logging Properties -->
     <Properties>
-        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
-        <Property name="APP_LOG_ROOT">/home/fred/AutomationServer/log</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} - %C{1} - %p - %m%n</Property>
+        <Property name="APP_LOG_ROOT">/applications/automationserver/logs</Property>
     </Properties>
      
     <Appenders>
@@ -60,9 +60,9 @@
         <!-- DEBUG, INFO, WARN, ERROR, FATAL -->
         <!-- level DEBUG = all messages of other level are displayed -->
         <!-- level INFO = DEBUG messages are not displayed etc.. -->         
-        <!--<Root level="debug">
+        <Root level="debug">
             <AppenderRef ref="Console"/>
-        </Root>-->
+        </Root>
  
     </Loggers>
  
