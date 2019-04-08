@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business.service;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.guiet.automationserver.business.RollerShutter;
 import fr.guiet.automationserver.business.RollerShutterState;
@@ -26,7 +27,7 @@ pour ouverture = verifier si pas deja ouvert (appel via http)*/
 public class RollerShutterService implements Runnable {
     
 	// Logger
-	private static Logger _logger = Logger.getLogger(RollerShutterService.class);
+	private static Logger _logger = LogManager.getLogger(RollerShutterService.class);
 		
 	private boolean _automaticManagementStatus = true; //By default
 	private boolean _isStopped = false; // Service arrete?

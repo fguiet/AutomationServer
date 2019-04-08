@@ -3,7 +3,9 @@ package fr.guiet.automationserver.business;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Calendar;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.helper.DateUtils;
@@ -17,7 +19,7 @@ import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class Room {
 
-	private static Logger _logger = Logger.getLogger(Room.class);
+	private static Logger _logger = LogManager.getLogger(Room.class);
 
 	private long _id;
 

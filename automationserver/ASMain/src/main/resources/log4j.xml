@@ -1,81 +1,69 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
-    <appender name="automationInfoAppender" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/fred/AutomationServer/log/InfoAutomationServer.log" />
-                <param name ="MaxFileSize" value="10MB"></param>
-                <param name ="MaxBackupIndex" value="10"></param>
-        <layout class="org.apache.log4j.PatternLayout">
-                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
-                </layout>
-        <filter class="org.apache.log4j.varia.LevelMatchFilter">
-            <param name="LevelToMatch" value="INFO" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
-        <filter class="org.apache.log4j.varia.DenyAllFilter" />
-    </appender>
-
-        <appender name="automationErrorAppender" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/fred/AutomationServer/log/ErrorAutomationServer.log" />
-                <param name ="MaxFileSize" value="10MB"></param>
-                <param name ="MaxBackupIndex" value="10"></param>
-        <layout class="org.apache.log4j.PatternLayout">
-                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
-                </layout>
-        <filter class="org.apache.log4j.varia.LevelMatchFilter">
-            <param name="LevelToMatch" value="ERROR" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
-        <filter class="org.apache.log4j.varia.DenyAllFilter" />
-    </appender>
-
-        <appender name="automationWarnAppender" class="org.apache.log4j.RollingFileAppender">
-                <param name ="MaxFileSize" value="10MB"></param>
-                <param name ="MaxBackupIndex" value="10"></param>
-        <param name="File" value="/home/fred/AutomationServer/log/WarnAutomationServer.log" />
-        <layout class="org.apache.log4j.PatternLayout">
-                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
-                </layout>
-        <filter class="org.apache.log4j.varia.LevelMatchFilter">
-            <param name="LevelToMatch" value="WARN" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
-        <filter class="org.apache.log4j.varia.DenyAllFilter" />
-    </appender>
-
-        <!--<appender name="thingSpeakAppender" class="org.apache.log4j.FileAppender">
-        <param name="File" value="/home/fred/AutomationServer/log/ThingSpeak.log" />
-        <layout class="org.apache.log4j.PatternLayout">
-                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
-                </layout>
-    </appender>-->
-
-        <appender name="debugAppender" class="org.apache.log4j.RollingFileAppender">
-                <param name ="MaxFileSize" value="10MB"></param>
-                <param name ="MaxBackupIndex" value="10"></param>
-        <param name="File" value="/home/fred/AutomationServer/log/debug.log" />
-        <layout class="org.apache.log4j.PatternLayout">
-                        <param name="ConversionPattern" value="%d{dd MMM yyyy HH:mm:ss} %5p %c{1} - %m%n" />
-                </layout>
-    </appender>
-
-        <logger name="com.rapplogic.xbee">
-                <level value="OFF" />
-        </logger>
-
-        <!--<logger name="com.angryelectron.thingspeak">
-                <level value="DEBUG" />
-                <appender-ref ref="thingSpeakAppender" />
-        </logger>-->
-
-    <root>
-         <level value="DEBUG" />
-                 <!--<appender-ref ref="debugAppender" />-->
-         <appender-ref ref="automationInfoAppender" />
-         <appender-ref ref="automationWarnAppender" />
-                 <appender-ref ref="automationErrorAppender" />
-                <!-- <appender-ref ref="thingSpeakAppender" />-->
-
-    </root>
-</log4j:configuration>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- monitorInterval = monitor interval to check changes in this file -->
+<Configuration status="WARN" monitorInterval="30">
+ 
+    <!-- Logging Properties -->
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+        <Property name="APP_LOG_ROOT">/home/fred/AutomationServer/log</Property>
+    </Properties>
+     
+    <Appenders>
+     
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+         
+        <!-- File Appenders on need basis -->
+        <RollingFile name="warnLog" fileName="${APP_LOG_ROOT}/automationserver-warn.log"
+            filePattern="${APP_LOG_ROOT}/automationserver-debug-%d{yyyy-MM-dd}-%i.log">
+            <LevelRangeFilter minLevel="WARN" maxLevel="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="infoLog" fileName="${APP_LOG_ROOT}/automationserver-info.log"
+            filePattern="${APP_LOG_ROOT}/automationserver-info-%d{yyyy-MM-dd}-%i.log" >
+            <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+        <RollingFile name="errorLog" fileName="${APP_LOG_ROOT}/automationserver-error.log"
+            filePattern="${APP_LOG_ROOT}/automationserver-error-%d{yyyy-MM-dd}-%i.log" >
+            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+         
+    </Appenders>
+ 
+    <Loggers>
+         
+        <Logger name="fr.guiet.automationserver" additivity="false" level="debug">
+            <AppenderRef ref="infoLog"  />
+            <AppenderRef ref="warnLog" />
+            <AppenderRef ref="errorLog" />
+            <!--<AppenderRef ref="Console"  />-->
+        </Logger>
+        
+        <!-- DEBUG, INFO, WARN, ERROR, FATAL -->
+        <!-- level DEBUG = all messages of other level are displayed -->
+        <!-- level INFO = DEBUG messages are not displayed etc.. -->         
+        <!--<Root level="debug">
+            <AppenderRef ref="Console"/>
+        </Root>-->
+ 
+    </Loggers>
+ 
+</Configuration>

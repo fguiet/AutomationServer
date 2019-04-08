@@ -19,7 +19,8 @@ import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import fr.guiet.automationserver.business.helper.DateUtils;
@@ -34,7 +35,7 @@ import fr.guiet.automationserver.dto.SMSDto;
  */
 public class SMSGammuService implements Runnable, IMqttable {
 
-	private static Logger _logger = Logger.getLogger(SMSGammuService.class);
+	private static Logger _logger = LogManager.getLogger(SMSGammuService.class);
 	private String[] _configRecipientList = null;
 	private String _configGammu = null;
 	private HashMap<String, Date> _messageMap = new HashMap<String, Date>();

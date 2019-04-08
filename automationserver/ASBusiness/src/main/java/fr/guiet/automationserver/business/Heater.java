@@ -2,7 +2,9 @@ package fr.guiet.automationserver.business;
 
 import com.pi4j.io.gpio.Pin;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.pi4j.io.gpio.RaspiPin;
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.helper.GpioHelper;
@@ -29,7 +31,7 @@ public class Heater implements Comparable<Heater> {
 	private Pin _pin;
 	private boolean _isOffForced = false;
 	// private TeleInfoService _teleInfoService = null;
-	private static Logger _logger = Logger.getLogger(Heater.class);
+	private static Logger _logger = LogManager.getLogger(Heater.class);
 	// private boolean _waitForOn = false;
 	// private boolean _waitForOff = false;
 	//private final String PIN_CHAUFFAGE_NAME = "PIN_CHAUFFAGE";

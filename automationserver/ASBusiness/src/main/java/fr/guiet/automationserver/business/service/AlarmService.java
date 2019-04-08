@@ -3,7 +3,9 @@ package fr.guiet.automationserver.business.service;
 import java.util.ArrayList;
 //import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.pi4j.io.gpio.RaspiPin;
 
 import fr.guiet.automationserver.business.helper.GpioHelper;
@@ -11,7 +13,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class AlarmService implements IMqttable {
 
-	private static Logger _logger = Logger.getLogger(AlarmService.class);
+	private static Logger _logger = LogManager.getLogger(AlarmService.class);
 	private RollerShutterService _rollerShutterService = null;
 	private SMSGammuService _smsGammuService = null;
 	private boolean _automaticModeStatus = true; // activated by default

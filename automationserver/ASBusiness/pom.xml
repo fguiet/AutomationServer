@@ -87,6 +87,22 @@
 			<artifactId>javax.mail</artifactId>
 			<version>${mail.version}</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-core</artifactId>
+			<version>${pi4j-core.version}</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/it.sauronsoftware.cron4j/cron4j -->
 		<!-- <dependency>
     		<groupId>it.sauronsoftware.cron4j</groupId>

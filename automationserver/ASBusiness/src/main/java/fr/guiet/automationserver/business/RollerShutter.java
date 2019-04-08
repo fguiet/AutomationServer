@@ -3,7 +3,8 @@ package fr.guiet.automationserver.business;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.business.service.MqttService;
@@ -12,7 +13,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class RollerShutter {
 
-	private static Logger _logger = Logger.getLogger(RollerShutter.class);
+	private static Logger _logger = LogManager.getLogger(RollerShutter.class);
 	private RollerShutterState _state = RollerShutterState.VOID;
 	private RollerShutterState _previousState = RollerShutterState.VOID;
 	private int _id = -1;

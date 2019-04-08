@@ -3,14 +3,15 @@ package fr.guiet.automationserver.business.service;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class BLEHubService implements Runnable, IMqttable {
 	
-	private static Logger _logger = Logger.getLogger(BLEHubService.class);
+	private static Logger _logger = LogManager.getLogger(BLEHubService.class);
 	private SMSGammuService _smsGammuService = null;
 	
 	private static String MQTT_TOPIC_HUB_UPSTAIRS = "guiet/upstairs/hub";

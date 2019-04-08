@@ -13,11 +13,12 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MailService {
 	
-	private static Logger _logger = Logger.getLogger(MailService.class);
+	private static Logger _logger = LogManager.getLogger(MailService.class);
 	
 	public void SendMailSSL(String subject, String body) {		
 
