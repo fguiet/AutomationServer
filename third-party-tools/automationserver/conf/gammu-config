@@ -35,7 +35,7 @@
 
 [gammu]
 
-port = /dev/ttyUSB3
+port = /dev/ttyUSB4
 model = 
 connection = at19200
 synchronizetime = yes
