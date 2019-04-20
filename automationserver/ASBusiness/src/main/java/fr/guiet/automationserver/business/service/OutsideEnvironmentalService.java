@@ -2,7 +2,7 @@ package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import fr.guiet.automationserver.business.sensor.DS18B20_Sensor;
 import fr.guiet.automationserver.business.sensor.EnvironmentalSensor;
@@ -32,7 +32,7 @@ public class OutsideEnvironmentalService extends AbstractAutomationService {
 
 	public OutsideEnvironmentalService(String name, SMSGammuService gammuService) {
 
-		super(name, false, Logger.getLogger(OutsideEnvironmentalService.class));
+		super(name, false, LogManager.getLogger(OutsideEnvironmentalService.class));
 		
 		_dbManager = new DbManager();
 		SensorDto sensorDto = _dbManager.getSensorById(DS18B20_GARAGE_SENSOR_ID);

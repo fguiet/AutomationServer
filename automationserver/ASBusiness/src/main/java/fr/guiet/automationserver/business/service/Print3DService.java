@@ -3,12 +3,14 @@ package fr.guiet.automationserver.business.service;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.guiet.automationserver.dto.SMSDto;
 
 public class Print3DService implements IMqttable {
 	
-	private static Logger _logger = Logger.getLogger(Print3DService.class);
+	private static Logger _logger = LogManager.getLogger(Print3DService.class);
 	private SMSGammuService _smsGammuService = null;
 	private static String MQTT_TOPIC_PRINT_STARTED="octoprint/event/PrintStarted";
 	private static String MQTT_TOPIC_PRINT_DONE="octoprint/event/PrintDone";

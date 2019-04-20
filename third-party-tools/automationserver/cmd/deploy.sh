@@ -14,13 +14,13 @@ cp /applications/java/src/AutomationServer/automationserver/ASWebApp/target/auto
 echo "Removing old logs..."
 rm -f /applications/automationserver/logs/*
 echo "Creating empty logs files..."
-touch /applications/automationserver/logs/ErrorAutomationServer.log
-touch /applications/automationserver/logs/InfoAutomationServer.log
-touch /applications/automationserver/logs/WarnAutomationServer.log
+touch /applications/automationserver/logs/automationserver-info.log
+touch /applications/automationserver/logs/automationserver-error.log
+touch /applications/automationserver/logs/automationserver-warn.log
 echo "Adding rw rigths to others so tomcat can write in it..."
-chmod o+rw /applications/automationserver/logs/ErrorAutomationServer.log
-chmod o+rw /applications/automationserver/logs/InfoAutomationServer.log
-chmod o+rw /applications/automationserver/logs/WarnAutomationServer.log
+chmod o+rw /applications/automationserver/logs/automationserver-info.log
+chmod o+rw /applications/automationserver/logs/automationserver-error.log
+chmod o+rw /applications/automationserver/logs/automationserver-warn.log
 echo "Done!"
 
 

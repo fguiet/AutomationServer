@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business.helper;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -12,7 +13,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class GpioHelper {
 
-	private static Logger _logger = Logger.getLogger(GpioHelper.class);
+	private static Logger _logger = LogManager.getLogger(GpioHelper.class);
 	
 	/*
 	 * Try to set pin state on shutdown

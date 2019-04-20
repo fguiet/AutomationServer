@@ -1,7 +1,8 @@
 package fr.guiet.automationserver.business.service;
 
 import java.util.ArrayList;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.guiet.automationserver.business.sensor.Sensor;
 

@@ -27,7 +27,9 @@
 		<maven-assembly.version>3.0.0</maven-assembly.version>
 		<maven-war-plugin.version>3.0.0</maven-war-plugin.version>
 		<maven-clean.version>3.0.0</maven-clean.version>
-		<log4j.version>1.2.8</log4j.version>
+		<log4j-api.version>2.11.2</log4j-api.version>
+		<log4j-core.version>2.11.2</log4j-core.version>
+		<!-- <log4j.version>1.2.8</log4j.version> -->
 		<!-- <xbee-api.version>0.9</xbee-api.version> -->
 		<!-- <RXTXComm.version>1.0</RXTXComm.version> -->
 		<pi4j-core.version>1.2</pi4j-core.version>
@@ -40,8 +42,8 @@
 		<json.version>20180130</json.version>
 		<c3p0.version>0.9.5.2</c3p0.version>
 		<postgresql.version>9.4.1212.jre7</postgresql.version>
-		<!-- <cron4j.version>2.2.5</cron4j.version>
-		<sunsetrise.version>1.2</sunsetrise.version>-->
+		<!-- <cron4j.version>2.2.5</cron4j.version>-->
+		<!-- <sunsetrise.version>1.2</sunsetrise.version>-->
 		<asm.version>6.1.1</asm.version>
 		<jersey-bundle.version>1.19.4</jersey-bundle.version>
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
@@ -89,7 +91,7 @@
 		</plugins>
 	</build>
 
-	<dependencyManagement>
+	<!-- <dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>log4j</groupId>
@@ -98,6 +100,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
+	-->
 </project>
 

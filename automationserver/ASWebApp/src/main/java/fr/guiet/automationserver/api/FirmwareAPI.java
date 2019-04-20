@@ -15,7 +15,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.sun.jersey.api.client.ClientResponse.Status;
@@ -26,7 +27,7 @@ import fr.guiet.automationserver.dto.SensorDto;
 @Path("/firmware")
 public class FirmwareAPI {
 
-	private static Logger _logger = Logger.getLogger(FirmwareAPI.class);
+	private static Logger _logger = LogManager.getLogger(FirmwareAPI.class);
 
 	@GET
 	@Path("/getversion/{sensorid}")

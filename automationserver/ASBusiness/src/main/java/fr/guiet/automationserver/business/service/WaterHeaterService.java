@@ -9,12 +9,14 @@ import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 import fr.guiet.automationserver.dto.TeleInfoTrameDto;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Date;
 
 public class WaterHeaterService implements Runnable {
 
-	private static Logger _logger = Logger.getLogger(WaterHeaterService.class);
+	private static Logger _logger = LogManager.getLogger(WaterHeaterService.class);
 
 	private boolean _isOn = false;
 	private Date _startTime;

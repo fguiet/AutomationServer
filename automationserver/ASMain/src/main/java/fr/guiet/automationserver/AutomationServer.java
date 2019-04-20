@@ -11,7 +11,9 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Queue;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.guiet.automationserver.business.helper.GpioHelper;
 import fr.guiet.automationserver.business.service.*;
 import fr.guiet.automationserver.dataaccess.DbManager;
@@ -54,7 +56,7 @@ public class AutomationServer implements Daemon {
 	//private Queue<AbstractAutomationService> _automationServiceQueue = new LinkedList<AbstractAutomationService>();
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(AutomationServer.class);
+	private static Logger _logger = LogManager.getLogger(AutomationServer.class);
 
 	// Init deamon
 	@Override

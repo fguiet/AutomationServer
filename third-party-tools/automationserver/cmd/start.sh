@@ -3,7 +3,7 @@
 export NAME="automationserver"
 export EXEC="/usr/bin/jsvc"
 export HOME_PATH="/applications/automationserver"
-export LOG4J="log4j.configuration=file:${HOME_PATH}/config/log4j.xml"
+export LOG4J="log4j.configurationFile=file:${HOME_PATH}/config/log4j.xml"
 #export JAVA_HOME="/usr/java/jdk1.8.0_111"
 export JAVA_LIBRARY_PATH="java.library.path=/applications/automationserver/bin"
 export CLASS_PATH="${HOME_PATH}/bin/*"
@@ -17,7 +17,6 @@ export TMP_FOLDER="/tmp"
 #rm /var/lock/LCK..ttyUSB0
 #remove pid because sometime when Raspberry reboot it is not removed and prevent automationserver from starting
 rm ${PID}
-#empty tmp directory (sometimes mqtt will not start because sometimes wrong stays in this folder)
 rm -rf ${TMP_FOLDER}
 $EXEC -nodetach -server -jvm server -java-home "$JAVA_HOME" -cwd "/applications/automationserver/bin"  -cp "$CLASS_PATH" -D"user.dir=/tmp" -D"${JAVA_LIBRARY_PATH}" -D"${LOG4J}" $ARGS -outfile "${LOG_OUT}" -errfile "${LOG_ERR}" -pidfile "${PID}" $1 $CLASS
 

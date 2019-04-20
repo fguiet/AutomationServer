@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -15,7 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class MqttClientHelper implements MqttCallback {
 	
-	private static Logger _logger = Logger.getLogger(MqttClientHelper.class);
+	private static Logger _logger = LogManager.getLogger(MqttClientHelper.class);
 	private String _uri = "tcp://%s:%s";
 	//private MqttClient _client = null;
 	private String _clientId = null;

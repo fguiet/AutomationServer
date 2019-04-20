@@ -1,6 +1,7 @@
 package fr.guiet.automationserver.business.service;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.pi4j.io.serial.SerialFactory;
@@ -29,7 +30,7 @@ import fr.guiet.automationserver.dataaccess.DbManager;
 public class TeleInfoService implements Runnable {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(TeleInfoService.class);
+	private static Logger _logger = LogManager.getLogger(TeleInfoService.class);
 	private boolean _isStopped = false; // Service arrete?
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;

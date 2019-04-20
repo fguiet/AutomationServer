@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.pi4j.io.serial.Baud;
 import com.pi4j.io.serial.DataBits;
@@ -23,7 +24,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class RainGaugeService implements Runnable {
 
-	private static Logger _logger = Logger.getLogger(RainGaugeService.class);
+	private static Logger _logger = LogManager.getLogger(RainGaugeService.class);
 	private String _defaultDevice = "";
 	private Serial _serial = null;
 	private boolean _isStopped = false; // Service arrete?

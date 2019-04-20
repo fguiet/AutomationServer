@@ -21,7 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.sql.ResultSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
 
@@ -45,7 +46,7 @@ import fr.guiet.automationserver.dto.*;
 public class DbManager {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(DbManager.class);
+	private static Logger _logger = LogManager.getLogger(DbManager.class);
 
 	private static String _postgresqlConnectionString = "jdbc:postgresql://%s:%s/%s";
 	private static String _hostPG = null;

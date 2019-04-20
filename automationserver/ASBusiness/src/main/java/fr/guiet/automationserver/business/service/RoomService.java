@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.guiet.automationserver.dto.*;
 import fr.guiet.automationserver.business.Heater;
 import fr.guiet.automationserver.business.Room;
@@ -23,7 +25,7 @@ import fr.guiet.automationserver.dataaccess.DbManager;
 public class RoomService implements Runnable {
 
 	// Logger
-	private static Logger _logger = Logger.getLogger(RoomService.class);
+	private static Logger _logger = LogManager.getLogger(RoomService.class);
 
 	private List<Room> _roomList = new ArrayList<Room>();
 	
