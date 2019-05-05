@@ -2,6 +2,7 @@ docker run \
   -d \
   -p 3000:3000 \
   --name grafana \
+  --network automationserver-network \
   -v /home/fred/applications/grafana/database:/var/lib/grafana \
   --restart=always \
   fg2it/grafana-armhf:v5.0.4
