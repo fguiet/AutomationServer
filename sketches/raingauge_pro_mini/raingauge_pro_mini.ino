@@ -13,12 +13,12 @@
 
 //Consumption with power led on :
 //1.6mA while sleeping
-//25mA peak while running+
+//25mA peak while running
 
 #include <LowPower.h>
 #include <ArduinoJson.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define FIRMWARE_VERSION "1.0"
 
 const int UPLOAD_PIN = 6;
@@ -80,8 +80,8 @@ void setup() {
 
 void InitSensors() {
   
-  sensors[0].Name = "Raingauge - Garden";
-  sensors[0].SensorId = "17";
+  sensors[0].Name = "Raingauge";
+  sensors[0].SensorId = "1";
 }
 
 void loop() {  
@@ -142,7 +142,6 @@ void sendMessage(bool bWakeUpByFlipFlop) {
   String flipflop = "0";
   if (bWakeUpByFlipFlop) 
     flipflop = "1";
-
 
   String message = ConvertToJSon(String(vin,2), humi, temp, flipflop);
   

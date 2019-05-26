@@ -34,18 +34,30 @@ void setup()
 //  digitalWrite(4, HIGH);
   Serial.begin(9600);
   while (!Serial) ; // Wait for serial port to be available
-  if (!rf95.init())
+  if (!rf95.init()) {
     Serial.println("init failed");
+    while(1);
+  }
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
-//  driver.setTxPower(23, false);
+ //  rf95.setTxPower(23, false);
+   //Example 4: Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. Slow+long range
+   // rf95.setFrequency(868);
+ // rf95.setSpreadingFactor(7);
+ // rf95.setSignalBandwidth(125E3);
+ // rf95.setCodingRate4(5);
+  //rf95.setTxPower(20,false);
   // If you are using Modtronix inAir4 or inAir9,or any other module which uses the
   // transmitter RFO pins and not the PA_BOOST pins
   // then you can configure the power transmitter power for -1 to 14 dBm and with useRFO true. 
   // Failure to do that will result in extremely low transmit powers.
 //  driver.setTxPower(14, true);
+  //rf95.setModemConfig(RH_RF95::Bw125Cr45Sf128);
+  rf95.setModemConfig(RH_RF95::Bw125Cr48Sf4096);
+  rf95.setTxPower(23,false);
+  
   if (!rf95.setFrequency(RF95_FREQ)) {
     Serial.println("setFrequency failed");
     while (1);

@@ -10,9 +10,13 @@
 #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
 
-#define RFM95_CS D2
+//#define RFM95_CS D2
+//#define RFM95_RST D3
+//#define RFM95_INT D1
+
+#define RFM95_CS D4
 #define RFM95_RST D3
-#define RFM95_INT D1
+#define RFM95_INT D8
 
 #define RF95_FREQ 868.0
 
@@ -48,6 +52,9 @@ void setup()
   // Detection shows no activity on the channel before transmitting by setting
   // the CAD timeout to non-zero:
 //  driver.setCADTimeout(10000);
+
+  driver.setModemConfig(RH_RF95::Bw125Cr45Sf128);
+
   if (!driver.setFrequency(RF95_FREQ)) {
     Serial.println("setFrequency failed");
     while (1);
