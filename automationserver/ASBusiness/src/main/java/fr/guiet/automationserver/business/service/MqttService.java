@@ -24,7 +24,7 @@ import fr.guiet.automationserver.dto.SMSDto;
 
 public class MqttService implements MqttCallbackExtended {
 
-	private static Logger _logger = LogManager.getLogger(MqttClient.class);
+	private static Logger _logger = LogManager.getLogger(MqttService.class);
 	private String _uri = "tcp://%s:%s";
 	private final String CLIENT_ID = "Java Automation Server";
 	private SMSGammuService _smsGammuService = null;

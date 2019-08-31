@@ -3,10 +3,11 @@
  * 
  * F. Guiet 
  * Creation           : 20190204
- * Last modification  :  
+ * Last modification  : 20190420 
  * 
  * Version            : 1.0
  * History            : 1.0 - First version
+ *                      1.1 - Add StillOnCheck
  *                      
  * Note               : Credits go to Kevin Darrah who inspired me to build this trigboard (https://www.kevindarrah.com/wiki/index.php?title=TrigBoard)
  *                      ESP Board I am using ESP-12-E
@@ -24,6 +25,7 @@
 
 #define LED_PIN 2 //ESP-12-E led pin
 #define DONE_PIN 12
+#define STILLOPEN_PIN 13 //To check whether reed switch is still open 
 #define EXTWAKE_PIN 5 //To check whether it is an external wake up or a tpl5111 timer wake up
 #define ADC_PIN 0 //To read battery voltage
 
@@ -31,9 +33,10 @@
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
 
-#define MQTT_CLIENT_ID "TrigBoardMailboxSensor"
+#define SMS_TOPIC  "guiet/automationserver/smsservice"
+#define MQTT_CLIENT_ID "TrigBoardGarageDoorSensor"
 #define MAX_RETRY 100
-#define FIRMWARE_VERSION "1.0"
+#define FIRMWARE_VERSION "1.1"
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -53,9 +56,9 @@ char message_buff[200];
 
 void InitSensors(bool externalWakeUp) {
   
-  sensors[0].Name = "Trigboard - Mailbox";
-  sensors[0].SensorId = "6";
-  sensors[0].Mqtt_topic = "guiet/mailbox/sensor/6";
+  sensors[0].Name = "Trigboard - Garage door";
+  sensors[0].SensorId = "18";
+  sensors[0].Mqtt_topic = "guiet/garage/sensor/18";
 
   if (externalWakeUp)
      sensors[0].External_wakeup = "oui";
@@ -72,6 +75,43 @@ bool isExternalWakeUp() {
   }
   else {
     return true;
+  }
+}
+
+void SendStillOpenMessage() {
+  if (WiFi.status() != WL_CONNECTED) {
+    if (!connectToWifi())
+      weAreDone();
+  }  
+
+  if (!client.connected()) {
+    if (!connectToMqtt()) {
+      weAreDone();
+    }
+  }
+
+  String mess = ConvertToJSonShortTestMsg("Attention, la porte du garage est toujours ouverte.");
+  debug_message("JSON Sensor : " + mess + ", topic : " +SMS_TOPIC, true);
+  mess.toCharArray(message_buff, mess.length()+1);
+    
+  client.publish(SMS_TOPIC,message_buff);
+
+  disconnectMqtt();
+  delay(100);
+  disconnectWifi();
+  delay(100);
+  
+}
+
+/*
+ * STILLON_PIN is HIGH when reedswitch is opened 
+ */
+bool isStillOpen() {
+  if (digitalRead(STILLOPEN_PIN) == HIGH) {
+    return true; 
+  }
+  else {
+    return false;
   }
 }
 
@@ -130,6 +170,7 @@ void setup() {
 
   //Initialise PINS
   pinMode(EXTWAKE_PIN, INPUT);
+  pinMode(STILLOPEN_PIN, INPUT_PULLUP);
   pinMode(DONE_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(ADC_PIN, OUTPUT);
@@ -150,16 +191,28 @@ void setup() {
     
     makeLedBlink(3,200);
 
-    externalWakeUp = false;
+    externalWakeUp = false;    
+
+    //Check if reed switch is open or not
+    if (isStillOpen()) {
+      debug_message("reedswitch is open", true);
+      InitSensors(externalWakeUp);
+      SendStillOpenMessage();
+    }
+    else {
+      debug_message("reedswitch is NOT open", true);
+    }
 
     //Go to sleep immediatly
     weAreDone();
     return;
   }
-
-  debug_message("Something in the maibox, time to send a message!...", true);
-
-  InitSensors(externalWakeUp);
+  else {
+    
+    debug_message("Something in the maibox, time to send a message!...", true);
+    InitSensors(externalWakeUp);
+    
+  }
 }
 
 void disconnectMqtt() {
@@ -237,6 +290,23 @@ boolean connectToWifi() {
   }  
 }
 
+String ConvertToJSonShortTestMsg(String message) {
+    //Create JSon object
+    DynamicJsonBuffer  jsonBuffer(200);
+    JsonObject& root = jsonBuffer.createObject();
+
+    //Garage door still open guid
+    String guid ="cce5d7f1-7aeb-443b-9b6d-c41db55da832";
+    
+    root["messageid"] = guid;
+    root["messagetext"] = message;
+           
+    String result;
+    root.printTo(result);
+
+    return result;
+}
+
 String ConvertToJSon(String battery) {
     //Create JSon object
     DynamicJsonBuffer  jsonBuffer(200);
@@ -247,8 +317,7 @@ String ConvertToJSon(String battery) {
     root["firmware"]  = FIRMWARE_VERSION;
     root["battery"] = battery;
     root["externalwakeup"] = sensors[0].External_wakeup; 
-    
-   
+       
     String result;
     root.printTo(result);
 
@@ -272,12 +341,13 @@ void loop() {
 
   //Read battery voltage
   float vin = readVoltage();
-  
-  String mess = ConvertToJSon(String(vin,2));
-  debug_message("JSON Sensor Mailbox : " + mess + ", topic : " +sensors[0].Mqtt_topic, true);
+
+  String mess = ConvertToJSonShortTestMsg("Garage door just opened ! (battery : "+String(vin,2)+" v");
+  //String mess = ConvertToJSon(String(vin,2));
+  debug_message("JSON Sensor : " + mess + ", topic : " +SMS_TOPIC, true);
   mess.toCharArray(message_buff, mess.length()+1);
     
-  client.publish(sensors[0].Mqtt_topic.c_str(),message_buff);
+  client.publish(SMS_TOPIC,message_buff);
 
   //Turn off LED... 
   digitalWrite(LED_PIN, HIGH);
