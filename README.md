@@ -13,8 +13,8 @@ DESCRIPTION
   
   This project is based on :
   
-    - PostgreSQL 9.4
-    - Java 1.8
+    - PostgreSQL 9.6
+    - Open JDK 9
     - Oracle Jersey Restful framework
     - cron4j
     - SunriseSunsetCalculator
@@ -29,7 +29,7 @@ DESCRIPTION
     - Docker
     - Grafana
     - OpenHab 2
-    - InfluxDB 1.2.x
+    - InfluxDB 1.7.x
     - Node-Red
     - Mqtt (mosquitto)
     - Gammu
