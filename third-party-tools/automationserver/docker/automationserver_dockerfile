@@ -1,4 +1,4 @@
-FROM resin/rpi-raspbian:stretch
+FROM balenalib/raspberry-pi:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
@@ -13,8 +13,8 @@ RUN apt-get install -y git
 #Install nano
 RUN apt-get install -y nano
 
-#Install Oracle Java 8
-RUN apt-get install -y oracle-java8-jdk
+#Install Open JDK 9
+RUN apt-get install -y openjdk-9-jdk
 
 #Install wget
 RUN apt-get install -y wget
@@ -28,8 +28,8 @@ RUN apt-get install -y gammu
 #Install WiringPi
 RUN apt-get install -y wiringpi
 
-#RUN groupadd --gid 1001 fred
-#RUN useradd  --uid 1001 --gid 1001 fred
+#RUN groupadd --gid 1000 fred
+#RUN useradd  --uid 1000 --gid 1000 fred
 
 #Create application source folder
 RUN mkdir -p /applications/java/src 
@@ -49,17 +49,18 @@ RUN mkdir -p /applications/maven
 WORKDIR /applications/maven
 
 #Get Maven (http://maven.apache.org/download.cgi)
-RUN wget http://mirrors.ircam.fr/pub/apache/maven/maven-3/3.5.3/binaries/apache-maven-3.5.3-bin.tar.gz
-RUN tar -xzvf apache-maven-3.5.3-bin.tar.gz
+RUN wget http://mirrors.ircam.fr/pub/apache/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
+RUN tar -xzvf apache-maven-3.5.4-bin.tar.gz
 
 #Set ENV
-ENV M2_HOME=/applications/maven/apache-maven-3.5.3
-ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
+ENV M2_HOME=/applications/maven/apache-maven-3.5.4
+ENV JAVA_HOME=/usr/lib/jvm/java-9-openjdk-armhf
 ENV PATH=$PATH:$PGHOME/bin:$M2_HOME/bin:$JAVA_HOME/bin
+#ENV LD_LIBRARY_PATH=/usr/lib/jvm/java-9-openjdk-armhf/lib:/usr/lib/jvm/java-9-openjdk-armhf/lib/server
 
 #Build Source
 WORKDIR /applications/java/src/AutomationServer/automationserver/ASParent
-RUN mvn clean package
+RUN mvn -Djavax.net.ssl.trustStorePassword=changeit -e clean package
 
 #Copy Binaries
 RUN rm -R -f /applications/automationserver/bin/*.jar
@@ -81,6 +82,18 @@ VOLUME ["/applications/automationserver/config","/applications/automationserver/
 COPY docker-entry-point.sh /usr/local/bin/
 RUN chmod 555 /usr/local/bin/docker-entry-point.sh
 ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+
+#In order to make jsvc works with OpenJDK ...not same folder construction than Oracle...
+
+#See error without symlink...
+#Found VM server definition in configuration
+#Checking library /usr/lib/jvm/java-9-openjdk-armhf/jre/lib/arm/server/libjvm.so
+#Checking library /usr/lib/jvm/java-9-openjdk-armhf/lib/arm/server/libjvm.so
+#Cannot locate library for VM server (skipping)
+
+RUN ln -s /usr/lib/jvm/java-9-openjdk-armhf/lib /usr/lib/jvm/java-9-openjdk-armhf/jre
+RUN mkdir -p /usr/lib/jvm/java-9-openjdk-armhf/jre/lib/arm
+RUN ln -s /usr/lib/jvm/java-9-openjdk-armhf/lib/server /usr/lib/jvm/java-9-openjdk-armhf/jre/lib/arm/server
 
 #USER fred
 

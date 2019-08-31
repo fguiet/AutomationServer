@@ -2,7 +2,7 @@
 set -e
 
 TOMCAT_DEPLOY_FOLDER=/tomcat/deploy
-TOMCAT_WEBAPP_DIR=/applications/apache-tomcat-9.0.7/webapps
+TOMCAT_WEBAPP_DIR=/applications/apache-tomcat-9.0.24/webapps
 
 echo "Checking whether webapp deployment is necessary"
 if [ -z "$(ls -A ${TOMCAT_DEPLOY_FOLDER})" ]; then

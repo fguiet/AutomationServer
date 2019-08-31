@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #add fred group
-#sudo groupadd fred --gid 1001
+#sudo groupadd fred --gid 1000
 #add fred user
-#sudo useradd -r -s /sbin/nologin fred --uid 1001 -g fred
+#sudo useradd -r -s /sbin/nologin fred --uid 1000 -g fred
 
 #create volume bind with docker container
 sudo mkdir -p /home/fred/applications/automationserver

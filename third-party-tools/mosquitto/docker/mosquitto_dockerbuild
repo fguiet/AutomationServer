@@ -1,2 +1,2 @@
-docker build -t guiet/mosquitto:1.5.8 -f mosquitto_dockerfile /home/fred/git/AutomationServer/third-party-tools/mosquitto/docker
+docker build -t guiet/mosquitto:1.6.4 -f mosquitto_dockerfile /home/fred/git/AutomationServer/third-party-tools/mosquitto/docker
 

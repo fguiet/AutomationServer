@@ -1,11 +1,11 @@
-FROM resin/rpi-raspbian:stretch
+FROM balenalib/raspberry-pi:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
 RUN groupadd --gid 9004 postgres
 RUN useradd  --uid 9004 --gid 9004 postgres
 
-RUN apt-get update && apt-get install -y locales && localedef -i en_GB -c -f UTF-8 -A /etc/locale.alias en_GB.UTF-8
+RUN apt-get update && apt-get upgrade && apt-get install -y locales && localedef -i en_GB -c -f UTF-8 -A /etc/locale.alias en_GB.UTF-8
 
 RUN apt-get install -y postgresql-9.6
 

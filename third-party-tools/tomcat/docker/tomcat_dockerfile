@@ -1,18 +1,18 @@
-FROM resin/rpi-raspbian:stretch
+FROM balenalib/raspberry-pi:stretch
 
 LABEL maintainer="fguiet@gmail.com"
 
 #Update stretch distribution
-RUN apt-get update
+RUN apt-get update && apt-get upgrade
 
-#Install Oracle Java 8
-RUN apt-get install -y oracle-java8-jdk
+#Install Open JDK 9
+RUN apt-get install -y openjdk-9-jdk
 
 #Install wget
 RUN apt-get install -y wget
 
-RUN groupadd --gid 1001 fred
-RUN useradd  --uid 1001 --gid 1001 fred
+RUN groupadd --gid 1000 fred
+RUN useradd  --uid 1000 --gid 1000 fred
 
 #Create application source folder
 RUN mkdir -p /tomcat
@@ -30,14 +30,14 @@ RUN mkdir -p /applications
 WORKDIR /applications
 
 #Get Tomcat bin
-RUN wget http://www.us.apache.org/dist/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz
-RUN tar -xzvf apache-tomcat-9.0.7.tar.gz
-RUN rm apache-tomcat-9.0.7.tar.gz
+RUN wget http://www.us.apache.org/dist/tomcat/tomcat-9/v9.0.24/bin/apache-tomcat-9.0.24.tar.gz
+RUN tar -xzvf apache-tomcat-9.0.24.tar.gz
+RUN rm apache-tomcat-9.0.24.tar.gz
 
 #Update tomcat configuration
 #Change listening port from 8080 to 8510
-RUN sed -i 's/<Connector port="8080" protocol="HTTP\/1.1"/<Connector port="8510" protocol="HTTP\/1.1"/g' /applications/apache-tomcat-9.0.7/conf/server.xml
-RUN sed -i 's/${catalina.base}\/logs/\/tomcat\/logs/g' /applications/apache-tomcat-9.0.7/conf/logging.properties
+RUN sed -i 's/<Connector port="8080" protocol="HTTP\/1.1"/<Connector port="8510" protocol="HTTP\/1.1"/g' /applications/apache-tomcat-9.0.24/conf/server.xml
+RUN sed -i 's/${catalina.base}\/logs/\/tomcat\/logs/g' /applications/apache-tomcat-9.0.24/conf/logging.properties
 
 RUN usermod -a -G sudo fred
 RUN chown -R fred:fred /applications
@@ -57,9 +57,9 @@ ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
 USER fred
 
 #Set ENV
-ENV JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
-ENV CATALINA_HOME=/applications/apache-tomcat-9.0.7
-ENV JRE_HOME=${JAVA_HOME}/jre
+ENV JAVA_HOME=/usr/lib/jvm/java-9-openjdk-armhf
+ENV CATALINA_HOME=/applications/apache-tomcat-9.0.24
+ENV JRE_HOME=${JAVA_HOME}
 ENV CATALINA_OPTS="$CATALINA_OPTS -Dautomationserver.config.path=/applications/automationserver/config/automationserver.properties -Dlog4j.configuration=file:/applications/automationserver/config/log4j.xml"
 ENV PATH=$PATH:$CATALINA_HOME/bin:$JAVA_HOME/bin
 

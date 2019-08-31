@@ -15,7 +15,7 @@ sudo mkdir -p  /home/fred/applications/influxdb/meta
 sudo mkdir -p  /home/fred/applications/influxdb/data
 
 #add conf file
-sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/influxdb/conf /home/fred/applications/influxdb 
+#sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/influxdb/conf /home/fred/applications/influxdb 
 #delete logs
 sudo rm -Rf /home/fred/applications/influxdb/logs/*.log
 

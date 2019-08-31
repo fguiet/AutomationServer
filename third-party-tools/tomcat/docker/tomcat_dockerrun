@@ -10,5 +10,5 @@ docker run \
         -d \
         --restart=always \
         -p 8510:8510 \
-        guiet/tomcat:9.0.7
+        guiet/tomcat:9.0.24
               
