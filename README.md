@@ -24,7 +24,8 @@ DESCRIPTION
     - nRF51822 BLE Module
     - Arduino (not anymore, replaced by Wemos ESP8266)
     - DHT22 Sensor (temperature and humidity), not suitable with deep sleep (replaced by DS18B20)
-    - XBee (not anymore but it used to, replaced by Wemos WiFi module)
+    - ~~XBee (not anymore but it used to, replaced by Wemos WiFi module)~~
+    - nRF51822 Bluetooth modules with HTU21D temperature and humidity sensor
     - Raspberry Pi 3 (Hypriot OS)
     - Docker
     - Grafana
