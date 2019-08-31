@@ -51,6 +51,7 @@
 		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>
 	</properties>
 
+    <!--
 	<repositories>
 		<repository>
 			<id>oss-snapshots-repo</id>
@@ -62,7 +63,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
+-->
 	<build>
 		<plugins>
 
