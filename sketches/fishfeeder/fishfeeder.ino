@@ -23,8 +23,19 @@ void setup() {
    //Initialize Serial
   Serial.begin(SERIAL_BAUD);
 
+  pinMode(D0,OUTPUT);
+  pinMode(D6,OUTPUT);
+  pinMode(D5,OUTPUT);
+  pinMode(D7,OUTPUT);
+  pinMode(BUILTIN_LED, OUTPUT);
+
   // set the speed at 10 rpm:
   myStepper.setSpeed(10);
+
+  digitalWrite(BUILTIN_LED, LOW);
+  connectToWifi();
+  connectToMqtt();  
+   digitalWrite(BUILTIN_LED, HIGH);
 
   debug_message("Ready", true);
 
@@ -42,18 +53,16 @@ void debug_message(String message, bool doReturnLine) {
 
 void loop() {
   
-  if (WiFi.status() != WL_CONNECTED) {
-      digitalWrite(BUILTIN_LED, LOW);  //LED on
-      connectToWifi();
-      digitalWrite(BUILTIN_LED, HIGH);  //LED off
-  }
-
-  if (!client.connected()) {
-    connectToMqtt();
+  if (WiFi.status() != WL_CONNECTED || !client.connected()) {
+      ESP.restart();
   }
 
    client.loop();
 
+  //digitalWrite(BUILTIN_LED, LOW);
+  //delay(100);
+  //digitalWrite(BUILTIN_LED, HIGH);
+  delay(100);
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
@@ -98,7 +107,7 @@ void connectToMqtt() {
   debug_message("Attempting MQTT connection...", true);
   while (!client.connected()) {   
     if (client.connect(MQTT_CLIENT_ID)) {
-      debug_message("connected to MQTT Broker...", true);
+      debug_message("connected to MQTT Broker...", false);
     }
     else {
       delay(500);
@@ -109,9 +118,10 @@ void connectToMqtt() {
     if (retry >= MAX_RETRY) {
       ESP.restart();
     }
-  }
-
-   client.subscribe(MQTT_TOPIC);      
+    else {
+      client.subscribe(MQTT_TOPIC);      
+    }
+  }   
 }
 
 void connectToWifi() 
@@ -129,7 +139,7 @@ void connectToWifi()
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
 
-    debug_message(".", true);
+    debug_message(".", false);
     retry++;  
 
     if (retry >= MAX_RETRY)
