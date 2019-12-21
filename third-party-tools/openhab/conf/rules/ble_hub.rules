@@ -1,0 +1,17 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle Upstairs Ble Hub Notification"
+when
+    Item Upstairs_Ble_Hub received update
+then
+   Upstairs_Ble_Hub_LastUpdate.postUpdate(new DateTimeType())
+end
+
+rule "Handle Downstairs Ble Hub Notification"
+when
+    Item Downstairs_Ble_Hub received update
+then
+   Downstairs_Ble_Hub_LastUpdate.postUpdate(new DateTimeType())
+end
+
+

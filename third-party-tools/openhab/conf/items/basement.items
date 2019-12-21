@@ -1,0 +1,4 @@
+Number Cave_Temp "Température [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:basement:cave_temp"}
+Number Cave_Humidity "Humidité [%.2f %%]" <water>  {channel="mqtt:topic:homeMqttBroker:basement:cave_humidity"}
+String Cave_Extractor "Etat extracteur [%s]" <radiator>  {channel="mqtt:topic:homeMqttBroker:basement:cave_extractor"}
+

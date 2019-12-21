@@ -1,0 +1,130 @@
+Bridge mqtt:broker:homeMqttBroker "MQTT Broker : Home Automation Mosquitto Broker " [ host="192.168.1.25",port=1883,clientID="OpenHab2_MqttClient",secure=false ] {
+   Thing topic outside {
+    Channels:
+        Type number : outside_temp  "Température extérieure" [ stateTopic="guiet/outside/sensor/14",transformationPattern="JSONPATH:$.temperature" ]
+	Type number : garage_temp  "Température garage" [ stateTopic="guiet/garage/sensor/13",transformationPattern="JSONPATH:$.temperature" ]
+        Type number : pressure  "Pression atmosphérique" [ stateTopic="guiet/garage/sensor/13",transformationPattern="JSONPATH:$.pressure" ]
+   }
+  
+   Thing topic mailbox {
+    Channels:
+       Type string : mailbox_vcc "Batterie boîte aux lettres" [ stateTopic="guiet/mailbox/sensor/6",transformationPattern="JSONPATH:$.battery" ]
+   }
+
+   Thing topic alarm {
+    Channels:
+       Type switch : alarm_mode "Marche/Arrêt alarme" [ commandTopic="guiet/openhab/alarm",on="SETALARM;ON",off="SETALARM;OFF" ]
+   }
+
+   Thing topic raingauge {
+    Channels:
+       Type string : raingauge_vcc "Tension batterie pluviomètre" [ stateTopic="/guiet/automationserver/raingauge",transformationPattern="JS:getRaingaugeVcc.js" ]
+   }
+
+   Thing topic ble_hub {
+    Channels:
+       Type string : upstairs_ble_hub "Etat du hub étage" [ stateTopic="guiet/upstairs/hub" ]
+       Type string : downstairs_ble_hub "Etat du hub rez de chaussée" [ stateTopic="guiet/downstairs/hub" ]
+   }
+
+   Thing topic boiler {
+    Channels:
+       Type number : boiler_temp  "Température chauffe eau" [ stateTopic="/guiet/home/info",transformationPattern="JS:getBoilerTemp.js" ]
+       Type string : boiler_state  "Etat capteur" [ stateTopic="/guiet/home/info",transformationPattern="JS:getBoilerState.js" ]       
+       Type string : boiler_lastinfo  "Dernière info capteur" [ stateTopic="/guiet/home/info",transformationPattern="JS:getBoilerLastInfo.js" ]
+       Type string : boiler_lastonduration  "Durée dernière chauffe" [ stateTopic="/guiet/home/info",transformationPattern="JS:getBoilerLastOnDuration.js" ]
+   }
+
+   Thing topic rollershutter {
+    Channels:
+       Type rollershutter : westrollershutter "Gestion volet roulant ouest" [ commandTopic="/guiet/openhab/rollershutter",on="",off="",stop="" ]
+       Type rollershutter : northrollershutter "Gestion volet roulant nord" [ commandTopic="/guiet/openhab/rollershutter",on="",off="",stop="" ]
+       Type string : westrollershutter_state "Etat volet roulant ouest" [ stateTopic="/guiet/home/info",transformationPattern="JS:getRSWestState.js" ]
+       Type string : northrollershutter_state "Etat volet roulant nord" [ stateTopic="/guiet/home/info",transformationPattern="JS:getRSNorthState.js" ]
+   }
+
+   Thing topic electricity {
+    Channels:
+       Type string : heurepleine "Heure Pleine" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.index_hp" ]
+       Type string : heurecreuse "Heure Creuse" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.index_hc" ]
+       Type string : consoinst  "Consommation Instantanée" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.conso_inst" ]
+       Type string : today_cost "Cout journalier" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.today_cost" ]
+       Type string : month_cost "Cout mensuel" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.month_cost" ]
+   }
+
+   Thing topic basement {
+    Channels:
+        Type number : cave_temp  "Température cave" [ stateTopic="/guiet/cave/temphumi",transformationPattern="JS:getCaveTemp.js" ]
+        Type number : cave_humidity  "Humidité cave" [ stateTopic="/guiet/cave/temphumi",transformationPattern="JS:getCaveHumi.js" ]
+        Type string : cave_extractor "Etat extracteur air cave" [ stateTopic="/guiet/cave/temphumi",transformationPattern="JS:getCaveExtractor.js" ]
+   }
+
+   Thing topic rooms {
+    Channels:
+       Type number : bathroom_upstairs_current_temp "Temp salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : bathroom_upstairs_humidity "Humidité salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : bathroom_upstairs_sensor_state "Etat capteur salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : bathroom_upstairs_sensor_lastinfo "Dernière info capteur salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type number : bathroom_upstairs_battery "Batterie capteur salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getBattery.js" ]
+       Type number : bathroom_upstairs_sensor_rssi "Rssi capteur salle de bain du haut" [ stateTopic="guiet/upstairs/bathroom/info",transformationPattern="JS:getRssi.js" ]
+ 
+       Type number : parents_current_temp "Temp chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : parents_programmed_temp "Temp prog. chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getProgTemp.js" ]
+       Type number : parents_humidity "Humidité chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : parents_heater_state "Etat radiateur chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getHeaterState.js" ]
+       Type string : parents_sensor_state "Etat capteur chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : parents_sensor_lastinfo "Dernière info capteur chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type string : parents_heater_nextchange "Prochain changement temp. chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getNextChange.js" ]
+       Type number : parents_wanted_temp "Définir dérogation chambre parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getWantedTemp.js",commandTopic="guiet/openhab/user",formatBeforePublish="SETROOMTEMP;5;%s" ]
+       Type number : parents_battery "Batterie capteur Parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getBattery.js" ]
+       Type number : parents_sensor_rssi "Rssi capteur Parents" [ stateTopic="guiet/upstairs/room_parents/info",transformationPattern="JS:getRssi.js" ]
+
+       Type number : manon_current_temp "Temp chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : manon_programmed_temp "Temp prog. chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getProgTemp.js" ]
+       Type number : manon_humidity "Humidité chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : manon_heater_state "Etat radiateur chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getHeaterState.js" ]
+       Type string : manon_sensor_state "Etat capteur chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : manon_sensor_lastinfo "Dernière info capteur chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type string : manon_heater_nextchange "Prochain changement temp. chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getNextChange.js" ]
+       Type number : manon_wanted_temp "Définir dérogation chambre Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getWantedTemp.js",commandTopic="guiet/openhab/user",formatBeforePublish="SETROOMTEMP;4;%s" ]
+       Type number : manon_battery "Batterie capteur Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getBattery.js" ]
+       Type number : manon_sensor_rssi "Rssi capteur Manon" [ stateTopic="guiet/upstairs/room_manon/info",transformationPattern="JS:getRssi.js" ]
+       Type string : manon_fishfeeder "Fish feeder" [ stateTopic="/guiet/fishfeeder" ]
+       
+       Type number : nohe_current_temp "Temp chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : nohe_programmed_temp "Temp prog. chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getProgTemp.js" ]
+       Type number : nohe_humidity "Humidité chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : nohe_heater_state "Etat radiateur chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getHeaterState.js" ]
+       Type string : nohe_sensor_state "Etat capteur chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : nohe_sensor_lastinfo "Dernière info capteur chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type string : nohe_heater_nextchange "Prochain changement temp. chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getNextChange.js" ]
+       Type number : nohe_wanted_temp "Définir dérogation chambre Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getWantedTemp.js",commandTopic="guiet/openhab/user",formatBeforePublish="SETROOMTEMP;3;%s" ]
+       Type number : nohe_battery "Batterie capteur Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getBattery.js" ]
+       Type number : nohe_sensor_rssi "Rssi capteur Nohé" [ stateTopic="guiet/upstairs/room_nohe/info",transformationPattern="JS:getRssi.js" ]
+
+       Type number : salon_current_temp "Temp chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : salon_programmed_temp "Temp prog. chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getProgTemp.js" ]
+       Type number : salon_humidity "Humidité chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : salon_heater_state "Etat radiateur chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getHeaterState.js" ]
+       Type string : salon_sensor_state "Etat capteur chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : salon_sensor_lastinfo "Dernière info capteur chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type string : salon_heater_nextchange "Prochain changement temp. chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getNextChange.js" ]
+       Type number : salon_wanted_temp "Définir dérogation chambre Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getWantedTemp.js",commandTopic="guiet/openhab/user",formatBeforePublish="SETROOMTEMP;2;%s" ]
+       Type number : salon_battery "Batterie capteur Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getBattery.js" ]
+       Type number : salon_sensor_rssi "Rssi capteur Salon" [ stateTopic="guiet/downstairs/livingroom/info",transformationPattern="JS:getRssi.js" ]
+       Type string : salon_frontdoor_state "Etat porte entrée" [ stateTopic="guiet/downstairs/livingroom/sensor/16",transformationPattern="JSONPATH:$.state" ]
+
+       Type number : bureau_current_temp "Temp chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getCurrentTemp.js" ]
+       Type number : bureau_programmed_temp "Temp prog. chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getProgTemp.js" ]
+       Type number : bureau_humidity "Humidité chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getHumidity.js" ]
+       Type string : bureau_heater_state "Etat radiateur chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getHeaterState.js" ]
+       Type string : bureau_sensor_state "Etat capteur chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getSensorState.js" ]
+       Type string : bureau_sensor_lastinfo "Dernière info capteur chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getSensorLastInfo.js" ]
+       Type string : bureau_heater_nextchange "Prochain changement temp. chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getNextChange.js" ]
+       Type number : bureau_wanted_temp "Définir dérogation chambre Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getWantedTemp.js",commandTopic="guiet/openhab/user",formatBeforePublish="SETROOMTEMP;1;%s" ]
+       Type number : bureau_battery "Batterie capteur Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getBattery.js" ]
+       Type number : bureau_sensor_rssi "Rssi capteur Bureau" [ stateTopic="guiet/downstairs/office/info",transformationPattern="JS:getRssi.js" ]
+
+   }
+}
+

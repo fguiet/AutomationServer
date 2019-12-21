@@ -1,0 +1,14 @@
+Number Salon_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:salon_current_temp"}
+Number Salon_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:salon_programmed_temp"}
+Number Salon_Humidity "Humidité  [%.2f %%]" <water>  {channel="mqtt:topic:homeMqttBroker:rooms:salon_humidity"}
+String Salon_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {channel="mqtt:topic:homeMqttBroker:rooms:salon_heater_state"}
+String Salon_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:salon_sensor_state"}
+String Salon_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:salon_sensor_lastinfo"}
+String Salon_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {channel="mqtt:topic:homeMqttBroker:rooms:salon_heater_nextchange"}
+Number Salon_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {channel="mqtt:topic:homeMqttBroker:rooms:salon_wanted_temp"}
+Number Salon_Derog "Dérogation en cours à [%.1f °C]" <temperature>
+Number Salon_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:salon_battery"}
+Number Salon_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:salon_sensor_rssi"}
+Switch Salon_Derog_Visibility
+Switch Salon_HUE_Motion "Capteur présence" <motion> { http="<[http://192.168.1.2/api/DVB9hqva71-vbGkJgQ5GElkUclfXi4g8DWCxGqWQ/sensors/5:3000:JS(getHueMotionEvent.js)]" }
+String Salon_FrontDoor_State "Porte entrée [MAP(door_state.map):%s]" <frontdoor> {channel="mqtt:topic:homeMqttBroker:rooms:salon_frontdoor_state"}

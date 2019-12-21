@@ -1,0 +1,4 @@
+Number Garage_Temp "Temp. garage [%.2f °C]" <temperature> { channel="mqtt:topic:homeMqttBroker:outside:garage_temp" }
+Number Pressure "Pression atmosphérique [%.2f hPa]" <pressure> { channel="mqtt:topic:homeMqttBroker:outside:pressure" }
+Number Pressure_Normalized "Pression atmo. normalisée [%.2f hPa]" <pressure>
+DateTime GarageSensor_LastUpdate "Dernière récep. capteur [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>

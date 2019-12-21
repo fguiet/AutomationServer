@@ -1,0 +1,4 @@
+String Upstairs_Ble_Hub "BLE Hub Etage dernière activité" <radiator>  { channel="mqtt:topic:homeMqttBroker:ble_hub:upstairs_ble_hub" }
+DateTime Upstairs_Ble_Hub_LastUpdate "BLE Hub Etage dernière activité : [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <bluetooth>
+String Downstairs_Ble_Hub "BLE Hub Rez Chaussée dernière activité" <radiator>  { channel="mqtt:topic:homeMqttBroker:ble_hub:downstairs_ble_hub" }
+DateTime Downstairs_Ble_Hub_LastUpdate "BLE Hub Rez Chaussée dernière activité : [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <bluetooth>

@@ -1,108 +1,88 @@
-Number Outside_Temp "Temp. va mere extérieure [%.2f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/outside/sensorsinfo:state:JS(getOutsideTemp.js)]"}
-Number Garage_Temp "Temp. garage [%.2f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/outside/sensorsinfo:state:JS(getGarageTemp.js)]"}
-Number Pressure "Pression atmosphérique [%.2f hPa]" <pressure> {mqtt="<[mosquitto-broker:/guiet/outside/sensorsinfo:state:JS(getPressure.js)]"}
-Number Pressure_Normalized "Pression atmo. normalisée [%.2f hPa]" <pressure>
+Number Outside_Temp "Temp. extérieure [%.2f °C]" <temperature> { channel="mqtt:topic:homeMqttBroker:outside:outside_temp" }
 
-Number Artenay_Temp "Temperature [%.2f °C]" {weather="locationId=artenay, type=temperature, property=current"} 
+Number Bathroom_Upstairs_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  { channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_current_temp" }
+Number Bathroom_Upstairs_Humidity "Humidité  [%d %%]" <water>  { channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_humidity" }
+String Bathroom_Upstairs_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> { channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_sensor_state" }
+String Bathroom_Upstairs_Sensor_LastInfo "Dernière info capteur [%s]"  <network> { channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_sensor_lastinfo" }
+Number Bathroom_Upstairs_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_battery"}
+Number Bathroom_Upstairs_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:bathroom_upstairs_sensor_rssi"}
 
-Number Parents_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getCurrentTemp.js)]"}
-Number Parents_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getProgTemp.js)]"}
-Number Parents_Humidity "Humidité  [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getHumidity.js)]"}
-String Parents_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getHeaterState.js)]"}
-String Parents_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getSensorState.js)]"}
-String Parents_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getSensorLastInfo.js)]"}
-String Parents_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getNextChange.js)]"}
-Number Parents_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_parents:state:JS(getWantedTemp.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setParentsRoomTemp.js)]"}
+Number Parents_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  { channel="mqtt:topic:homeMqttBroker:rooms:parents_current_temp" }
+Number Parents_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  { channel="mqtt:topic:homeMqttBroker:rooms:parents_programmed_temp" }
+Number Parents_Humidity "Humidité  [%d %%]" <water>  { channel="mqtt:topic:homeMqttBroker:rooms:parents_humidity" }
+String Parents_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  { channel="mqtt:topic:homeMqttBroker:rooms:parents_heater_state" }
+String Parents_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> { channel="mqtt:topic:homeMqttBroker:rooms:parents_sensor_state" }
+String Parents_Sensor_LastInfo "Dernière info capteur [%s]"  <network> { channel="mqtt:topic:homeMqttBroker:rooms:parents_sensor_lastinfo" }
+String Parents_Heater_NextChange "Prochaine prog. [%s]"  <calendar> { channel="mqtt:topic:homeMqttBroker:rooms:parents_heater_nextchange" }
+Number Parents_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> { channel="mqtt:topic:homeMqttBroker:rooms:parents_wanted_temp" }
 Number Parents_Derog "Dérogation en cours à [%.1f °C]" <temperature> 
+Number Parents_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:parents_battery"}
+Number Parents_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:parents_sensor_rssi"}
 Switch Parents_Derog_Visibility 
 
-Number Manon_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getCurrentTemp.js)]"}
-Number Manon_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getProgTemp.js)]"}
-Number Manon_Humidity "Humidité  [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getHumidity.js)]"}
-String Manon_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getHeaterState.js)]"}
-String Manon_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getSensorState.js)]"}
-String Manon_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getSensorLastInfo.js)]"}
-String Manon_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getNextChange.js)]"}
-Number Manon_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_manon:state:JS(getWantedTemp.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setManonRoomTemp.js)]"}
-Number Manon_Derog "Dérogation en cours à [%.1f °C]" <temperature> 
-Switch Manon_Derog_Visibility 
-
-Number Nohe_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getCurrentTemp.js)]"}
-Number Nohe_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getProgTemp.js)]"}
-Number Nohe_Humidity "Humidité  [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getHumidity.js)]"}
-String Nohe_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getHeaterState.js)]"}
-String Nohe_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getSensorState.js)]"}
-String Nohe_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getSensorLastInfo.js)]"}
-String Nohe_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getNextChange.js)]"}
-Number Nohe_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_nohe:state:JS(getWantedTemp.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setNoheRoomTemp.js)]"}
+Number Nohe_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:nohe_current_temp"}
+Number Nohe_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:nohe_programmed_temp"}
+Number Nohe_Humidity "Humidité  [%d %%]" <water>  {channel="mqtt:topic:homeMqttBroker:rooms:nohe_humidity"}
+String Nohe_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {channel="mqtt:topic:homeMqttBroker:rooms:nohe_heater_state"}
+String Nohe_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:nohe_sensor_state"}
+String Nohe_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:nohe_sensor_lastinfo"}
+String Nohe_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {channel="mqtt:topic:homeMqttBroker:rooms:nohe_heater_nextchange"}
+Number Nohe_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {channel="mqtt:topic:homeMqttBroker:rooms:nohe_wanted_temp"}
 Number Nohe_Derog "Dérogation en cours à [%.1f °C]" <temperature>
+Number Nohe_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:nohe_battery"}
+Number Nohe_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:nohe_sensor_rssi"}
 Switch Nohe_Derog_Visibility
 
-Number Salon_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getCurrentTemp.js)]"}
-Number Salon_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getProgTemp.js)]"}
-Number Salon_Humidity "Humidité  [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getHumidity.js)]"}
-String Salon_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getHeaterState.js)]"}
-String Salon_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getSensorState.js)]"}
-String Salon_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getSensorLastInfo.js)]"}
-String Salon_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getNextChange.js)]"}
-Number Salon_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_salon:state:JS(getWantedTemp.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setSalonRoomTemp.js)]"}
-Number Salon_Derog "Dérogation en cours à [%.1f °C]" <temperature>
-Switch Salon_Derog_Visibility
-Switch Salon_HUE_Motion "Capteur présence" <present> { http="<[http://192.168.1.2/api/DVB9hqva71-vbGkJgQ5GElkUclfXi4g8DWCxGqWQ/sensors/5:3000:JS(getHueMotionEvent.js)]" }
-
-Number Bureau_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getCurrentTemp.js)]"}
-Number Bureau_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getProgTemp.js)]"}
-Number Bureau_Humidity "Humidité  [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getHumidity.js)]"}
-String Bureau_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getHeaterState.js)]"}
-String Bureau_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getSensorState.js)]"}
-String Bureau_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getSensorLastInfo.js)]"}
-String Bureau_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getNextChange.js)]"}
-Number Bureau_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {mqtt="<[mosquitto-broker:/guiet/sensors/dht22_bureau:state:JS(getWantedTemp.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setBureauRoomTemp.js)]"}
+Number Bureau_Current_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:bureau_current_temp"}
+Number Bureau_Programmed_Temp "Temp. programmée  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:rooms:bureau_programmed_temp"}
+Number Bureau_Humidity "Humidité  [%.2f %%]" <water>  {channel="mqtt:topic:homeMqttBroker:rooms:bureau_humidity"}
+String Bureau_Heater_State "Etat radiateur [MAP(heater_state.map):%s]" <radiator>  {channel="mqtt:topic:homeMqttBroker:rooms:bureau_heater_state"}
+String Bureau_Sensor_State "Etat capteur [MAP(sensor_state.map):%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:bureau_sensor_state"}
+String Bureau_Sensor_LastInfo "Dernière info capteur [%s]"  <network> {channel="mqtt:topic:homeMqttBroker:rooms:bureau_sensor_lastinfo"}
+String Bureau_Heater_NextChange "Prochaine prog. [%s]"  <calendar> {channel="mqtt:topic:homeMqttBroker:rooms:bureau_heater_nextchange"}
+Number Bureau_Wanted_Temp "Définir la dérogation [%.1f °C]" <temperature> {channel="mqtt:topic:homeMqttBroker:rooms:bureau_wanted_temp"}
+Number Bureau_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:bureau_battery"}
+Number Bureau_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:bureau_sensor_rssi"}
 Number Bureau_Derog "Dérogation en cours à [%.1f °C]" <temperature>
 Switch Bureau_Derog_Visibility
 
-DateTime Sunrise_Time  "Levé du soleil à [%1$tH:%1$tM]" <sunrise>  { channel="astro:sun:361ed714:rise#start" }
-DateTime Sunset_Time   "Couché du soleil à [%1$tH:%1$tM]" <sunset>   { channel="astro:sun:361ed714:set#start" }
-Number   Azimuth       "Azimuth [%.1f °]"       { channel="astro:sun:361ed714:position#azimuth" }
-Number   Elevation     "Elevation [%.1f °]"     { channel="astro:sun:361ed714:position#elevation" }
-String   MoonPhase     "Phase de la lune [%s]" <moon>        { channel="astro:moon:813bd26a:phase#name" }
+DateTime Sunrise_Time  "Levé du soleil à [%1$tH:%1$tM]" <sunrise>  { channel="astro:sun:local:rise#start" }
+DateTime Sunset_Time   "Couché du soleil à [%1$tH:%1$tM]" <sunset>   { channel="astro:sun:local:set#start" }
+Number   Azimuth       "Azimuth [%.1f °]"       { channel="astro:sun:local:position#azimuth" }
+Number   Elevation     "Elevation [%.1f °]"     { channel="astro:sun:local:position#elevation" }
+String   MoonPhase     "Phase de la lune [%s]" <moon>        { channel="astro:moon:local:phase#name" }
 String   Season        "Saison [%s]"            {channel="astro:sun:local:season#name"}
-
-String HeurePleine "Heure pleine : [%s]" {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getHeurePleine.js)]"}
-String HeureCreuse "Heure creuse : [%s]" {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getHeureCreuse.js)]"}
-String ConsoInst "Conso. instantanée : [%s]" <energy> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getConsoInst.js)]"}
-String NextBill "Prochaine fact. : [%s €]"  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextBill.js)]"}
 
 DateTime DateHeure "Nous sommes le [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <calendar>  { channel="ntp:ntp:local:dateTime" }
 
-Number Cave_Temp "Température [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/cave/temphumi:state:JS(getCaveTemp.js)]"}
-Number Cave_Humidity "Humidité [%.2f %%]" <water>  {mqtt="<[mosquitto-broker:/guiet/cave/temphumi:state:JS(getCaveHumi.js)]"}
-String Cave_Extractor "Etat extracteur [%s]" <radiator>  {mqtt="<[mosquitto-broker:/guiet/cave/temphumi:state:JS(getCaveExtractor.js)]"}
 
-String Mailbox_Vcc "Voltage [%s]" <energy>  {mqtt="<[mosquitto-broker:guiet/mailbox/gotmail:state:JS(getMailboxVcc.js)]"}
-DateTime Mailbox_LastUpdate "Dernière réception courrier [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>  
+//Switch Away_Mode "Mode absence prolongée" <vacation> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getAwayMode.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setAwayMode.js)]"}
+//Number AutoMgt_Mode "Mode Mgt auto" <vacation> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getMgtAutoMode.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setMgtAutoMode.js)]"}
 
-Switch Away_Mode "Mode absence prolongée" <vacation> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getAwayMode.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setAwayMode.js)]"}
-Number AutoMgt_Mode "Mode Mgt auto" <vacation> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getMgtAutoMode.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setMgtAutoMode.js)]"}
+//Switch RollershutterMgt  "Gest. auto. volets roulants" <settings>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getRSMgt.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setRSMgt.js)]"}
+String WestRollerShutter_State "Volet roulant Ouest [MAP(rs_state.map):%s]" <rollershutter>  {channel="mqtt:topic:homeMqttBroker:rollershutter:westrollershutter_state"}
+String NorthRollerShutter_State "Volet roulant Nord [MAP(rs_state.map):%s]" <rollershutter>  {channel="mqtt:topic:homeMqttBroker:rollershutter:northrollershutter_state"}
 
-Switch RollershutterMgt  "Gest. auto. volets roulants" <settings>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getRSMgt.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setRSMgt.js)]"}
-String WestRollerShutter_State "Volet roulant Ouest [MAP(rs_state.map):%s]" <rollershutter>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getRSWestState.js)]"}
-String NorthRollerShutter_State "Volet roulant Nord [MAP(rs_state.map):%s]" <rollershutter>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getRSNorthState.js)]"}
+//[] pour ne pas voir la valeur ON/OFF
+Switch Alarm_Mode "Alarme []" <siren> {channel="mqtt:topic:homeMqttBroker:alarm:alarm_mode"}
 
-Switch Alarm_Mode "Alarme" <siren> {mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setAlarmMode.js)]"}
-Switch AlarmMgt "Gest. auto. alarme" <settings> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getAlarmMgt.js)]", mqtt=">[mosquitto-broker:/guiet/openhab/user:command:*:JS(setAlarmMgt.js)]"}
+//Non fonctionnel a l'heure actuelle https://community.openhab.org/t/binding-mqtt-2-5-0-snapshot-rollershutter-command-is-sent-wrong/61091
+//Rollershutter WestRollerShutter "Volet roulant Ouest"  <rollershutter> {mqtt=">[mosquitto-broker:/guiet/openhab/rollershutter:command:*:JS(setRSWestAction.js)]"}
+Rollershutter WestRollerShutter "Volet roulant Ouest"  <rollershutter> {channel="mqtt:topic:homeMqttBroker:rollershutter:westrollershutter"}
+//Rollershutter NorthRollerShutter "Volet roulant Nord"  <rollershutter> {mqtt=">[mosquitto-broker:/guiet/openhab/rollershutter:command:*:JS(setRSNorthAction.js)]"}
+Rollershutter NorthRollerShutter "Volet roulant Nord"  <rollershutter> {channel="mqtt:topic:homeMqttBroker:rollershutter:northrollershutter"}
 
-Rollershutter WestRollerShutter "Volet roulant Ouest"  <rollershutter> {mqtt=">[mosquitto-broker:/guiet/openhab/rollershutter:command:*:JS(setRSWestAction.js)]"}
-Rollershutter NorthRollerShutter "Volet roulant Nord"  <rollershutter> {mqtt=">[mosquitto-broker:/guiet/openhab/rollershutter:command:*:JS(setRSNorthAction.js)]"}
+//String NextRSOpen "Ouv. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSOpen.js)]"}
+//String NextRSClose "Ferm. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSClose.js)]"}
 
-String NextRSOpen "Ouv. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSOpen.js)]"}
-String NextRSClose "Ferm. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSClose.js)]"}
-
-String Raingauge_Vcc "Voltage pluvio. [%s]" <energy>  {mqtt="<[mosquitto-broker:/guiet/automationserver/raingauge:state:JS(getRaingaugeVcc.js)]"}
+String Raingauge_Vcc "Voltage pluvio. [%s]" <energy>  {channel="mqtt:topic:homeMqttBroker:raingauge:raingauge_vcc"}
 DateTime Raingauge_LastUpdate "Dernière réception tension pluvio. [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
 
-Number Boiler_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerTemp.js)]"}
-String Boiler_State "Etat capteur [MAP(boiler_state.map):%s]" <switch> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerState.js)]"}
-String Boiler_LastInfo "Dernière info capteur [%s]"  <network> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerLastInfo.js)]"}
-String Boiler_LastOnDuration "Durée de la dernière chauffe [%s]"  <time-on> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getBoilerLastOnDuration.js)]"}
+Number Boiler_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:boiler:boiler_temp"}
+String Boiler_State "Etat chauffe-eau [MAP(boiler_state.map):%s]" <switch> {channel="mqtt:topic:homeMqttBroker:boiler:boiler_state"}
+String Boiler_LastInfo "Dernière info capteur [%s]"  <network> {channel="mqtt:topic:homeMqttBroker:boiler:boiler_lastinfo"}
+String Boiler_LastOnDuration "Durée de la dernière chauffe [%s]"  <time-on> {channel="mqtt:topic:homeMqttBroker:boiler:boiler_lastonduration"}
 
+Color Kitchen_LightStrip "Lumière"  {channel="hue:0210:00178840cd81:1:color"}
+Color Manon_HueColor "Lumière Manounette" {channel="hue:0210:00178840cd81:4:color"}
+Color Nohe_HueColor "Lumière Nohé" {channel="hue:0210:00178840cd81:5:color"}

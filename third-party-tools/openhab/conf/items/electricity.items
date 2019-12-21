@@ -1,0 +1,6 @@
+String HeurePleine "Heure pleine : [%s]" {channel="mqtt:topic:homeMqttBroker:electricity:heurepleine"}
+String HeureCreuse "Heure creuse : [%s]" {channel="mqtt:topic:homeMqttBroker:electricity:heurecreuse"}
+String ConsoInst "Conso. instantanée : [%s]" <energy> {channel="mqtt:topic:homeMqttBroker:electricity:consoinst"}
+String TodayCost "Coût journalier : [%s €]" <price>  {channel="mqtt:topic:homeMqttBroker:electricity:today_cost"}
+String MonthCost "Coût mensuel : [%s €]" <price>  {channel="mqtt:topic:homeMqttBroker:electricity:month_cost"}
+

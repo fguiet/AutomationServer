@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle Garage Sensor Notification"
+when
+    Item Garage_Temp  received update
+then
+   GarageSensor_LastUpdate.postUpdate(new DateTimeType())
+end
+

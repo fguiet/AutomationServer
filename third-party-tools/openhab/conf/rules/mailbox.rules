@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle Mailbox Notification"
+when
+    Item Mailbox_Vcc received update
+then
+   Mailbox_LastUpdate.postUpdate(new DateTimeType())
+end
+

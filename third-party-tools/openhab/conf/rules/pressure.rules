@@ -1,4 +1,4 @@
-import org.openhab.core.library.types.*
+import org.openhab.core.library.types.DecimalType
 
 rule "Handle Normalised Pressure"
 when

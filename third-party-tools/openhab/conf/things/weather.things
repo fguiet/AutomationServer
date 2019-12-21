@@ -1,0 +1,3 @@
+Bridge openweathermap:weather-api:api "OpenWeatherMap Account" [apikey="ff842058b1cb20e5af06378a4a8015e9", refreshInterval=30, language="fr"] {
+    Thing weather-and-forecast meteo_artenay "Météo Artenay" [location="48.08,1.88", forecastHours=0, forecastDays=7]
+}

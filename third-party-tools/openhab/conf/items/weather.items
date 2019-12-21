@@ -1,0 +1,43 @@
+String localStationId "ID [%s]" { channel="openweathermap:weather-and-forecast:api:meteo_artenay:station#id" }
+String localStationName "Nom Station Météo [%s]" { channel="openweathermap:weather-and-forecast:api:meteo_artenay:station#name" }
+Location localStationLocation "Localisation Station Météo [%2$s°N %3$s°E]" <location> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:station#location" }
+
+DateTime localLastMeasurement "Dernière mesure [%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS]" <time> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#time-stamp" }
+String localCurrentCondition "Condition météo actuelle [%s]" <sun_clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#condition" }
+Image localCurrentConditionIcon "Icon" { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#icon" }
+Number:Temperature localCurrentTemperature "Témperature actuelle [%.1f %unit%]" <temperature> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#temperature" }
+Number:Pressure localCurrentPressure "Pression atmosphérique actuelle [%.1f %unit%]" <pressure> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#pressure" }
+Number:Dimensionless localCurrentHumidity "Huimidité atmosphérique actuelle [%d %unit%]" <humidity> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#humidity" }
+Number:Speed localCurrentWindSpeed "Vitesse du vent actuelle [%.1f km/h]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#wind-speed" }
+Number:Angle localCurrentWindDirection "Direction du vent actuelle [%d %unit%]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#wind-direction" }
+Number:Dimensionless localCurrentCloudiness "Enuagement actuel [%d %unit%]" <clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#cloudiness" }
+Number:Length localCurrentRainVolume "Quantité de pluie actuelle [%.1f %unit%]" <rain> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#rain" }
+Number:Length localCurrentSnowVolume "Quantité de neige actuelle [%.1f %unit%]" <snow> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:current#snow" }
+
+//DateTime localDailyForecastTodayTimestamp "Timestamp of forecast [%1$tY-%1$tm-%1$td]" <time> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#time-stamp" }
+//String localDailyForecastTodayCondition "Condition pour aujourd'hui [%s]" <sun_clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#condition" }
+//Image localDailyForecastTodayConditionIcon "Icon" { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#icon" }
+//Number:Temperature localDailyForecastTodayMinTemperature "Temp. mini. pour aujourd'hui [%.1f %unit%]" <temperature> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#min-temperature" }
+//Number:Temperature localDailyForecastTodayMaxTemperature "Temp. max. pour aujourd'hui [%.1f %unit%]" <temperature> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#max-temperature" }
+//Number:Pressure localDailyForecastTodayPressure "Pression atmo. pour aujourd'hui [%.1f %unit%]" <pressure> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#pressure" }
+//Number:Dimensionless localDailyForecastTodayHumidity "Humidité pour pour aujourd'hui [%d %unit%]" <humidity> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#humidity" }
+//Number:Speed localDailyForecastTodayWindSpeed "Vitesse du vent pour aujourd'hui [%.1f km/h]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#wind-speed" }
+//Number:Angle localDailyForecastTodayWindDirection "Direction du vent pour aujourd'hui [%d %unit%]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#wind-direction" }
+//Number:Dimensionless localDailyForecastTodaytCloudiness "Enuagement pour aujourd'hui [%d %unit%]" <clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#cloudiness" }
+//Number:Length localDailyForecastTodayRainVolume "Qté de pluie pour aujourd'hui [%.1f %unit%]" <rain> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#rain" }
+//Number:Length localDailyForecastTodaySnowVolume "Qté de neige pour aujourd'hui [%.1f %unit%]" <snow> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastToday#snow" }
+
+//DateTime localDailyForecastTomorrowTimestamp "Timestamp of forecast [%1$tY-%1$tm-%1$td]" <time> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#time-stamp" }
+//String localDailyForecastTomorrowCondition "Condition pour demain [%s]" <sun_clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#condition" }
+//Image localDailyForecastTomorrowConditionIcon "Icon" { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#icon" }
+//Number:Temperature localDailyForecastTomorrowMinTemperature "Temp. mini. pour demain [%.1f %unit%]" <temperature> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#min-temperature" }
+//Number:Temperature localDailyForecastTomorrowMaxTemperature "Temp. max. pour demain [%.1f %unit%]" <temperature> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#max-temperature" }
+//Number:Pressure localDailyForecastTomorrowPressure "Pression atmo. pour demain [%.1f %unit%]" <pressure> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#pressure" }
+//Number:Dimensionless localDailyForecastTomorrowHumidity "Humidité pour pour demain [%d %unit%]" <humidity> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#humidity" }
+//Number:Speed localDailyForecastTomorrowWindSpeed "Vitesse du vent pour demain [%.1f km/h]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#wind-speed" }
+//Number:Angle localDailyForecastTomorrowWindDirection "Direction du vent pour demain [%d %unit%]" <wind> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#wind-direction" }
+//Number:Dimensionless localDailyForecastTomorrowtCloudiness "Enuagement pour demain [%d %unit%]" <clouds> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#cloudiness" }
+//Number:Length localDailyForecastTomorrowRainVolume "Qté de pluie pour demain [%.1f %unit%]" <rain> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#rain" }
+//Number:Length localDailyForecastTomorrowSnowVolume "Qté de neige pour demain [%.1f %unit%]" <snow> { channel="openweathermap:weather-and-forecast:api:meteo_artenay:forecastTomorrow#snow" }
+
+
