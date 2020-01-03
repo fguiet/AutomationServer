@@ -22,9 +22,12 @@ import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
-public class RainGaugeService implements Runnable {
+import org.json.JSONException;
+import org.json.JSONObject;
 
-	private static Logger _logger = LogManager.getLogger(RainGaugeService.class);
+public class LoRaService implements Runnable {
+
+	private static Logger _logger = LogManager.getLogger(LoRaService.class);
 	private String _defaultDevice = "";
 	private Serial _serial = null;
 	private boolean _isStopped = false; // Service arrete?
@@ -33,9 +36,13 @@ public class RainGaugeService implements Runnable {
 	// private static String _mqttClientId = "rainGaugeCliendId";
 	private MqttService _mqttService = null;
 	private String _pub_topic = "/guiet/automationserver/raingauge";
+	private String _pub_topic_watermeter = "/guiet/automationserver/watermeter";
 	private Date _lastMessageReceived = new Date();
+	
+	private final String RAINGAUGE_SENSOR_ID = "17";
+	private final String WATERMETER_SENSOR_ID = "19";
 
-	public RainGaugeService(SMSGammuService smsGammuService, MqttService mqttService) {
+	public LoRaService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
 		_mqttService = mqttService;
 		_dbManager = new DbManager();
@@ -47,7 +54,7 @@ public class RainGaugeService implements Runnable {
 
 		try {
 			if (_serial.isOpen()) {
-				_logger.info("Fermeture port serie pour la RainGauge");
+				_logger.info("Fermeture port serie pour le service de gestion LoRa");
 
 				_serial.discardInput();
 				_serial.close();
@@ -58,11 +65,11 @@ public class RainGaugeService implements Runnable {
 			
 		} catch (IOException ioe) {
 
-			_logger.error("Impossible de fermer le port serie pour la RainGauge", ioe);
+			_logger.error("Impossible de fermer le port serie pour le service de gestion LoRa", ioe);
 		}
 	}
 
-	private String ReadRainGaugeMessage() {
+	private String ReadLoRaMessage() {
 		try {
 
 			// Check serial connection
@@ -75,7 +82,7 @@ public class RainGaugeService implements Runnable {
 				byte[] byteArray = _serial.read();
 
 				String serialData = new String(byteArray, "UTF-8");
-				_logger.info("Received RainGauge message : " + serialData);
+				_logger.info("Received LoRa message : " + serialData);
 
 				return serialData;
 			}
@@ -83,7 +90,7 @@ public class RainGaugeService implements Runnable {
 			return null;
 
 		} catch (Exception e) {
-			_logger.info("Erreur while reading RainGauge message", e);
+			_logger.info("Erreur while reading LoRa message", e);
 
 			CloseSerialConnection(false);
 
@@ -110,7 +117,7 @@ public class RainGaugeService implements Runnable {
 				_serial.setBufferingDataReceived(true);
 
 				_serial.open(config);
-				_logger.info("Ouverture du port serie pour la RainGauge effectué avec succès...");
+				_logger.info("Ouverture du port serie pour le service de gestion LoRa effectué avec succès...");
 
 			}
 
@@ -118,16 +125,50 @@ public class RainGaugeService implements Runnable {
 
 			isOk = false;
 
-			_logger.error("Impossible d'ouvrir le port série pour la RainGauge", e);
+			_logger.error("Impossible d'ouvrir le port série pour le service de gestion LoRa", e);
 		}
 
 		return isOk;
+	}
+	
+	private void ManageRaingaugeSensor(String message) {
+		
+		String[] messageContent = message.split(";");
+
+		if (messageContent != null && messageContent.length > 0) {
+
+			String action = messageContent[0];
+
+			switch (action) {
+			case "SETRAINGAUGEINFO":
+				_lastMessageReceived = new Date();
+				
+				float vcc = Float.parseFloat(messageContent[1]);
+				String flipflop = messageContent[2];
+				_mqttService.SendMsg(_pub_topic, message);
+
+				_dbManager.SaveRainGaugeInfo(vcc, flipflop);
+			}
+		}
+	}
+	
+	private void ManageWaterMeterSensor(String message, String battery) {
+		_mqttService.SendMsg(_pub_topic_watermeter, message);
+		
+		float vcc = 0;
+		try {
+			vcc = Float.parseFloat(battery);
+		}
+		catch(NumberFormatException e) {
+			_logger.error("Valeur de la batterie pour le capter Water Meter incorrecte : " + battery);
+		}
+		_dbManager.SaveWaterMeterInfo(vcc);
 	}
 
 	@Override
 	public void run() {
 
-		_logger.info("Starting RainGaugeService...");
+		_logger.info("Starting LoRaService...");
 
 		InputStream is = null;
 		try {
@@ -137,7 +178,7 @@ public class RainGaugeService implements Runnable {
 			Properties prop = new Properties();
 			prop.load(is);
 
-			_defaultDevice = prop.getProperty("raingauge.usbdevice");
+			_defaultDevice = prop.getProperty("lora.usbdevice");
 
 		} catch (FileNotFoundException e) {
 			_logger.error(
@@ -151,33 +192,43 @@ public class RainGaugeService implements Runnable {
 
 		_logger.info("Using serial device : " + _defaultDevice);
 
-		// CreateSerialInstance();
+		String sensorid = null;
+		//String firmware = null;
+		String battery = null;
+		//String name = null;
 
 		while (!_isStopped) {
 
 			try {
 
-				String message = ReadRainGaugeMessage();
-
+				String message = ReadLoRaMessage();
+				
 				if (message != null) {
-
-					String[] messageContent = message.split(";");
-
-					if (messageContent != null && messageContent.length > 0) {
-
-						String action = messageContent[0];
-
-						switch (action) {
-						case "SETRAINGAUGEINFO":
-							_lastMessageReceived = new Date();
-							
-							float vcc = Float.parseFloat(messageContent[1]);
-							String flipflop = messageContent[2];
-							_mqttService.SendMsg(_pub_topic, message);
-
-							_dbManager.SaveRainGaugeInfo(vcc, flipflop);
-						}
+					
+					//Parse LoRa message
+					//Try to convert into JSON
+					
+					try {
+						JSONObject json = new JSONObject(message);
+						sensorid = json.getString("sensorid");
+						//firmware = json.getString("firmware");
+						battery = json.getString("battery");
+						//name = json.getString("name");
 					}
+					catch(JSONException e) {
+						//Set default sensor id which is RainGauge
+						sensorid = RAINGAUGE_SENSOR_ID;
+						_logger.info("Cannot convert LoRa message to JSON, message must be in old format");				
+					}
+
+					switch(sensorid) {
+					case RAINGAUGE_SENSOR_ID:
+						ManageRaingaugeSensor(message);
+						break;
+					case WATERMETER_SENSOR_ID: 
+						ManageWaterMeterSensor(message, battery);
+						break;
+					}	
 				}
 
 				Thread.sleep(2000);
@@ -199,23 +250,22 @@ public class RainGaugeService implements Runnable {
 					CloseSerialConnection(false);
 				}
 				
-
 			} catch (Exception e) {
-				_logger.error("Error occured in RainGauge service...", e);
+				_logger.error("Error occured in LoRa service...", e);
 
 				SMSDto sms = new SMSDto("5ac9056c-599d-4e0f-8a02-3eb9b782d0ba");
-				sms.setMessage("Error occured in RainGauge services service, review error log for more details");
+				sms.setMessage("Error occured in LoRa services service, review error log for more details");
 				_smsGammuService.sendMessage(sms);
 			}
 		}
 	}
 
-	// Arret du service TeleInfoService
+	// Arret du service LoRaService
 	public void StopService() {
 
 		CloseSerialConnection(true);
 
-		_logger.info("Stopping RainGauge service...");
+		_logger.info("Stopping LoRa service...");
 
 		_isStopped = true;
 	}

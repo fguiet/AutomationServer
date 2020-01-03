@@ -266,6 +266,50 @@ public class DbManager {
 			}
 		}
 	}
+	
+	public void SaveWaterMeterInfo(float vcc) {
+
+		InfluxDB influxDb = null;
+
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+
+			influxDb = GetInfluxDbConnection();
+
+			_logger.info("Saving Water Meter info to InfluxDB");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("watermeter").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("vcc", vcc).build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			influxDb.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			// influxDb.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		} finally {
+
+			try {
+				if (influxDb != null) {
+					influxDb.close();
+
+					influxDb = null;
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+	}
 
 	/*
 	 * public void SaveOutsideSensorsInfo(float outsideTemp, float garageTemp, float

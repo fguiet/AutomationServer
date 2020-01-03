@@ -6,10 +6,7 @@ import org.apache.commons.daemon.DaemonInitException;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Queue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +30,7 @@ public class AutomationServer implements Daemon {
 	private AlarmService _alarmService = null; // Alarm service
 
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
-	private RainGaugeService _rainGaugeService = null; // service raingauge
+	private LoRaService _loRaService = null; // service raingauge
 	private RoomService _roomService = null; // service de room service
 	private WaterHeaterService _waterHeater = null; // service de gestion du chauffe-eau
 	private RollerShutterService _rollerShutterService = null;
@@ -41,7 +38,7 @@ public class AutomationServer implements Daemon {
 	private boolean _isStopped = false;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
-	private Thread _rainGaugeServiceThread = null;
+	private Thread _loRaServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
 	private Thread _BLEHubServiceThread = null;
@@ -102,9 +99,9 @@ public class AutomationServer implements Daemon {
 					DoSystemSanityChecks();
 
 					// Starting rain gauge service
-					_rainGaugeService = new RainGaugeService(_smsGammuService, _mqttService);
-					_rainGaugeServiceThread = new Thread(_rainGaugeService);
-					_rainGaugeServiceThread.start();
+					_loRaService = new LoRaService(_smsGammuService, _mqttService);
+					_loRaServiceThread = new Thread(_loRaService);
+					_loRaServiceThread.start();
 
 					// Starting teleinfo service
 					_teleInfoService = new TeleInfoService(_smsGammuService, _mqttService);
@@ -314,7 +311,7 @@ public class AutomationServer implements Daemon {
 			GpioHelper.shutdown();
 			// Stopping all services
 			_BLEHubService.StopService();
-			_rainGaugeService.StopService();
+			_loRaService.StopService();
 			_alarmService.StopService();
 			_smsGammuService.StopService();
 			// _scenariiManager.StopScenariiManager();
@@ -348,7 +345,7 @@ public class AutomationServer implements Daemon {
 	@Override
 	public void destroy() {
 		_mainThread = null;
-		_rainGaugeService = null;
+		_loRaService = null;
 		_rollerShutterService = null;
 		_teleInfoService = null;
 		_roomService = null;
