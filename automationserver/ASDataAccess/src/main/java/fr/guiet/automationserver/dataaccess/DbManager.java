@@ -283,7 +283,7 @@ public class DbManager {
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement("watermeter").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+			Point point1 = Point.measurement("sensor_watermeter").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 					.addField("vcc", vcc).build();
 
 			batchPoints.point(point1);

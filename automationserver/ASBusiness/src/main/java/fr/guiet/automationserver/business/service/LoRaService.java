@@ -36,7 +36,7 @@ public class LoRaService implements Runnable {
 	// private static String _mqttClientId = "rainGaugeCliendId";
 	private MqttService _mqttService = null;
 	private String _pub_topic = "/guiet/automationserver/raingauge";
-	private String _pub_topic_watermeter = "/guiet/automationserver/watermeter";
+	private String _pub_topic_watermeter = "/guiet/outside/sensor/19";
 	private Date _lastMessageReceived = new Date();
 	
 	private final String RAINGAUGE_SENSOR_ID = "17";
