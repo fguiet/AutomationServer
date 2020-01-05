@@ -267,7 +267,7 @@ public class DbManager {
 		}
 	}
 	
-	public void SaveWaterMeterInfo(float vcc) {
+	public void SaveWaterMeterInfo(float vcc, int liter) {
 
 		InfluxDB influxDb = null;
 
@@ -284,7 +284,7 @@ public class DbManager {
 					.build();
 
 			Point point1 = Point.measurement("sensor_watermeter").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-					.addField("vcc", vcc).build();
+					.addField("vcc", vcc).addField("liter", liter).build();
 
 			batchPoints.point(point1);
 

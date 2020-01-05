@@ -76,19 +76,31 @@ public class LoRaService implements Runnable {
 			if (!OpenSerialConnection())
 				return null;
 
+			String serialData = "";
+			
 			// Data available in buffer ?
 			if (_serial.available() > 0) {
-
-				byte[] byteArray = _serial.read();
-
-				String serialData = new String(byteArray, "UTF-8");
-				_logger.info("Received LoRa message : " + serialData);
-
-				return serialData;
+				
+				
+				long finish = System.currentTimeMillis() + 2000;
+				while (System.currentTimeMillis() < finish) {
+		
+					if (_serial.available() > 0) {
+					
+						byte[] byteArray = _serial.read();
+						serialData = serialData + new String(byteArray, "UTF-8");
+						_logger.info("Received LoRa message : " + serialData);
+					}
+				}
 			}
 			
-			return null;
-
+			if (serialData == "") {
+				return null;
+			}
+			else {
+				_logger.info("Complete LoRa received : " + serialData);
+				return serialData;
+			}
 		} catch (Exception e) {
 			_logger.info("Erreur while reading LoRa message", e);
 
@@ -152,7 +164,7 @@ public class LoRaService implements Runnable {
 		}
 	}
 	
-	private void ManageWaterMeterSensor(String message, String battery) {
+	private void ManageWaterMeterSensor(String message, String battery, String liter) {
 		_mqttService.SendMsg(_pub_topic_watermeter, message);
 		
 		float vcc = 0;
@@ -162,7 +174,16 @@ public class LoRaService implements Runnable {
 		catch(NumberFormatException e) {
 			_logger.error("Valeur de la batterie pour le capter Water Meter incorrecte : " + battery);
 		}
-		_dbManager.SaveWaterMeterInfo(vcc);
+		
+		int consumption = 0;
+		try {
+			consumption = Integer.parseInt(liter);
+		}
+		catch(NumberFormatException e) {
+			_logger.error("Valeur de la consommation pour le capter Water Meter incorrecte : " + battery);
+		}
+		
+		_dbManager.SaveWaterMeterInfo(vcc, consumption);
 	}
 
 	@Override
@@ -195,6 +216,7 @@ public class LoRaService implements Runnable {
 		String sensorid = null;
 		//String firmware = null;
 		String battery = null;
+		String consumption = null;
 		//String name = null;
 
 		while (!_isStopped) {
@@ -213,6 +235,7 @@ public class LoRaService implements Runnable {
 						sensorid = json.getString("sensorid");
 						//firmware = json.getString("firmware");
 						battery = json.getString("battery");
+						consumption = json.getString("liter");
 						//name = json.getString("name");
 					}
 					catch(JSONException e) {
@@ -226,7 +249,7 @@ public class LoRaService implements Runnable {
 						ManageRaingaugeSensor(message);
 						break;
 					case WATERMETER_SENSOR_ID: 
-						ManageWaterMeterSensor(message, battery);
+						ManageWaterMeterSensor(message, battery, consumption);
 						break;
 					}	
 				}
