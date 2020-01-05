@@ -82,7 +82,7 @@ public class LoRaService implements Runnable {
 			if (_serial.available() > 0) {
 				
 				
-				long finish = System.currentTimeMillis() + 2000;
+				long finish = System.currentTimeMillis() + 3000;
 				while (System.currentTimeMillis() < finish) {
 		
 					if (_serial.available() > 0) {
