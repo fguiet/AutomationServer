@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#add grafan group
+sudo groupadd grafana --gid 472 
+#add grafan  user
+sudo useradd -r -s /sbin/nologin grafana --uid 472 -g grafana
+
+#create volume bind with docker container
+sudo mkdir -p /home/fred/applications/grafana/logs
+sudo mkdir -p /home/fred/applications/grafana/data
+
+#change mosquitto folders owner
+sudo chown -R grafana:grafana /home/fred/applications/grafana

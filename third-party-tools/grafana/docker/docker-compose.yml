@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+   grafana: 
+      image: grafana/grafana:6.5.2 
+      container_name: grafana-6.5.2
+      restart: unless-stopped
+      volumes:
+         - /home/fred/applications/grafana/data:/var/lib/grafana
+         - /home/fred/applications/grafana/logs:/var/log/grafana
+      ports: 
+         - 3000:3000
+      networks:
+         - automationserver                
+ 
+networks:
+   automationserver:
+      name: automationserver-network 
+            

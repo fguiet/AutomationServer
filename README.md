@@ -28,7 +28,7 @@ DESCRIPTION
     - nRF51822 Bluetooth modules with HTU21D temperature and humidity sensor
     - Raspberry Pi 3 (Hypriot OS)
     - Docker
-    - Grafana
+    - Grafana 6.5.2
     - OpenHab 2
     - InfluxDB 1.7.x
     - Node-Red
