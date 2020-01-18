@@ -232,10 +232,10 @@ public class LoRaService implements Runnable {
 					
 					try {
 						JSONObject json = new JSONObject(message);
-						sensorid = json.getString("sensorid");
+						sensorid = json.getString("id");
 						//firmware = json.getString("firmware");
-						battery = json.getString("battery");
-						consumption = json.getString("liter");
+						battery = json.getString("b");
+						consumption = json.getString("l");
 						//name = json.getString("name");
 					}
 					catch(JSONException e) {
