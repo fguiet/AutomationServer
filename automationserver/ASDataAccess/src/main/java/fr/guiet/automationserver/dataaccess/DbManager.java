@@ -1231,6 +1231,8 @@ public class DbManager {
 		
 		try {
 			
+			influxDb = GetInfluxDbConnection();
+			
 			String sql = "select sum(liter) from sensor_watermeter group by time(1d) order by time desc limit 1";
 			
 			Query query = new Query(sql, "automation");
