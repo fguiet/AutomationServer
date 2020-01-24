@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
+import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 import fr.guiet.automationserver.dto.*;
@@ -1221,6 +1222,54 @@ public class DbManager {
 		Date dateTo = sdfFrom.parse(sdfTo.format(dateFrom));
 
 		return dateTo;
+	}
+	
+	public JSONObject GetWaterMeterInfo() {
+		
+		InfluxDB influxDb = null;
+		JSONObject json = new JSONObject();
+		
+		try {
+			
+			String sql = "select sum(liter) from sensor_watermeter group by time(1d) order by time desc limit 1";
+			
+			Query query = new Query(sql, "automation");
+			QueryResult queryResult = influxDb.query(query);
+
+			List<QueryResult.Result> result = queryResult.getResults();
+			
+
+			String waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(0).toString();
+			
+			sql = "select sum(liter) from sensor_watermeter group by time(1h) order by time desc limit 1";
+	
+			query = new Query(sql, "automation");
+			queryResult = influxDb.query(query);
+
+			result = queryResult.getResults();
+			
+			String waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(0).toString();
+			
+			json.put("WaterHourConsomption", waterConsumptionByDay);
+			json.put("WaterDayConsomption", waterConsumptionByHour);
+			
+		} finally {
+	
+			json.put("WaterHourConsomption", "NA");
+			json.put("WaterDayConsomption", "NA");
+			
+			try {
+				if (influxDb != null) {
+					influxDb.close();
+					influxDb = null;
+				}
+	
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+		
+		return json;
 	}
 
 	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) throws Exception {
