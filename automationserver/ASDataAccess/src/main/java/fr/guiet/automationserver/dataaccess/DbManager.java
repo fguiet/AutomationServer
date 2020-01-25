@@ -1241,8 +1241,8 @@ public class DbManager {
 			List<QueryResult.Result> result = queryResult.getResults();
 			
 			String waterConsumptionByDay = "NA";
-			if (result.get(0).getSeries().size() >= 1) {
-				waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(0).get(1).toString();
 			}
 			
 			sql = "select sum(liter) from sensor_watermeter group by time(1h) order by time desc limit 1";
@@ -1253,17 +1253,19 @@ public class DbManager {
 			result = queryResult.getResults();
 			
 			String waterConsumptionByHour = "NA";
-			if (result.get(0).getSeries().size() >= 1) {
-				waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(0).get(1).toString();
 			}
 			
 			json.put("WaterHourConsomption", waterConsumptionByDay);
 			json.put("WaterDayConsomption", waterConsumptionByHour);
 			
-		} finally {
-	
+		} 
+		catch(Exception e) {
 			json.put("WaterHourConsomption", "NA");
 			json.put("WaterDayConsomption", "NA");
+		}
+		finally {
 			
 			try {
 				if (influxDb != null) {
