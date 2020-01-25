@@ -1240,8 +1240,10 @@ public class DbManager {
 
 			List<QueryResult.Result> result = queryResult.getResults();
 			
-
-			String waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			String waterConsumptionByDay = "NA";
+			if (result.get(0).getSeries().size() >= 1) {
+				waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			}
 			
 			sql = "select sum(liter) from sensor_watermeter group by time(1h) order by time desc limit 1";
 	
@@ -1250,7 +1252,10 @@ public class DbManager {
 
 			result = queryResult.getResults();
 			
-			String waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			String waterConsumptionByHour = "NA";
+			if (result.get(0).getSeries().size() >= 1) {
+				waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(1).toString();
+			}
 			
 			json.put("WaterHourConsomption", waterConsumptionByDay);
 			json.put("WaterDayConsomption", waterConsumptionByHour);
