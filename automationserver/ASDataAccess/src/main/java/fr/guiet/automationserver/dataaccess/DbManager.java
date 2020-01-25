@@ -1257,8 +1257,8 @@ public class DbManager {
 				waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(0).get(1).toString();
 			}
 			
-			json.put("WaterHourConsomption", waterConsumptionByDay);
-			json.put("WaterDayConsomption", waterConsumptionByHour);
+			json.put("WaterHourConsomption", waterConsumptionByHour);
+			json.put("WaterDayConsomption", waterConsumptionByDay);
 			
 		} 
 		catch(Exception e) {
