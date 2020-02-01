@@ -35,7 +35,11 @@ public class TeleInfoService implements Runnable {
 	private String _defaultDevice = "";
 	private static final int VALID_GROUPES_NUMBER = 17;
 	
+	private Integer _lastHCHC = null;
+	private Integer _lastHCHP = null;
 	private TeleInfoTrameDto _lastTeleInfoTrameReceived = null;
+	
+	
 	private Timer _timer = null;
 	private Timer _timer2 = null;
 	private Timer _timer3 = null;
@@ -64,15 +68,12 @@ public class TeleInfoService implements Runnable {
 		_mqttService = mqttService;
 		
 		_serial = SerialFactory.createInstance();
+		
+		ReadConfig();
 	}
-
 	
-
-	@Override
-	public void run() {
-
-		_logger.info("Starting TeleInfoService...");
-
+	private void ReadConfig() {
+		
 		InputStream is = null;
 		try {
 			String configPath = System.getProperty("automationserver.config.path");
@@ -158,6 +159,16 @@ public class TeleInfoService implements Runnable {
 					"Impossible de trouver le fichier de configuration classpath_folder/config/automationserver.properties",
 					e);
 		}
+	}
+
+	
+
+	@Override
+	public void run() {
+
+		_logger.info("Starting TeleInfoService...");
+
+		ReadConfig();
 
 		// TODO : using String.format C# similar way to log pieces of
 		// information
@@ -373,11 +384,55 @@ public class TeleInfoService implements Runnable {
 
 		return null;
 	}
-
+	
+	//Dunno why but it may occur...
+	private boolean TeleInfoTrameSanityCheck(TeleInfoTrameDto teleInfoTrame) {
+		
+		boolean isValid = true;
+		
+		if (_lastHCHC == null) {
+			_lastHCHC = teleInfoTrame.HCHC; 
+		}
+		
+		if (_lastHCHP == null) {
+			_lastHCHP = teleInfoTrame.HCHP; 
+		}
+		
+		if (teleInfoTrame.HCHC < _lastHCHC) {									
+			isValid = false;
+			_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est inférieure à la valeur de la dernière trame ("+ _lastHCHC  +"), c'est impossible");
+		} else {
+			if (teleInfoTrame.HCHC - _lastHCHC > 100) {
+				isValid = false;
+				_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 100, c'est impossible");	
+			}
+		}
+		
+		
+		if (teleInfoTrame.HCHP < _lastHCHP) {
+			isValid = false;
+			_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est inférieure à la valeur de la dernière trame ("+ _lastHCHP  +"), c'est impossible");
+		}
+		else {
+			if (teleInfoTrame.HCHP - _lastHCHP > 100) {
+				isValid = false;
+				_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 100, c'est impossible");	
+			}
+		}
+		
+		return isValid;
+	}
+	
 	// Sauvegarde de la trame de teleinfo recue en bdd
 	private void SaveTrameToDb(TeleInfoTrameDto teleInfoTrame) {
 
-		_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
+		boolean isValid = TeleInfoTrameSanityCheck(teleInfoTrame);
+		
+		if (isValid)		
+			_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
+		
+		_lastHCHC = teleInfoTrame.HCHC; 
+		_lastHCHP = teleInfoTrame.HCHP;
 	}
 
 	private void CloseSerialConnection(boolean killSerialFactory) {
@@ -668,7 +723,7 @@ public class TeleInfoService implements Runnable {
 
 	// public
 
-	private HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
+	public HashMap<String, Float> GetElectricityBillInfo(Date fromDate, Date toDate) {
 
 		float hcConsoTTC = 0;
 		float hpConsoTTC = 0;

@@ -101,8 +101,8 @@ public class AutomationServer implements Daemon {
 					DoSystemSanityChecks();
 					
 					_waterMeterService = new WaterMeterService(_smsGammuService, _mqttService);
-					_waterHeaterServiceThread = new Thread(_waterMeterService);
-					_waterHeaterServiceThread.start();
+					_waterMeterServiceThread = new Thread(_waterMeterService);
+					_waterMeterServiceThread.start();
 
 					// Starting rain gauge service
 					_loRaService = new LoRaService(_smsGammuService, _mqttService);
@@ -318,6 +318,7 @@ public class AutomationServer implements Daemon {
 			// Stopping all services
 			_BLEHubService.StopService();
 			_waterMeterService.StopService();
+			_waterHeater.StopService();
 			_loRaService.StopService();
 			_alarmService.StopService();
 			_smsGammuService.StopService();

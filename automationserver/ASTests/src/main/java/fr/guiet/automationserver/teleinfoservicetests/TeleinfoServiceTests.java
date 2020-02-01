@@ -1,8 +1,14 @@
 package fr.guiet.automationserver.teleinfoservicetests;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+
+import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.business.service.MqttService;
 import fr.guiet.automationserver.business.service.SMSGammuService;
 import fr.guiet.automationserver.business.service.TeleInfoService;
+import fr.guiet.automationserver.dataaccess.DbManager;
 
 public class TeleinfoServiceTests {
 	public static void main(String args[]) {
@@ -12,8 +18,27 @@ public class TeleinfoServiceTests {
 		MqttService mqttService = new MqttService(gammuService);
 		
 		TeleInfoService teleInfoService = new TeleInfoService(gammuService, mqttService);
-		Thread teleInfoServiceThread = new Thread(teleInfoService);
-		teleInfoServiceThread.start();
+		//Thread teleInfoServiceThread = new Thread(teleInfoService);
+		//teleInfoServiceThread.start();
+		
+		Date fromDate = DateUtils.parseDate("2020-01-01");
+		Date toDate = DateUtils.parseDate("2020-01-31");
+		
+		HashMap<String, Float> test = teleInfoService.GetElectricityBillInfo(fromDate, toDate);
+		
+		
+			
+		/*DbManager dbManager = new DbManager();
+		HashMap<String, Integer> map = null;
+		try {
+			map = dbManager.GetElectriciyConsumption(fromDate, toDate);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Integer hcConso = map.get("hcConsuption");
+		Integer hpConso = map.get("hpConsuption");*/
 		
 		//Test d'une minute
 		

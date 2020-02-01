@@ -1,9 +1,5 @@
 package fr.guiet.automationserver.various;
 
-
-
-import fr.guiet.automationserver.business.service.RollerShutterService;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;

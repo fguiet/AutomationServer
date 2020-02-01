@@ -1331,36 +1331,41 @@ public class DbManager {
 			//select * from teleinfo where HCHP=0
 			//Puis : delete from teleinfo where time=1548245774878000000;
 			
-			if (min_hchp.length() >= 5)
-				min_hchp = min_hchp.substring(0, 5);
+			min_hchp = min_hchp.substring(0, min_hchp.length()-3);
+			min_hchc = min_hchc.substring(0, min_hchc.length()-3);
+			max_hchp = max_hchp.substring(0, max_hchp.length()-3);
+			max_hchc = max_hchc.substring(0, max_hchc.length()-3);
+			
+			/*if (min_hchp.length() >= 6)
+				min_hchp = min_hchp.substring(0, 6);
 			else {
 				min_hchp = "0";
 				_logger.warn("Valeur incorrecte pour min_hchp....");
 			}
 
-			if (min_hchc.length() >= 5)
-				min_hchc = min_hchc.substring(0, 5);
+			if (min_hchc.length() >= 6)
+				min_hchc = min_hchc.substring(0, 6);
 			else
 			{
 				min_hchc = "0";
 				_logger.warn("Valeur incorrecte pour min_hchc....");
 			}
 
-			if (max_hchp.length() >= 5)
-				max_hchp = max_hchp.substring(0, 5);
+			if (max_hchp.length() >= 6)
+				max_hchp = max_hchp.substring(0, 6);
 			else
 			{
 				max_hchp = "0";
 				_logger.warn("Valeur incorrecte pour max_hchp....");
 			}
 
-			if (max_hchc.length() >= 5)
-				max_hchc = max_hchc.substring(0, 5);
+			if (max_hchc.length() >= 6)
+				max_hchc = max_hchc.substring(0, 6);
 			else
 			{
 				max_hchc = "0";
 				_logger.warn("Valeur incorrecte pour max_hchc....");
-			}
+			}*/
 
 			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
 			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
