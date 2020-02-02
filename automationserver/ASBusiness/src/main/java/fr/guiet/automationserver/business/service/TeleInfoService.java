@@ -402,7 +402,7 @@ public class TeleInfoService implements Runnable {
 			isValid = false;
 			_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est inférieure à la valeur de la dernière trame ("+ _lastHCHC  +"), c'est impossible");
 		} else {
-			if (teleInfoTrame.HCHC - _lastHCHC > 100) {
+			if (teleInfoTrame.HCHC - _lastHCHC > 200) {
 				isValid = false;
 				_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 100, c'est impossible");	
 			}
@@ -414,7 +414,7 @@ public class TeleInfoService implements Runnable {
 			_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est inférieure à la valeur de la dernière trame ("+ _lastHCHP  +"), c'est impossible");
 		}
 		else {
-			if (teleInfoTrame.HCHP - _lastHCHP > 100) {
+			if (teleInfoTrame.HCHP - _lastHCHP > 200) {
 				isValid = false;
 				_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 100, c'est impossible");	
 			}
@@ -428,11 +428,14 @@ public class TeleInfoService implements Runnable {
 
 		boolean isValid = TeleInfoTrameSanityCheck(teleInfoTrame);
 		
-		if (isValid)		
+		if (isValid) {		
 			_dbManager.SaveTeleInfoTrameToInfluxDb(teleInfoTrame);
+			
+			_lastHCHC = teleInfoTrame.HCHC; 
+			_lastHCHP = teleInfoTrame.HCHP;
+		}
 		
-		_lastHCHC = teleInfoTrame.HCHC; 
-		_lastHCHP = teleInfoTrame.HCHP;
+		
 	}
 
 	private void CloseSerialConnection(boolean killSerialFactory) {

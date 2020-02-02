@@ -1317,15 +1317,42 @@ public class DbManager {
 			// _logger.info("QueryResult :
 			// "+result.get(0).getSeries().get(0).getValues());
 
-			String min_hchp = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
-			String min_hchc = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
-			String max_hchp = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
-			String max_hchc = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
-
+			String min_hchp = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				min_hchp = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
+			}
+			else {
+				_logger.info("Could not find min_hchp...query : " + sql);
+			}
+			
+			String min_hchc = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(2) != null) {
+				min_hchc = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
+			}
+			else {
+				_logger.info("Could not find min_hchc...query : " + sql);
+			}
+			
+			String max_hchp = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(3) != null) {
+				max_hchp = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
+			}
+			else {
+				_logger.info("Could not find max_hchp...query : " + sql);
+			}
+			
+			String max_hchc = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(4) != null) {
+				max_hchc = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
+			}
+			else {
+				_logger.info("Could not find max_hchc...query : " + sql);
+			}
+		
 			//Pour trouver la valeur incorrecte
 			//select * from teleinfo where HCHC=0
 			//select * from teleinfo where HCHP=0
