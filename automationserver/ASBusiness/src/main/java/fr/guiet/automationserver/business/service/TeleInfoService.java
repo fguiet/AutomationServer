@@ -402,9 +402,9 @@ public class TeleInfoService implements Runnable {
 			isValid = false;
 			_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est inférieure à la valeur de la dernière trame ("+ _lastHCHC  +"), c'est impossible");
 		} else {
-			if (teleInfoTrame.HCHC - _lastHCHC > 200) {
+			if (teleInfoTrame.HCHC - _lastHCHC > 500) {
 				isValid = false;
-				_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 100, c'est impossible");	
+				_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 500, c'est impossible");	
 			}
 		}
 		
@@ -414,9 +414,9 @@ public class TeleInfoService implements Runnable {
 			_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est inférieure à la valeur de la dernière trame ("+ _lastHCHP  +"), c'est impossible");
 		}
 		else {
-			if (teleInfoTrame.HCHP - _lastHCHP > 200) {
+			if (teleInfoTrame.HCHP - _lastHCHP > 500) {
 				isValid = false;
-				_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 100, c'est impossible");	
+				_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 500, c'est impossible");	
 			}
 		}
 		

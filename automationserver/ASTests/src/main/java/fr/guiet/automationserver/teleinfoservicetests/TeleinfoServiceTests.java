@@ -21,8 +21,8 @@ public class TeleinfoServiceTests {
 		//Thread teleInfoServiceThread = new Thread(teleInfoService);
 		//teleInfoServiceThread.start();
 		
-		Date fromDate = DateUtils.parseDate("2020-01-01");
-		Date toDate = DateUtils.parseDate("2020-01-31");
+		Date fromDate = DateUtils.parseDate("2020-02-01");
+		Date toDate = DateUtils.parseDate("2020-02-28");
 		
 		HashMap<String, Float> test = teleInfoService.GetElectricityBillInfo(fromDate, toDate);
 		
