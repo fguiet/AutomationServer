@@ -24,7 +24,8 @@ public class TeleinfoServiceTests {
 		Date fromDate = DateUtils.parseDate("2020-02-01");
 		Date toDate = DateUtils.parseDate("2020-02-28");
 		
-		HashMap<String, Float> test = teleInfoService.GetElectricityBillInfo(fromDate, toDate);
+		//HashMap<String, Float> test = teleInfoService.GetElectricityBillInfo(fromDate, toDate);
+		float test = teleInfoService.getElectricityCostPerCurrentDay();
 		
 		
 			

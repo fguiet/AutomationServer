@@ -402,9 +402,15 @@ public class TeleInfoService implements Runnable {
 			isValid = false;
 			_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est inférieure à la valeur de la dernière trame ("+ _lastHCHC  +"), c'est impossible");
 		} else {
-			if (teleInfoTrame.HCHC - _lastHCHC > 500) {
+			if (teleInfoTrame.HCHC - _lastHCHC > 1000) {
 				isValid = false;
-				_logger.warn("La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 500, c'est impossible");	
+				String mess = "La valeur HCHC actuelle ("+ teleInfoTrame.HCHC +") est supérieure à la valeur de la dernière trame ("+ _lastHCHC  +") de 1000, c'est impossible"; 
+				
+				_logger.warn(mess);
+				
+				SMSDto sms = new SMSDto("79447dfa-34d9-43d6-81a5-5f6db41cfebb");
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms);
 			}
 		}
 		
@@ -414,9 +420,15 @@ public class TeleInfoService implements Runnable {
 			_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est inférieure à la valeur de la dernière trame ("+ _lastHCHP  +"), c'est impossible");
 		}
 		else {
-			if (teleInfoTrame.HCHP - _lastHCHP > 500) {
+			if (teleInfoTrame.HCHP - _lastHCHP > 1000) {
 				isValid = false;
-				_logger.warn("La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 500, c'est impossible");	
+				String mess = "La valeur HCHP actuelle ("+ teleInfoTrame.HCHP +") est supérieure à la valeur de la dernière trame ("+ _lastHCHP  +") de 1000, c'est impossible";
+				
+				_logger.warn(mess);
+				
+				SMSDto sms = new SMSDto("b63e8c33-a394-4789-a68f-c4de517b57b2");
+				sms.setMessage(mess);
+				_smsGammuService.sendMessage(sms);
 			}
 		}
 		
@@ -670,7 +682,7 @@ public class TeleInfoService implements Runnable {
 		return hc_cost + hp_cost + other_cost;
 	}
 
-	private float getElectricityCostPerCurrentDay() {
+	public float getElectricityCostPerCurrentDay() {
 
 		float hc_cost = 0;
 		float hp_cost = 0;
