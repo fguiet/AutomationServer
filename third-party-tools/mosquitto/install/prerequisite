@@ -6,8 +6,8 @@ sudo groupadd mosquitto --gid 9002
 sudo useradd -r -s /sbin/nologin mosquitto --uid 9002 -g mosquitto
 
 #create volume bind with docker container
-sudo mkdir -p /home/fred/applications/mosquitto/logs
-sudo mkdir -p /home/fred/applications/mosquitto/conf
+sudo mkdir -p /home/fred/applications/mosquitto/log
+sudo mkdir -p /home/fred/applications/mosquitto/config
 sudo mkdir -p /home/fred/applications/mosquitto/data
 
 #add conf file
@@ -15,4 +15,6 @@ sudo mkdir -p /home/fred/applications/mosquitto/data
 #sudo cp -rf /home/fred/git/AutomationServer/third-party-tools/mosquitto/conf /home/fred/applications/mosquitto
 
 #change mosquitto folders owner
-sudo chown -R mosquitto:mosquitto /home/fred/applications/mosquitto
+sudo chown -R mosquitto:mosquitto /home/fred/applications/mosquitto 
+sudo chmod o+rx /home/fred/applications/mosquitto -R
+

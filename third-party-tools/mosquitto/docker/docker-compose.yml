@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+   mosquitto:
+      image: eclipse-mosquitto:1.6.8
+      container_name: eclipse-mosquitto-1.6.8
+      restart: unless-stopped
+      volumes:
+         - /home/fred/applications/mosquitto/config:/mosquitto/config
+         - /home/fred/applications/mosquitto/data:/mosquitto/data
+         - /home/fred/applications/mosquitto/log:/mosquitto/log
+         - /etc/localtime:/etc/localtime:ro
+         - /etc/timezone:/etc/timezone:ro
+      ports:
+         - 1883:1883
+      networks:
+         - automationserver
+
+networks:
+   automationserver:
+      name: automationserver-network

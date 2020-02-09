@@ -1,12 +1,1 @@
-docker run \
-        -v /etc/localtime:/etc/localtime:ro \
-        -v /etc/timezone:/etc/timezone:ro \
-        --name mosquitto \
-        --network automationserver-network \
-        -h docker-mosquitto \
-        -v /home/fred/applications/mosquitto:/mosquitto \
-        -d \
-        --restart=always \
-        -p 1883:1883 \
-        guiet/mosquitto:1.6.4
-
+docker-compose up -d
