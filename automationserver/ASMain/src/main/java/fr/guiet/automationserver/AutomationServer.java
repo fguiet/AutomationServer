@@ -29,6 +29,7 @@ public class AutomationServer implements Daemon {
 	private Thread _mainThread = null; // Thread principal
 	private AlarmService _alarmService = null; // Alarm service
 
+	private WaterMeterService _waterMeterService = null;
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
 	private LoRaService _loRaService = null; // service raingauge
 	private RoomService _roomService = null; // service de room service
@@ -36,6 +37,7 @@ public class AutomationServer implements Daemon {
 	private RollerShutterService _rollerShutterService = null;
 	private BLEHubService _BLEHubService = null;
 	private boolean _isStopped = false;
+	private Thread _waterMeterServiceThread = null;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
 	private Thread _loRaServiceThread = null;
@@ -97,6 +99,10 @@ public class AutomationServer implements Daemon {
 
 					// Starts system sanity checks
 					DoSystemSanityChecks();
+					
+					_waterMeterService = new WaterMeterService(_smsGammuService, _mqttService);
+					_waterMeterServiceThread = new Thread(_waterMeterService);
+					_waterMeterServiceThread.start();
 
 					// Starting rain gauge service
 					_loRaService = new LoRaService(_smsGammuService, _mqttService);
@@ -311,6 +317,8 @@ public class AutomationServer implements Daemon {
 			GpioHelper.shutdown();
 			// Stopping all services
 			_BLEHubService.StopService();
+			_waterMeterService.StopService();
+			_waterHeater.StopService();
 			_loRaService.StopService();
 			_alarmService.StopService();
 			_smsGammuService.StopService();

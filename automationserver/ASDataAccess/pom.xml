@@ -78,6 +78,11 @@
 			<version>${postgresql.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.mchange/c3p0 -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${json.version}</version>
+		</dependency>	
 <dependency>
     <groupId>com.mchange</groupId>
     <artifactId>c3p0</artifactId>

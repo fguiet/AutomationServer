@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.influxdb.*;
 import org.influxdb.dto.*;
+import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 import fr.guiet.automationserver.dto.*;
@@ -1222,6 +1223,63 @@ public class DbManager {
 
 		return dateTo;
 	}
+	
+	public JSONObject GetWaterMeterInfo() {
+		
+		InfluxDB influxDb = null;
+		JSONObject json = new JSONObject();
+		
+		try {
+			
+			influxDb = GetInfluxDbConnection();
+			
+			String sql = "select sum(liter) from sensor_watermeter group by time(1d) order by time desc limit 1";
+			
+			Query query = new Query(sql, "automation");
+			QueryResult queryResult = influxDb.query(query);
+
+			List<QueryResult.Result> result = queryResult.getResults();
+			
+			String waterConsumptionByDay = "NA";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				waterConsumptionByDay = result.get(0).getSeries().get(0).getValues().get(0).get(1).toString();
+			}
+			
+			sql = "select sum(liter) from sensor_watermeter group by time(1h) order by time desc limit 1";
+	
+			query = new Query(sql, "automation");
+			queryResult = influxDb.query(query);
+
+			result = queryResult.getResults();
+			
+			String waterConsumptionByHour = "NA";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				waterConsumptionByHour = result.get(0).getSeries().get(0).getValues().get(0).get(1).toString();
+			}
+			
+			json.put("WaterHourConsumption", waterConsumptionByHour);
+			json.put("WaterDayConsumption", waterConsumptionByDay);
+			
+		} 
+		catch(Exception e) {
+			json.put("WaterHourConsumption", "NA");
+			json.put("WaterDayConsumption", "NA");
+		}
+		finally {
+			
+			try {
+				if (influxDb != null) {
+					influxDb.close();
+					influxDb = null;
+				}
+	
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+		
+		return json;
+	}
 
 	public HashMap<String, Integer> GetElectriciyConsumption(Date fromDate, Date toDate) throws Exception {
 
@@ -1259,50 +1317,82 @@ public class DbManager {
 			// _logger.info("QueryResult :
 			// "+result.get(0).getSeries().get(0).getValues());
 
-			String min_hchp = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
-			String min_hchc = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
-			String max_hchp = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
-			String max_hchc = Long.toString(
-					Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
-
+			String min_hchp = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(1) != null) {
+				min_hchp = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(1)).longValue());
+			}
+			else {
+				_logger.info("Could not find min_hchp...query : " + sql);
+			}
+			
+			String min_hchc = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(2) != null) {
+				min_hchc = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(2)).longValue());
+			}
+			else {
+				_logger.info("Could not find min_hchc...query : " + sql);
+			}
+			
+			String max_hchp = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(3) != null) {
+				max_hchp = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(3)).longValue());
+			}
+			else {
+				_logger.info("Could not find max_hchp...query : " + sql);
+			}
+			
+			String max_hchc = "000000";
+			if (result.get(0).getSeries().get(0).getValues().get(0).get(4) != null) {
+				max_hchc = Long.toString(
+						Double.valueOf((double) result.get(0).getSeries().get(0).getValues().get(0).get(4)).longValue());
+			}
+			else {
+				_logger.info("Could not find max_hchc...query : " + sql);
+			}
+		
 			//Pour trouver la valeur incorrecte
 			//select * from teleinfo where HCHC=0
 			//select * from teleinfo where HCHP=0
 			//Puis : delete from teleinfo where time=1548245774878000000;
 			
-			if (min_hchp.length() >= 5)
-				min_hchp = min_hchp.substring(0, 5);
+			min_hchp = min_hchp.substring(0, min_hchp.length()-3);
+			min_hchc = min_hchc.substring(0, min_hchc.length()-3);
+			max_hchp = max_hchp.substring(0, max_hchp.length()-3);
+			max_hchc = max_hchc.substring(0, max_hchc.length()-3);
+			
+			/*if (min_hchp.length() >= 6)
+				min_hchp = min_hchp.substring(0, 6);
 			else {
 				min_hchp = "0";
 				_logger.warn("Valeur incorrecte pour min_hchp....");
 			}
 
-			if (min_hchc.length() >= 5)
-				min_hchc = min_hchc.substring(0, 5);
+			if (min_hchc.length() >= 6)
+				min_hchc = min_hchc.substring(0, 6);
 			else
 			{
 				min_hchc = "0";
 				_logger.warn("Valeur incorrecte pour min_hchc....");
 			}
 
-			if (max_hchp.length() >= 5)
-				max_hchp = max_hchp.substring(0, 5);
+			if (max_hchp.length() >= 6)
+				max_hchp = max_hchp.substring(0, 6);
 			else
 			{
 				max_hchp = "0";
 				_logger.warn("Valeur incorrecte pour max_hchp....");
 			}
 
-			if (max_hchc.length() >= 5)
-				max_hchc = max_hchc.substring(0, 5);
+			if (max_hchc.length() >= 6)
+				max_hchc = max_hchc.substring(0, 6);
 			else
 			{
 				max_hchc = "0";
 				_logger.warn("Valeur incorrecte pour max_hchc....");
-			}
+			}*/
 
 			results.put("hpConsuption", Integer.parseInt(max_hchp) - Integer.parseInt(min_hchp));
 			results.put("hcConsuption", Integer.parseInt(max_hchc) - Integer.parseInt(min_hchc));
