@@ -27,24 +27,24 @@
 		<maven-assembly.version>3.0.0</maven-assembly.version>
 		<maven-war-plugin.version>3.0.0</maven-war-plugin.version>
 		<maven-clean.version>3.0.0</maven-clean.version>
-		<log4j-api.version>2.11.2</log4j-api.version>
-		<log4j-core.version>2.11.2</log4j-core.version>
+		<log4j-api.version>2.13.0</log4j-api.version>
+		<log4j-core.version>2.13.0</log4j-core.version>
 		<!-- <log4j.version>1.2.8</log4j.version> -->
 		<!-- <xbee-api.version>0.9</xbee-api.version> -->
 		<!-- <RXTXComm.version>1.0</RXTXComm.version> -->
 		<pi4j-core.version>1.2</pi4j-core.version>
-		<influxdb-java.version>2.15</influxdb-java.version>
+		<influxdb-java.version>2.17</influxdb-java.version>
 		<commons-exec.version>1.3</commons-exec.version>
 		<commons-daemon.version>1.0.15</commons-daemon.version>
-		<mqttv3.version>1.2.1</mqttv3.version>
-		<mail.version>1.6.1</mail.version>
-		<jackson-annotations.version>2.9.5</jackson-annotations.version>
-		<json.version>20180130</json.version>
-		<c3p0.version>0.9.5.2</c3p0.version>
+		<mqttv3.version>1.2.2</mqttv3.version>
+		<mail.version>1.6.2</mail.version>
+		<jackson-annotations.version>2.10.2</jackson-annotations.version>
+		<json.version>20190722</json.version>
+		<c3p0.version>0.9.5.5</c3p0.version>
 		<postgresql.version>9.4.1212.jre7</postgresql.version>
 		<!-- <cron4j.version>2.2.5</cron4j.version>-->
 		<!-- <sunsetrise.version>1.2</sunsetrise.version>-->
-		<asm.version>6.1.1</asm.version>
+		<asm.version>7.3.1</asm.version>
 		<jersey-bundle.version>1.19.4</jersey-bundle.version>
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
 		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
