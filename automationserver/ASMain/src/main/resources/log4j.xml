@@ -57,6 +57,8 @@
             <!--<AppenderRef ref="Console"  />-->
         </Logger>
         
+        <Logger name="com.mchange.v2.c3p0" level="info"/>
+        
         <!-- DEBUG, INFO, WARN, ERROR, FATAL -->
         <!-- level DEBUG = all messages of other level are displayed -->
         <!-- level INFO = DEBUG messages are not displayed etc.. -->         

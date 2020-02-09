@@ -366,7 +366,7 @@ public class DbManager {
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement("mailbox").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+			Point point1 = Point.measurement("sensor_mailbox").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 					.addField("vcc", vcc).build();
 
 			batchPoints.point(point1);

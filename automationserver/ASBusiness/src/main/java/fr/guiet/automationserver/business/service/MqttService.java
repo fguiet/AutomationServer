@@ -331,44 +331,7 @@ public class MqttService implements MqttCallbackExtended {
 				}
 
 				break;
-			/*case "SETGOTMAIL":
-				try {
-
-					long diffMinutes = 0;
-					if (_lastGotMailMessage != null) {
-						Date currentDate = new Date();
-						long diff = currentDate.getTime() - _lastGotMailMessage.getTime();
-						diffMinutes = diff / (60 * 1000);
-					}
-
-					// Send new SMS only if last message was sent more then one
-					// hour before
-					// Need to do that so I am not receiving lot of messages
-					// during strong wind (it opens my mailbox!!)
-					if (_lastGotMailMessage == null || diffMinutes > 60) {
-
-						float vcc = Float.parseFloat(messageContent[1]);
-
-						//_dbManager.SaveMailboxSensorInfoInfluxDB(vcc);
-
-						String mess = "Hey! you got mail ! by the way, vcc sensor is " + vcc;
-						/*
-						 * MailService mailService = new MailService();
-						 * mailService.SendMailSSL("Hey! you got mail", mess);
-						 */
-
-					//	SMSDto sms = new SMSDto("fdaed23f-92d6-4334-8aec-bf39be62f3aa");
-					//	sms.setMessage(mess);
-					//	_smsGammuService.sendMessage(sms, true);
-					//}
-
-					//_lastGotMailMessage = new Date();
-
-				//} catch (Exception e) {
-				///	_logger.error("Could not read or save information received from mailbox", e);
-				//}
-				//break;
-
+			
 			case "SETROOMTEMP":
 				long roomId = Long.parseLong(messageContent[1]);
 
