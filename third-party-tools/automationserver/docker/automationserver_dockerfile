@@ -82,6 +82,7 @@ VOLUME ["/applications/automationserver/config","/applications/automationserver/
 COPY docker-entry-point.sh /usr/local/bin/
 RUN chmod 555 /usr/local/bin/docker-entry-point.sh
 ENTRYPOINT ["/usr/local/bin/docker-entry-point.sh"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 #In order to make jsvc works with OpenJDK ...not same folder construction than Oracle...
 

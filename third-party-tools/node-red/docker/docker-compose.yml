@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+   node-red: 
+      image: nodered/node-red:1.0.3-3-12
+      container_name: node-red-1.0.3-3-12
+      restart: unless-stopped
+      environment:
+         - TZ=Europe/Paris
+         - FLOWS=home_flows.json
+      volumes:         
+         - /home/fred/applications/node-red/data:/data
+         - /etc/localtime:/etc/localtime:ro
+      ports: 
+         - 1880:1880
+      networks:
+         - automationserver                
+ 
+networks:
+   automationserver:
+      name: automationserver-network 
+            

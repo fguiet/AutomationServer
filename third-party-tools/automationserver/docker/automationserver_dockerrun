@@ -10,6 +10,6 @@ docker run --device=/dev/ttyUSB2 \
            -v /home/fred/applications/automationserver/cmd:/applications/automationserver/cmd \
            -v /home/fred/applications/automationserver/config:/applications/automationserver/config \
            -v /home/fred/applications/automationserver/bin:/applications/automationserver/bin \
-           --restart=always \
+           --restart=unless-stopped \
            -d \
            guiet/automationserver:1.0
