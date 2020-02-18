@@ -349,6 +349,52 @@ public class DbManager {
 	 * 
 	 * }
 	 */
+	
+	public void SaveAnemometerSensorInfoInfluxDB(float vcc, int rpm, float vitesse) {
+
+		InfluxDB influxDb = null;
+
+		try {
+			if (!_influxdbEnable.equals("true"))
+				return;
+
+			influxDb = GetInfluxDbConnection();
+
+			_logger.info("Saving anemometer info to InfluxDB");
+
+			BatchPoints batchPoints = BatchPoints.database(_databaseInfluxDB).retentionPolicy(_retentionPolicy)
+					// .consistency(ConsistencyLevel.ALL)
+					.build();
+
+			Point point1 = Point.measurement("sensor_anemometer").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+					.addField("vcc", vcc)
+					.addField("rpm", rpm)
+					.addField("vitesse", vitesse)
+					.build();
+
+			batchPoints.point(point1);
+
+			// _logger.info("InfluxDB writing...");
+			influxDb.write(batchPoints);
+			// influxDB.write(sensorName, TimeUnit.MILLISECONDS, serie);
+			// _logger.info("InfluxDB written...");
+			// influxDb.close();
+
+		} catch (Exception e) {
+			_logger.error("Erreur lors de l'écriture dans InfluxDB", e);
+		} finally {
+
+			try {
+				if (influxDb != null) {
+					influxDb.close();
+					influxDb = null;
+				}
+
+			} catch (Exception ex) {
+				_logger.error("Erreur lors de la fermeture de InfluxDb", ex);
+			}
+		}
+	}
 
 	public void SaveMailboxSensorInfoInfluxDB(float vcc) {
 
