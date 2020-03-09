@@ -40,7 +40,9 @@ public class LoRaService implements Runnable {
 	private Date _lastMessageReceived = new Date();
 	
 	private final String RAINGAUGE_SENSOR_ID = "17";
-	private final String WATERMETER_SENSOR_ID = "19";
+	
+	//TODO : Change Sensor ID to 19 !!!! 20 is not the correct ID!!
+	private final String WATERMETER_SENSOR_ID = "20";
 
 	public LoRaService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
@@ -165,6 +167,9 @@ public class LoRaService implements Runnable {
 	}
 	
 	private void ManageWaterMeterSensor(String message, String battery, String liter) {
+		
+		
+		
 		_mqttService.SendMsg(_pub_topic_watermeter, message);
 		
 		float vcc = 0;

@@ -10,6 +10,19 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class DateUtils {
+	
+	private static long millisToNextHour(Calendar calendar) {
+		
+	    int minutes = calendar.get(Calendar.MINUTE);
+	    int seconds = calendar.get(Calendar.SECOND);
+	    int millis = calendar.get(Calendar.MILLISECOND);
+	    int minutesToNextHour = 60 - minutes;
+	    int secondsToNextHour = 60 - seconds;
+	    int millisToNextHour = 1000 - millis;
+	    
+	    return minutesToNextHour*60*1000 + secondsToNextHour*1000 + millisToNextHour;
+	    
+	}
 
 	public static Date addDays(Date date, int days) {
 		Calendar cal = Calendar.getInstance();
