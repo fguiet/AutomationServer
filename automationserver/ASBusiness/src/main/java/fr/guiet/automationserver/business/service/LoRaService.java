@@ -41,8 +41,7 @@ public class LoRaService implements Runnable {
 	
 	private final String RAINGAUGE_SENSOR_ID = "17";
 	
-	//TODO : Change Sensor ID to 19 !!!! 20 is not the correct ID!!
-	private final String WATERMETER_SENSOR_ID = "20";
+	private final String WATERMETER_SENSOR_ID = "19";
 
 	public LoRaService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
