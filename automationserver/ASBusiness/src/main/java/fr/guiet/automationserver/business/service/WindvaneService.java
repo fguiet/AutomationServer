@@ -7,20 +7,20 @@ import org.json.JSONObject;
 
 import fr.guiet.automationserver.dataaccess.DbManager;
 
-public class AnemometerService implements IMqttable {
+public class WindvaneService implements IMqttable {
 
-	private static Logger _logger = LogManager.getLogger(AnemometerService.class);
+	private static Logger _logger = LogManager.getLogger(WindvaneService.class);
 	//private SMSGammuService _smsGammuService = null;
-	private static String MQTT_TOPIC = "guiet/outside/sensor/20";
+	private static String MQTT_TOPIC = "guiet/outside/sensor/21";
 	private ArrayList<String> _mqttTopics = new ArrayList<String>();
 	private DbManager _dbManager = null;
 	
-	public AnemometerService() {
+	public WindvaneService() {
 		//_smsGammuService = smsGammuService;		
 		_mqttTopics.add(MQTT_TOPIC);
 		_dbManager = new DbManager();
 		
-		_logger.info("Starting Anemometer service...");
+		_logger.info("Starting Windvane service...");
 	}
 	
 	@Override
@@ -31,30 +31,30 @@ public class AnemometerService implements IMqttable {
 		if (topic.equals(MQTT_TOPIC)) {
 			
 			JSONObject json = new JSONObject(message);
-			String battery = json.getString("battery");
-			String rpm = json.getString("rpm");
-			String vitesse = json.getString("vitesse");
+			String battery = json.getString("battery");			
 			String firmware = json.getString("firmware");
+			
+			String winddirection = json.getString("winddirection");
+			String degree = json.getString("degree");
 			
 			//SMSDto sms = new SMSDto("45eab206-21de-41c4-8598-759d1bfe198b");
 			//String mess = "You got mail ! (Battery voltage : " + battery + "v, Firmware : "+firmware+")";
 			
 			try {
 				float vcc = Float.parseFloat(battery);
-				float vitesseFloat = Float.parseFloat(vitesse);
-				int rpmInt = Integer.parseInt(rpm);
+				float degreeFloat = Float.parseFloat(battery);
 				
 				//Save info to InfluxDb
-				_dbManager.SaveAnemometerSensorInfoInfluxDB(vcc, rpmInt, vitesseFloat);
+				_dbManager.SaveWindvaneSensorInfoInfluxDB(vcc, winddirection, degreeFloat);
 			}
 			catch (NumberFormatException nfe) {
-				_logger.error("Could not convert anemometer value, battery : " + battery + ", rpm : " + rpm + ", vitesse: " + vitesse, nfe);
+				_logger.error("Could not convert windvane value, battery : " + battery + ", winddirection : " + winddirection + ", vitesse: " + degree, nfe);
 			}
 			
 			//sms.setMessage(mess);
 			//_smsGammuService.sendMessage(sms);
 			
-			_logger.info("Receveid message from anemometer. Battery voltage : " + battery+ "v, Firmware : "+ firmware +", rpm : " + rpm + ", vitesse : " + vitesse);
+			_logger.info("Receveid message from windvane. Battery voltage : " + battery+ "v, Firmware : "+ firmware +", winddirection : " + winddirection + ", degree : " + degree);
 			
 			messageProcessed = true;
 		}

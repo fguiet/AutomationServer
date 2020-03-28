@@ -48,6 +48,7 @@ public class AutomationServer implements Daemon {
 	private Print3DService _print3DService = null;
 	private MailboxService _mailboxService = null;
 	private AnemometerService _anemometerService = null;
+	private WindvaneService _windvaneService = null;
 	private OutsideEnvironmentalService _outsideEnvService = null;
 	private SMSGammuService _smsGammuService = null;
 	private MqttService _mqttService = null;
@@ -138,6 +139,9 @@ public class AutomationServer implements Daemon {
 					
 					//Start Anemometer service
 					_anemometerService = new AnemometerService();
+					
+					//Start Windvane service
+					_windvaneService = new WindvaneService();
 
 					// Start 3D Print service
 					_print3DService = new Print3DService(_smsGammuService, _mqttService);
@@ -165,6 +169,7 @@ public class AutomationServer implements Daemon {
 
 					_mqttService.addClient(_mailboxService);
 					_mqttService.addClient(_anemometerService);
+					_mqttService.addClient(_windvaneService);
 					_mqttService.addClient(_alarmService);
 					_mqttService.addClient(_BLEHubService);
 					_mqttService.addClient(_print3DService);
