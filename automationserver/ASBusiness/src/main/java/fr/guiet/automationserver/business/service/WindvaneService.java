@@ -36,10 +36,7 @@ public class WindvaneService implements IMqttable {
 			
 			String winddirection = json.getString("winddirection");
 			String degree = json.getString("degree");
-			
-			//SMSDto sms = new SMSDto("45eab206-21de-41c4-8598-759d1bfe198b");
-			//String mess = "You got mail ! (Battery voltage : " + battery + "v, Firmware : "+firmware+")";
-			
+									
 			try {
 				float vcc = Float.parseFloat(battery);
 				float degreeFloat = Float.parseFloat(battery);

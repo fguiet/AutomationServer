@@ -5,9 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Timer;
@@ -45,18 +47,23 @@ public class SMSGammuService implements Runnable, IMqttable {
 	private boolean _smsSendingInProgress = false;
 	private static String MQTT_TOPIC_SMS_SERVICE = "guiet/automationserver/smsservice";
 	private ArrayList<String> _mqttTopics = new ArrayList<String>();
+	private List<String> _safeSms = null;
 
 	public SMSGammuService() {
 
 		InputStream is = null;
-		try {
-
+		try {			
+			
 			String configPath = System.getProperty("automationserver.config.path");
 			is = new FileInputStream(configPath);
 
 			Properties prop = new Properties();
 			prop.load(is);
 
+			String[] permanentSmsArray = prop.getProperty("sms.safe.guid").split(",");
+										
+			_safeSms = Arrays.<String>asList(permanentSmsArray);
+			
 			_configRecipientList = prop.getProperty("sms.recipients").split(",");
 			_configGammu = prop.getProperty("gammu.config");
 
@@ -137,6 +144,12 @@ public class SMSGammuService implements Runnable, IMqttable {
 		String messId = smsDto.getId();
 
 		if (!_messageMap.containsKey(messId)) {
+			
+			if (_safeSms.contains(messId)) {
+				_logger.info("SMS message with UUID : " + messId + " will be send as it is on the safe list");
+				return false;
+			}
+			
 			_logger.info("Adding SMS message UUID to cache : " + messId.toString());
 			_messageMap.put(messId, new Date());
 			return false;
