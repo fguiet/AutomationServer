@@ -42,6 +42,8 @@ public class MailService {
     		prop.put("mail.smtp.port", "587");
             prop.put("mail.smtp.auth", "true");
             prop.put("mail.smtp.starttls.enable", "true"); //TLS
+            prop.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
     		
     		/*prop.put("mail.smtp.socketFactory.port", "587");
     		prop.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
