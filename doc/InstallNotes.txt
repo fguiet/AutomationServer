@@ -1,13 +1,13 @@
 Installation du Raspberry 3
 ---------------------------
 
-0.Mise ‡ jour
+0.Mise √† jour
 
 sudo apt-get update 
 sudo apt-get upgrade
 
 
-1.Changer le mot de passe de pi (connectÈ pi)
+1.Changer le mot de passe de pi (connect√© pi)
 
 passwd
 
@@ -22,8 +22,8 @@ sudo nano /etc/hosts (Attention changer 127.0.1.1 par 127.0.0.1)
 
 4.Pour le WIFI
 
-sudo iwconfig wlan0 power off => A mettre dans un fichier de config pour Ítre repris au demarrage du raspberry
-iwconfig => pour connaitre l'Ètat du WIFI
+sudo iwconfig wlan0 power off => A mettre dans un fichier de config pour √™tre repris au demarrage du raspberry
+iwconfig => pour connaitre l'√©tat du WIFI
 
 Installation de Java dans /usr/java
 -----------------------------------
@@ -57,7 +57,7 @@ Installation de Postgres
 
 sudo apt-get install postgresql-9.4
 
-CrÈation d'un fichier .bashrc
+Cr√©ation d'un fichier .bashrc
 
 export PGDATA=/home/fred/databases/postgres/data
 export LANG=en_US.utf8
@@ -74,7 +74,7 @@ mkdir postgres
 Chown postgres:postgres /home/postgres/
 utiliser la commande en root : usermod -d /home/postgres/ postgres
 
-on drop l'install par default et on recrÈÈ
+on drop l'install par default et on recr√©√©
 
 pg_dropcluster --stop 9.4 main
 pg_createcluster -d /home/fred/databases/postgres/data 9.4 main
@@ -122,6 +122,9 @@ gammu -c /home/fred/gammu/config/gammu-config --identify
 #network info
 gammu -c /home/fred/gammu/config/gammu-config --networkinfo
 
+#monitor
+gammu -c gammu-config --monitor 1
+
 #test envoi sms
 gammu -c /home/fred/gammu/config/gammu-config sendsms TEXT +0033xxxxxxxx -text "demain cave!"
 
@@ -138,7 +141,7 @@ Configuration de la db
 https://docs.influxdata.com/influxdb/v1.1/administration/config/
 fichier de config : /etc/influxdb/influxdb.conf
 
-Video intÈressante influxdb, mqtt, openhab
+Video int√©ressante influxdb, mqtt, openhab
 https://www.youtube.com/watch?v=-4aRaCAbZxU
 
 Creer un base influxdb
@@ -158,7 +161,7 @@ wget http://apache.mindstudios.com/maven/maven-3/3.3.9/binaries/apache-maven-3.3
 sudo tar -xzvf apache-maven-3.3.9-bin.tar.gz
 
 --Pour creer le repo, src: https://devcenter.heroku.com/articles/local-maven-dependencies
-mvn deploy:deploy-file -Durl=file:///D:\Documents\guiet\PrivÈ\Projets\AutomationServer\Git\automationserver\ASBusiness\repo -DgroupId=com.rapplogic.xbee -DartifactId=RXTXComm -Dversion=1.0 -Dfile=RXTXcomm.jar -Dpackaging=jar
+mvn deploy:deploy-file -Durl=file:///D:\Documents\guiet\Priv√©\Projets\AutomationServer\Git\automationserver\ASBusiness\repo -DgroupId=com.rapplogic.xbee -DartifactId=RXTXComm -Dversion=1.0 -Dfile=RXTXcomm.jar -Dpackaging=jar
 
 
 AutomationServer
@@ -180,10 +183,10 @@ supprimer de /boot/cmdline.txt
 
 Installation sous forme de service systemd
 http://www.framboise314.fr/systemd-tout-nouveau-tout-beau-ou-pas/
-systemctl => pour voir si le service est correctement lancÈ
+systemctl => pour voir si le service est correctement lanc√©
 sudo systemctl stop automationserver@1.service => arret
 sudo systemctl daemon-reload => en cas de changement du script systemd
-systemctl status automationserver@1.service => pour connaÓtre l'Ètat du service
+systemctl status automationserver@1.service => pour conna√Ætre l'√©tat du service
 
 
 Pour faire des tests : 
@@ -205,7 +208,7 @@ guiet/home/devices/sensors/dht22chambre_parents
 Info
 http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
 
-Souscrire ‡ un topic pour test
+Souscrire √† un topic pour test
 mosquitto_sub -h localhost -t guiet/home/devices/sensors/dht22chambre_manon
 
 Grafana
@@ -276,7 +279,7 @@ guiet/home/devices/sensors/dht22chambre_parents
 Info
 http://www.projetsdiy.fr/mosquitto-broker-mqtt-raspberry-pi/#.WGT2aFPhCpo
 
-//Souscrire ‡ un topic
+//Souscrire √† un topic
 mosquitto_sub -v -h localhost -t guiet/home/devices/sensors/xxxtest
 
 //Publier un message
@@ -285,9 +288,9 @@ mosquitto_pub -t guiet/home/devices/sensors/dht22salon -m 22
 ESP8266
 -------
 
-Pour voir les problËmes de boot se mettre en 74880 baud...
+Pour voir les probl√®mes de boot se mettre en 74880 baud...
 Pour reset le bouzin (pin Reset sur ground pendant 2sec)
-Pour programmer le bouzon (GPIO00 sur ground) puis reset, puis tÈlÈversement
+Pour programmer le bouzon (GPIO00 sur ground) puis reset, puis t√©l√©versement
 
 
 https://iothacking.wordpress.com/2016/11/08/mqtt-reed-switch/
