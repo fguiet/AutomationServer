@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle Anemometer Notification"
+when
+   Item Anemometer_Voltage received update
+then
+   Anemometer_LastUpdate.postUpdate(new DateTimeType())
+end
+

@@ -1,0 +1,5 @@
+String WaterConsumptionByHour "Conso. heure en cours : [%s] l" <water> {channel="mqtt:topic:homeMqttBroker:watermeter:waterconsumptionbyhour"}
+String WaterConsumptionByDay "Conso. du jour : [%s] l" <water> {channel="mqtt:topic:homeMqttBroker:watermeter:waterconsumptionbyday"}
+String WaterMeterVoltage "Batt. water meter : [%s] v" <battery> {channel="mqtt:topic:homeMqttBroker:watermeter:watermetervoltage"}
+DateTime WaterMeter_LastUpdate "Maj water meter [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
+

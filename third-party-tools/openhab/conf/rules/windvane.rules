@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle Windvane Notification"
+when
+   Item Windvane_Voltage received update
+then
+   Windvane_LastUpdate.postUpdate(new DateTimeType())
+end
+

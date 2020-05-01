@@ -1,0 +1,9 @@
+import org.openhab.core.library.types.DateTimeType
+
+rule "Handle WaterMeter Notification"
+when
+   Item WaterMeterVoltage received update
+then
+   WaterMeter_LastUpdate.postUpdate(new DateTimeType())
+end
+

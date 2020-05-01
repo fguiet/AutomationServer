@@ -1,0 +1,4 @@
+String Anemometer_Rpm "Rpm : [%s] r/5s" <wind> {channel="mqtt:topic:homeMqttBroker:anemometer:anemometerrpm"}
+String Anemometer_Voltage "Batt. anemomètre : [%s] v" <battery> {channel="mqtt:topic:homeMqttBroker:anemometer:anemometervoltage"}
+DateTime Anemometer_LastUpdate "Maj anemomètre [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
+

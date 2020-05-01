@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+   openhab: 
+      network_mode: host
+      image: openhab/openhab:2.5.4-armhf-debian 
+      container_name: openhab-2.5.4
+      restart: unless-stopped
+      volumes:
+         - /etc/localtime:/etc/localtime:ro 
+         - /etc/timezone:/etc/timezone:ro 
+         - /home/fred/applications/openhab/conf:/openhab/conf
+         - /home/fred/applications/openhab/userdata:/openhab/userdata
+         - /home/fred/applications/openhab/addons:/openhab/addons
+      environment:
+         - USER_ID=9001
+         - GROUP_ID=9001

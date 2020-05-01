@@ -28,6 +28,12 @@ sitemap homeautomation label="Home Sweet Home" {
 			Text item=Pressure_Normalized
 	                Text item=Raingauge_Vcc
 		        Text item=Raingauge_LastUpdate
+                        Text item=Anemometer_Voltage
+		        Text item=Anemometer_Rpm
+	                Text item=Anemometer_LastUpdate
+			Text item=Windvane_Direction
+                        Text item=Windvane_Voltage
+                        Text item=Windvane_LastUpdate
 				
 			Webview url="/static/cctvCam1Chart.html" height=12
 			
@@ -134,7 +140,7 @@ sitemap homeautomation label="Home Sweet Home" {
 			}
 
 			Colorpicker item=Manon_HueColor
-                        Text item=Manon_Fish_Feeder_LastUpdate
+                        //Text item=Manon_Fish_Feeder_LastUpdate
         	}
 
 		Group item=Nohe_Current_Temp label="Chambre Nohé" icon="bedroom_blue"  {
@@ -169,6 +175,13 @@ sitemap homeautomation label="Home Sweet Home" {
                 }
 
 	}
+
+        Frame label="Consommation d'eau" icon="water" {
+                Text item=WaterConsumptionByHour
+                Text item=WaterConsumptionByDay
+                Text item=WaterMeterVoltage
+                Text item=WaterMeter_LastUpdate
+        }
 
 	Frame label="Electricité" icon="energy" {
 		Group item=ConsoInst label="Electricité" icon="energy" {
@@ -207,18 +220,18 @@ sitemap homeautomation label="Home Sweet Home" {
 		}
 	}
 
-	Frame label="Boîte aux lettres" {
-		Group item=Mailbox_LastUpdate label="Boîte aux lettres" icon="mail" {
+	Frame label="Boîte aux lettres" icon="mail" {
+		//Group item=Mailbox_LastUpdate label="Boîte aux lettres" icon="mail" {
 			Text item=Mailbox_Vcc
 			Text item=Mailbox_LastUpdate
-		}
+		//}
 	}
 	
 	Frame label="Gestion de l'alarme" {
-		Group item=Alarm_Mode label="Alarme" icon="siren-on" {
+		//Group item=Alarm_Mode label="Alarme" icon="siren-on" {
 	 		Switch item=Alarm_Mode mappings=[ON="Marche", OFF="Arrêt"]
 			//Switch item=AlarmMgt mappings=[ON="Activé", OFF="Désactivé"]
-		}
+		//}
 	}
         
         Frame label="Etat du système" {

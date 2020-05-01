@@ -75,8 +75,8 @@ Rollershutter NorthRollerShutter "Volet roulant Nord"  <rollershutter> {channel=
 //String NextRSOpen "Ouv. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSOpen.js)]"}
 //String NextRSClose "Ferm. auto. prévue : [%s]" <calendar> {mqtt="<[mosquitto-broker:/guiet/home/info:state:JS(getNextRSClose.js)]"}
 
-String Raingauge_Vcc "Voltage pluvio. [%s]" <energy>  {channel="mqtt:topic:homeMqttBroker:raingauge:raingauge_vcc"}
-DateTime Raingauge_LastUpdate "Dernière réception tension pluvio. [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
+String Raingauge_Vcc "Batt. pluvio. [%s]" <battery>  {channel="mqtt:topic:homeMqttBroker:raingauge:raingauge_vcc"}
+DateTime Raingauge_LastUpdate "Maj pluvio  [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
 
 Number Boiler_Temp "Temp. actuelle  [%.1f °C]" <temperature>  {channel="mqtt:topic:homeMqttBroker:boiler:boiler_temp"}
 String Boiler_State "Etat chauffe-eau [MAP(boiler_state.map):%s]" <switch> {channel="mqtt:topic:homeMqttBroker:boiler:boiler_state"}

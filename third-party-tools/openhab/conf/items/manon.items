@@ -10,6 +10,4 @@ Number Manon_Derog "Dérogation en cours à [%.1f °C]" <temperature>
 Number Manon_Battery "Batterie [%.2f v]" <battery> {channel="mqtt:topic:homeMqttBroker:rooms:manon_battery"}
 Number Manon_Sensor_Rssi "Rssi [%d]" {channel="mqtt:topic:homeMqttBroker:rooms:manon_sensor_rssi"}
 Switch Manon_Derog_Visibility
-String Manon_Fish_Feeder "Splash nourrit le" <cistern>  { channel="mqtt:topic:homeMqttBroker:rooms:manon_fishfeeder" }
-DateTime Manon_Fish_Feeder_LastUpdate "Splash nourrit le : [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <cistern>
 

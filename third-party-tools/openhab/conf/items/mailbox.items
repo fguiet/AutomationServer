@@ -1,2 +1,2 @@
-String Mailbox_Vcc "Voltage [%s]" <energy>  {channel="mqtt:topic:homeMqttBroker:mailbox:mailbox_vcc"}
+String Mailbox_Vcc "Batterie [%s]" <battery>  {channel="mqtt:topic:homeMqttBroker:mailbox:mailbox_vcc"}
 DateTime Mailbox_LastUpdate "Dernière réception courrier [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>

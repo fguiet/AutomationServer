@@ -1,0 +1,4 @@
+String Windvane_Direction "Vent : [%s]" <wind> {channel="mqtt:topic:homeMqttBroker:windvane:windvanedirection"}
+String Windvane_Voltage "Batt. windvane : [%s] v" <battery> {channel="mqtt:topic:homeMqttBroker:windvane:windvanevoltage"}
+DateTime Windvane_LastUpdate "Maj windvane [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock>
+

@@ -52,6 +52,25 @@ Bridge mqtt:broker:homeMqttBroker "MQTT Broker : Home Automation Mosquitto Broke
        Type string : month_cost "Cout mensuel" [ stateTopic="guiet/automationserver/electricity",transformationPattern="JSONPATH:$.month_cost" ]
    }
 
+   Thing topic watermeter {
+    Channels:
+       Type string : waterconsumptionbyhour "Conso par heure" [ stateTopic="/guiet/automationserver/watermeter",transformationPattern="JSONPATH:$.WaterHourConsumption" ]
+       Type string : waterconsumptionbyday "Conso par jour" [ stateTopic="/guiet/automationserver/watermeter",transformationPattern="JSONPATH:$.WaterDayConsumption" ]
+       Type string : watermetervoltage "Voltage" [ stateTopic="/guiet/outside/sensor/19",transformationPattern="JSONPATH:$.b" ]
+   }
+
+   Thing topic anemometer {
+    Channels:
+       Type string : anemometerrpm "rpm" [ stateTopic="guiet/outside/sensor/20",transformationPattern="JSONPATH:$.rpm" ]
+       Type string : anemometervoltage "Voltage" [ stateTopic="guiet/outside/sensor/20",transformationPattern="JSONPATH:$.battery" ]
+   }
+
+   Thing topic windvane {
+    Channels:
+       Type string : windvanedirection "direction" [ stateTopic="guiet/outside/sensor/21",transformationPattern="JSONPATH:$.winddirection" ]
+       Type string : windvanevoltage "Voltage" [ stateTopic="guiet/outside/sensor/21",transformationPattern="JSONPATH:$.battery" ]
+   }
+
    Thing topic basement {
     Channels:
         Type number : cave_temp  "Température cave" [ stateTopic="/guiet/cave/temphumi",transformationPattern="JS:getCaveTemp.js" ]

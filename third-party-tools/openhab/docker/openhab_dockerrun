@@ -1,14 +1,1 @@
-docker run \
-        --name openhab-2.5.0 \
-        --net=host \
-        --tty \
-        -v /etc/localtime:/etc/localtime:ro \
-        -v /etc/timezone:/etc/timezone:ro \
-        -v /home/fred/applications/openhab/conf:/openhab/conf \
-        -v /home/fred/applications/openhab/userdata:/openhab/userdata \
-        -v /home/fred/applications/openhab/addons:/openhab/addons\
-        -d \
-        -e USER_ID=9001 \
-        -e GROUP_ID=9001 \
-        --restart=unless-stopped \
-        openhab/openhab:2.5.0-armhf-debian
+docker-compose up -d
