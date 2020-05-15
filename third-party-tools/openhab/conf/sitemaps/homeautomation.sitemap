@@ -240,4 +240,6 @@ sitemap homeautomation label="Home Sweet Home" {
                   Text item=Downstairs_Ble_Hub_LastUpdate
                }
         }
+
+	 Webview url="/static/issue-120.html"
 }

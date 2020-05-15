@@ -1,0 +1,36 @@
+<!-- 
+So Switch button works on iOS : https://github.com/openhab/openhab-webui/issues/120 
+-->
+<head>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <script type="text/javascript">
+        
+        function addStyleSheet(filename) {
+	
+        var head = window.parent.document.head
+          , link = window.parent.document.createElement('link')
+
+          link.type = 'text/css'
+          link.rel = 'stylesheet'
+          link.href = filename
+
+          head.appendChild(link)
+	  //alert(filename)
+        }
+
+	// Hide the last web element of the page ...
+        _webViewElements = window.parent.document.body.getElementsByClassName("mdl-form__row mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet ");	
+        _lastWebViewElement = _webViewElements[_webViewElements.length - 1];
+        _lastWebViewElement.style.display = "none";
+	//alert(_lastWebViewElement);
+        _webViewElements.item(22).style.display="none";
+        
+                
+       addStyleSheet("../static/issue-120.css")
+    </script>
+</body>
