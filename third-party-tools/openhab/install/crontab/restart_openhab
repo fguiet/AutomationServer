@@ -1,0 +1,3 @@
+CONTAINER_ID=$(docker ps -qf "name=^/openhab-.*$")
+docker stop ${CONTAINER_ID}
+docker start ${CONTAINER_ID}
