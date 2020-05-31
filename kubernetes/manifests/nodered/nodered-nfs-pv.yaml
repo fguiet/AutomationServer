@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+   name: nodered-nfs-pv
+   labels:
+      #TODO: type loca?? what does it mean?
+      type: local
+spec:
+   storageClassName: nodered-nfs-pv
+   capacity:
+      #Sets here the max capacity
+      storage: 10Mi
+   accessModes:
+     - ReadWriteOnce
+   nfs:
+      server: nfs.guiet.lan
+      path: "/mnt/touros-ext-drive/k8s-data/node-red-pv"       

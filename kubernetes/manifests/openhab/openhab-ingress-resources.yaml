@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+   name: openhab-ingress-resources
+spec:
+   rules:
+   - host: openhab.guiet.lan
+     http:
+        paths:
+        - backend:
+           serviceName: openhab-service-clusterip
+           servicePort: 80

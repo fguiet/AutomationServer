@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+   name: grafana-ingress-resources
+spec:
+   rules:
+   - host: grafana.guiet.lan
+     http:
+        paths:
+        - backend:
+           serviceName: grafana-service-clusterip
+           servicePort: 80

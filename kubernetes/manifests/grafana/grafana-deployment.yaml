@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+spec:
+  replicas: 1
+  selector:
+    #Comment le deploiement trouve les nodes à gérer
+    matchLabels:      
+      app: grafana
+  template:
+    metadata:
+      labels:
+        #Les pods recoivent le champ app: openhab dans le champ label
+        app: grafana
+    spec:
+      #Mount following host volume on pod
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+             claimName: grafana-nfs-pvc
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Europe/Paris
+            type: File
+      containers:
+      - name: grafana
+        image: grafana/grafana:6.5.2
+        #Can be useful
+        #resources:
+        #  limits:
+        #    memory: "128Mi"
+        #    cpu: "500m"
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP        
+
+        #Volume on container    
+        volumeMounts:          
+          - mountPath: /etc/localtime
+            name: tz-config
+          #Path on the container to mount
+          - mountPath: /var/lib/grafana
+            name: grafana-storage
+            subPath: data
+          #Path on the container to mount
+          - mountPath: /var/log/grafana
+            name: grafana-storage
+            subPath: logs

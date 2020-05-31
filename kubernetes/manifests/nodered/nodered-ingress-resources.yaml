@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+   name: nodered-ingress-resources
+spec:
+   rules:
+   - host: nodered.guiet.lan
+     http:
+        paths:
+        - backend:
+           serviceName: nodered-service-clusterip
+           servicePort: 80

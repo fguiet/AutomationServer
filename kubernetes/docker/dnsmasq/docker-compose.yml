@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+   dnsmasq:
+      #build: .
+      #dockerfile: Dockerfile
+      image : guiet/dnsmasq
+      container_name: dnsmasq
+      restart: unless-stopped
+      ports:
+         - "53:53/udp"
+      #Add DNS Entry here
+      #name:ip
+      extra_hosts:
+         - "???:???"
+         - "???:???"

@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+   haproxy:
+      image : guiet/haproxy
+      container_name: haproxy
+      restart: unless-stopped
+      ports:
+         - 80:80
+      expose:
+         - 80

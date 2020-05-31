@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodered-deployment
+spec:
+  replicas: 1
+  selector:
+    #Comment le deploiement trouve les nodes à gérer
+    matchLabels:      
+      app: nodered
+  template:
+    metadata:
+      labels:
+        #Les pods recoivent le champ app: nodered dans le champ label
+        app: nodered
+    spec:     
+      #Mount following host volume on pod
+      volumes:
+        - name: nodered-storage
+          persistentVolumeClaim:
+             claimName: nodered-nfs-pvc
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Europe/Paris
+            type: File
+      containers:         
+      - name: nodered
+        image: nodered/node-red:1.0.3-3-12
+        env:
+         - name: TZ
+           value: "Europe/Paris"
+         - name: FLOWS
+           value: "home_flows.json"
+        #Can be useful
+        #resources:
+        #  limits:
+        #    memory: "128Mi"
+        #    cpu: "500m"
+        ports:
+        - containerPort: 1880
+          name: http
+          protocol: TCP        
+
+        #Volume on container    
+        volumeMounts:          
+          - mountPath: /etc/localtime
+            name: tz-config
+          #Path on the container to mount
+          - mountPath: /data
+            name: nodered-storage
+            subPath: data
+          

@@ -1,0 +1,1 @@
+docker build -t guiet/dnsmasq -f Dockerfile .

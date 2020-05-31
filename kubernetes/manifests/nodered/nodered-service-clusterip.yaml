@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodered-service-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: nodered
+  ports:
+    - protocol: TCP
+      port: 80
+      #Ip du container openhab (voir deploiement du pod)
+      targetPort: 1880

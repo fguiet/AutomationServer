@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nodered-nfs-pvc
+spec:
+  accessModes:
+    #Only one pod can read or write? need to be check
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  #Used to bound pvc and pv
+  storageClassName: nodered-nfs-pv

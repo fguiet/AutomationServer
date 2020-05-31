@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openhab-deployment
+spec:
+  replicas: 1
+  selector:
+    #Comment le deploiement trouve les nodes à gérer
+    matchLabels:      
+      app: openhab
+  template:
+    metadata:
+      labels:
+        #Les pods recoivent le champ app: openhab dans le champ label
+        app: openhab
+    spec:
+      #Mount following host volume on pod
+      volumes:
+        - name: openhab-storage
+          persistentVolumeClaim:
+             claimName: openhab-nfs-pvc
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Europe/Paris
+            type: File
+      containers:
+      - name: openhab
+        image: openhab/openhab:2.5.4-armhf-debian
+        #Can be useful
+        #resources:
+        #  limits:
+        #    memory: "128Mi"
+        #    cpu: "500m"
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        #- containerPort: 8443
+        #  name: https
+        #  protocol: TCP
+        #- containerPort: 8101
+        #  name: console
+        #  protocol: TCP    
+
+        #Volume on container    
+        volumeMounts:          
+          - mountPath: /etc/localtime
+            name: tz-config
+          #Path on the container to mount
+          - mountPath: /openhab/conf
+            name: openhab-storage
+            subPath: conf
+          #Path on the container to mount
+          - mountPath: /openhab/userdata
+            name: openhab-storage
+            subPath: userdata        
+          #Path on the container to mount
+          - mountPath: /openhab/addons
+            name: openhab-storage
+            subPath: addons        
+    
+      #terminationGracePeriodSeconds: 300
