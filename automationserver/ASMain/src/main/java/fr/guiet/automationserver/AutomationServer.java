@@ -176,6 +176,7 @@ public class AutomationServer implements Daemon {
 					_mqttService.addClients(_roomService.getMqttableClients());
 					_mqttService.addClients(_outsideEnvService.getMqttableClients());
 					_mqttService.addClient(_smsGammuService);
+					_mqttService.addClient(_waterMeterService);
 
 					_mqttService.connectAndSubscribe();
 

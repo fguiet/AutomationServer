@@ -91,7 +91,7 @@
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
 			<version>${commons-daemon.version}</version>
-		</dependency>
+		</dependency>	
 		<dependency>
 			<groupId>fr.guiet.automationserver</groupId>
 			<artifactId>automationserver-dataaccess</artifactId>

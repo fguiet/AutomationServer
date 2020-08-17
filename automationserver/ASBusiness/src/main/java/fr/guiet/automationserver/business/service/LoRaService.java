@@ -22,8 +22,8 @@ import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONException;
+//import org.json.JSONObject;
 
 public class LoRaService implements Runnable {
 
@@ -36,12 +36,10 @@ public class LoRaService implements Runnable {
 	// private static String _mqttClientId = "rainGaugeCliendId";
 	private MqttService _mqttService = null;
 	private String _pub_topic = "/guiet/automationserver/raingauge";
-	private String _pub_topic_watermeter = "/guiet/outside/sensor/19";
-	private Date _lastMessageReceived = new Date();
 	
+	private Date _lastMessageReceived = new Date();
 	private final String RAINGAUGE_SENSOR_ID = "17";
 	
-	private final String WATERMETER_SENSOR_ID = "19";
 
 	public LoRaService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
@@ -165,31 +163,7 @@ public class LoRaService implements Runnable {
 		}
 	}
 	
-	private void ManageWaterMeterSensor(String message, String battery, String liter) {
-		
-		
-		
-		_mqttService.SendMsg(_pub_topic_watermeter, message);
-		
-		float vcc = 0;
-		try {
-			vcc = Float.parseFloat(battery);
-		}
-		catch(NumberFormatException e) {
-			_logger.error("Valeur de la batterie pour le capter Water Meter incorrecte : " + battery);
-		}
-		
-		int consumption = 0;
-		try {
-			consumption = Integer.parseInt(liter);
-		}
-		catch(NumberFormatException e) {
-			_logger.error("Valeur de la consommation pour le capter Water Meter incorrecte : " + battery);
-		}
-		
-		_dbManager.SaveWaterMeterInfo(vcc, consumption);
-	}
-
+	
 	@Override
 	public void run() {
 
@@ -219,8 +193,8 @@ public class LoRaService implements Runnable {
 
 		String sensorid = null;
 		//String firmware = null;
-		String battery = null;
-		String consumption = null;
+		//String battery = null;
+		//String consumption = null;
 		//String name = null;
 
 		while (!_isStopped) {
@@ -234,7 +208,7 @@ public class LoRaService implements Runnable {
 					//Parse LoRa message
 					//Try to convert into JSON
 					
-					try {
+					/*try {
 						JSONObject json = new JSONObject(message);
 						sensorid = json.getString("id");
 						//firmware = json.getString("firmware");
@@ -246,16 +220,19 @@ public class LoRaService implements Runnable {
 						//Set default sensor id which is RainGauge
 						sensorid = RAINGAUGE_SENSOR_ID;
 						_logger.info("Cannot convert LoRa message to JSON, message must be in old format");				
-					}
+					}*/
 
+					sensorid = RAINGAUGE_SENSOR_ID;
+					
 					switch(sensorid) {
 					case RAINGAUGE_SENSOR_ID:
 						ManageRaingaugeSensor(message);
 						break;
-					case WATERMETER_SENSOR_ID: 
+					/*case WATERMETER_SENSOR_ID: 
 						ManageWaterMeterSensor(message, battery, consumption);
 						break;
-					}	
+						*/
+					}
 				}
 
 				Thread.sleep(2000);

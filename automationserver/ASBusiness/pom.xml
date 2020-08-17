@@ -56,6 +56,12 @@
 			<artifactId>automationserver-dataaccess</artifactId>
 			<version>${automationserver-dataaccess.version}</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+		<dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk15on</artifactId>
+		    <version>1.66</version>
+		</dependency>		
 		<dependency>
 			<groupId>com.pi4j</groupId>
 			<artifactId>pi4j-core</artifactId>
