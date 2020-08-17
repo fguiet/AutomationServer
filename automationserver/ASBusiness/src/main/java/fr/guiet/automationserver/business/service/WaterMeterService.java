@@ -141,7 +141,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				//Try parse payload
 				
-				String[] messageContent = decryptedPayload.split(" ");
+				String[] messageContent = decryptedPayload.trim().split(" ");
 				
 				String sensorid = messageContent[0];
 				

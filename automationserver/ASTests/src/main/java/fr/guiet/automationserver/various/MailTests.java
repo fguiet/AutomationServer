@@ -10,9 +10,11 @@ public class MailTests {
 		byte[] appKey = new byte[] { (byte)0xC3, 0x0B, (byte)0xEA, (byte)0xEE, (byte)0xE8, (byte)0xBA, 0x50, (byte)0xA8, 0x31, 0x5B, 0x1E, 0x05, (byte)0x9B, (byte)0xAA, (byte)0xE0, (byte)0xB8 };
 		//appKey =  new BigInteger("A2E9B32DE6CEA07370A521ABCF51882A", 16).toByteArray();
 		LoRaDecrypter ld = new LoRaDecrypter(appKey);
-		
-		byte[] result = ld.decrypt("QPQRASaADQABxuQg6a3bunLrey2RPSQckXOKY+c5RA==");
+				
+		byte[] result = ld.decrypt("QPQRASaABwABtTJ7ZAP3df8A7P8qX5XqiyfScV5t");
 		String s = new String(result);
+		
+		String[] messageContent = s.trim().split(" ");
 		
 		/*byte[] lorawan = null;
 		
