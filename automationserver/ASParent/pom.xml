@@ -16,8 +16,7 @@
 		<module>../ASBusiness</module>
 		<module>../ASMain</module>
 		<module>../ASTests</module>
-		<module>../ASWebApp</module>
-		<module>../LoRaWAN</module>
+		<module>../ASWebApp</module>		
 	</modules>
 
 	<properties>
