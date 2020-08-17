@@ -117,7 +117,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 		
 		if (topic.equals(MQTT_TOPIC_LORAWAN)) {
 			
-			_logger.info("LoRaWAN message received : " + message);
+			//_logger.info("LoRaWAN message received : " + message);
 			
 			String decryptedPayload = "";
 			
@@ -137,6 +137,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				decryptedPayload = new String(result);
 				
+				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);
+				
 				//Try parse payload
 				
 				String[] messageContent = decryptedPayload.split(" ");
@@ -144,6 +146,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 				String sensorid = messageContent[0];
 				
 				if (sensorid.equals(WATERMETER_SENSOR_ID)) {
+					
 					String firmware  = messageContent[1];	
 					String voltage  = messageContent[2];
 					String literConsumed  = messageContent[3];
@@ -157,6 +160,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 					mess.put("b", voltage);
 					mess.put("l", literConsumed);
 					mess.put("cft", literConsumedFromStart);
+					
+					_logger.info("JSON Message for OpenHab : " + mess.toString());
 					
 					ManageWaterMeterSensor(mess.toString(), voltage, literConsumed);
 				}
@@ -197,6 +202,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 		catch(NumberFormatException e) {
 			_logger.error("Valeur de la consommation pour le capter Water Meter incorrecte : " + battery);
 		}
+		
+		_logger.info("WaterMeter voltage " + vcc + ", consumption : " + consumption);
 		
 		_dbManager.SaveWaterMeterInfo(vcc, consumption);
 	}
