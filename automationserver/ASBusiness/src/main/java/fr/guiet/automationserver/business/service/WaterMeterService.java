@@ -106,7 +106,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
 				
-				if (elapsedTime >= 75) {
+				if (elapsedTime >= 60) {
 					String mess = "Aucune nouvelle du capteur sur compteur d'eau depuis 1h";
 
 					_logger.info(mess);
@@ -200,6 +200,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 					mess.put("cft", literConsumedFromStart);
 					
 					_logger.info("JSON Message for OpenHab : " + mess.toString());
+					
+					_lastMessageReceived = new Date();
 					
 					ManageWaterMeterSensor(mess.toString(), voltage, literConsumed);
 				}
