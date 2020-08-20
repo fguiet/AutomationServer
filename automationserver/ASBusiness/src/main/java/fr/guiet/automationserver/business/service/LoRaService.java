@@ -237,7 +237,8 @@ public class LoRaService implements Runnable {
 
 				Thread.sleep(2000);
 				
-				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
+				//TODO : To reactivate after Raingauge migration to LoRaWAN
+				/*Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
 				
 				if (elapsedTime >= 75) {
 					String mess = "Aucune nouvelle du pluviomètre depuis 1h15, tentative de relance d'une instance sur le port série";
@@ -252,7 +253,7 @@ public class LoRaService implements Runnable {
 					_lastMessageReceived = new Date();
 					
 					CloseSerialConnection(false);
-				}
+				}*/
 				
 			} catch (Exception e) {
 				_logger.error("Error occured in LoRa service...", e);

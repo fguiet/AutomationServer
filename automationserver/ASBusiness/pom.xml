@@ -55,6 +55,11 @@
 			<groupId>fr.guiet.automationserver</groupId>
 			<artifactId>automationserver-dataaccess</artifactId>
 			<version>${automationserver-dataaccess.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>fr.guiet.automationserver</groupId>
+			<artifactId>automationserver-lorawan</artifactId>
+			<version>${automationserver-lorawan.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
 		<dependency>

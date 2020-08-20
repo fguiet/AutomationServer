@@ -16,7 +16,8 @@
 		<module>../ASBusiness</module>
 		<module>../ASMain</module>
 		<module>../ASTests</module>
-		<module>../ASWebApp</module>		
+		<module>../ASWebApp</module>
+		<module>../ASLoraWAN</module>
 	</modules>
 
 	<properties>
@@ -49,7 +50,8 @@
 		<jersey-bundle.version>1.19.4</jersey-bundle.version>
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
 		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
-		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>		
+		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>	
+		<automationserver-lorawan.version>0.0.1-SNAPSHOT</automationserver-lorawan.version>		
 	</properties>
 
     <!--

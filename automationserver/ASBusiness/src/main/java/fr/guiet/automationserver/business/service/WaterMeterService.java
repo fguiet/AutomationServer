@@ -1,15 +1,28 @@
 package fr.guiet.automationserver.business.service;
 
+import java.nio.ByteBuffer;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import be.romaincambier.lorawan.FRMPayload;
+import be.romaincambier.lorawan.MACPayload;
+import be.romaincambier.lorawan.PhyPayload;
+import be.romaincambier.lorawan.exceptions.MalformedPacketException;
+import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.business.helper.LoRaDecrypter;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
@@ -31,6 +44,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 	private final String WATERMETER_SENSOR_ID = "19";
 	
 	private static String MQTT_TOPIC_LORAWAN="gateway/dca632fffe365d9c/event/up";
+	
+	private Date _lastMessageReceived = new Date();
 	
 	public WaterMeterService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
@@ -89,6 +104,22 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				Thread.sleep(2000);
 				
+				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
+				
+				if (elapsedTime >= 75) {
+					String mess = "Aucune nouvelle du capteur sur compteur d'eau depuis 1h";
+
+					_logger.info(mess);
+
+					SMSDto sms = new SMSDto("9e357202-cb61-4338-9562-df07564460d0");
+					sms.setMessage(mess);
+					_smsGammuService.sendMessage(sms);
+					
+					//Reset
+					_lastMessageReceived = new Date();
+										
+				}
+				
 			} catch (Exception e) {
 				_logger.error("Error occured in WaterMeter service...", e);
 
@@ -126,22 +157,29 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				String payload = json.getString("phyPayload");
 				
-				//Decrypt payload						
-				//See TTN information to find appKey
-				//TODO : A revoir pour stocker mieux cette information
-				byte[] appKey = new byte[] { (byte)0xC3, 0x0B, (byte)0xEA, (byte)0xEE, (byte)0xE8, (byte)0xBA, 0x50, (byte)0xA8, 0x31, 0x5B, 0x1E, 0x05, (byte)0x9B, (byte)0xAA, (byte)0xE0, (byte)0xB8 };
+				_logger.info("Payload base64 received : " + payload);
 				
-				LoRaDecrypter ld = new LoRaDecrypter(appKey);
-
-				byte[] result = ld.decrypt(payload);
+							    
+				PhyPayload pp;
+				//try {
+				byte[] decode = Base64.decode(payload);
+				byte[] nwkSKey = new byte[] { (byte)0xA2, (byte)0xE9, (byte)0xB3, 0x2D, (byte)0xE6, (byte)0xCE, (byte)0xA0, 0x73, 0x70, (byte)0xA5, 0x21, (byte)0xAB, (byte)0xCF, 0x51, (byte)0x88, 0x2A };
+			    byte[] appSKey = new byte[] { (byte)0xC3, 0x0B, (byte)0xEA, (byte)0xEE, (byte)0xE8, (byte)0xBA, 0x50, (byte)0xA8, 0x31, 0x5B, 0x1E, 0x05, (byte)0x9B, (byte)0xAA, (byte)0xE0, (byte)0xB8 };
+			    				    
+				pp = PhyPayload.parse(ByteBuffer.wrap(decode));
 				
-				decryptedPayload = new String(result);
+				MACPayload pl = (MACPayload) pp.getMessage();
+				
+				FRMPayload data = pl.getFRMPayload();
+				byte[] clearData = data.getClearPayLoad(nwkSKey, appSKey);
+				
+				decryptedPayload = new String(clearData);
 				
 				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);
 				
 				//Try parse payload
 				
-				String[] messageContent = decryptedPayload.trim().split(" ");
+				String[] messageContent = decryptedPayload.split(" ");
 				
 				String sensorid = messageContent[0];
 				
@@ -168,6 +206,12 @@ public class WaterMeterService implements Runnable, IMqttable {
 				else {
 					throw new Exception("sensorid is " + sensorid + ", mine is " + WATERMETER_SENSOR_ID + ", LoRaWAN frame not for me");
 				}
+					
+				/*} catch (MalformedPacketException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+				
 				
 				messageProcessed = true;
 				
