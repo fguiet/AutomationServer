@@ -1,16 +1,10 @@
 package fr.guiet.automationserver.business.service;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,9 +15,7 @@ import org.json.JSONObject;
 import be.romaincambier.lorawan.FRMPayload;
 import be.romaincambier.lorawan.MACPayload;
 import be.romaincambier.lorawan.PhyPayload;
-import be.romaincambier.lorawan.exceptions.MalformedPacketException;
 import fr.guiet.automationserver.business.helper.DateUtils;
-import fr.guiet.automationserver.business.helper.LoRaDecrypter;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -46,6 +38,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 	private static String MQTT_TOPIC_LORAWAN="gateway/dca632fffe365d9c/event/up";
 	
 	private Date _lastMessageReceived = new Date();
+	
+	private Long _previousConsumptionFromStart = null;
 	
 	public WaterMeterService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
@@ -189,7 +183,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 					String voltage  = messageContent[2];
 					String literConsumed  = messageContent[3];
 					String literConsumedFromStart  = messageContent[4];
-					
+										
 					//TODO : review that!
 					JSONObject mess = new JSONObject();
 					mess.put("id", WATERMETER_SENSOR_ID);
@@ -203,7 +197,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 					
 					_lastMessageReceived = new Date();
 					
-					ManageWaterMeterSensor(mess.toString(), voltage, literConsumed);
+					ManageWaterMeterSensor(mess.toString(), voltage, literConsumed, literConsumedFromStart);
 				}
 				else {
 					throw new Exception("sensorid is " + sensorid + ", mine is " + WATERMETER_SENSOR_ID + ", LoRaWAN frame not for me");
@@ -229,7 +223,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 		return messageProcessed;
 	}
 	
-	private void ManageWaterMeterSensor(String message, String battery, String liter) {
+	private void ManageWaterMeterSensor(String message, String battery, String liter, String literConsumedFromStart) {
 		
 		_mqttService.SendMsg(_pub_topic_watermeter, message);
 		
@@ -246,12 +240,56 @@ public class WaterMeterService implements Runnable, IMqttable {
 			consumption = Integer.parseInt(liter);
 		}
 		catch(NumberFormatException e) {
-			_logger.error("Valeur de la consommation pour le capter Water Meter incorrecte : " + battery);
+			_logger.error("Valeur de la consommation pour le capter Water Meter incorrecte : " + liter);
 		}
 		
-		_logger.info("WaterMeter voltage " + vcc + ", consumption : " + consumption);
+		Long literConsumedFromStartLong = null;
+		try {
+			literConsumedFromStartLong = Long.parseLong(literConsumedFromStart);
+		}
+		catch(NumberFormatException e) {
+			_logger.error("Valeur de la consommation depuis le lancement du capteur Water Meter incorrecte : " + literConsumedFromStart);
+		}
 		
-		_dbManager.SaveWaterMeterInfo(vcc, consumption);
+		//2020-08-29
+		//quelque fois, il arrive, pour une raison qui met encore inconnue que la tranmission LoRa ne fonctionne
+		//pas pendant un certain temps....commme si la gateway ne recevait pas les infos...
+		//du coup on va rattraper les infos perdues en ce basant sur la variable literConsumedFromStart
+		int computedComsuption = 0;
+		
+		if (_previousConsumptionFromStart == null) {
+			computedComsuption = consumption;
+			_previousConsumptionFromStart = literConsumedFromStartLong;
+			_logger.info("Previous consumption from start not initialized...");
+		} else  {
+			if (literConsumedFromStartLong != null) {
+				
+				Long cons =  literConsumedFromStartLong - _previousConsumptionFromStart;
+				_previousConsumptionFromStart = literConsumedFromStartLong;
+				
+				if (cons < 0) {
+					//Sensor has restart here					
+					computedComsuption = consumption;
+					_logger.info("WaterMeter sensor has restarted...");
+				}
+				else {
+					computedComsuption = cons.intValue();					
+					
+					if (computedComsuption > 2) {
+						SMSDto sms = new SMSDto("9ef44780-9e50-4a82-972e-38c473e066f4");
+						sms.setMessage("Bizarre...conso d'eau enregistrée : " + computedComsuption + ", transmission LoRa dead?");
+						_smsGammuService.sendMessage(sms);
+					}
+				}
+			}
+			else {
+				computedComsuption = consumption;
+			}
+		}
+		
+		_logger.info("WaterMeter voltage " + vcc + ", consumption : " + computedComsuption, ", consumption from sensor start : " + literConsumedFromStart);
+		
+		_dbManager.SaveWaterMeterInfo(vcc, computedComsuption);
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
+//import java.util.Date;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +18,7 @@ import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 
-import fr.guiet.automationserver.business.helper.DateUtils;
+//import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
 
@@ -37,7 +37,7 @@ public class LoRaService implements Runnable {
 	private MqttService _mqttService = null;
 	private String _pub_topic = "/guiet/automationserver/raingauge";
 	
-	private Date _lastMessageReceived = new Date();
+	//private Date _lastMessageReceived = new Date();
 	private final String RAINGAUGE_SENSOR_ID = "17";
 	
 
@@ -152,7 +152,7 @@ public class LoRaService implements Runnable {
 
 			switch (action) {
 			case "SETRAINGAUGEINFO":
-				_lastMessageReceived = new Date();
+				//_lastMessageReceived = new Date();
 				
 				float vcc = Float.parseFloat(messageContent[1]);
 				String flipflop = messageContent[2];
