@@ -275,11 +275,12 @@ public class WaterMeterService implements Runnable, IMqttable {
 				else {
 					computedComsuption = cons.intValue();					
 					
-					if (computedComsuption > 2) {
+					//2020/09/19 - Totalement possible...conso d'eau envoyé après 5s d'inactivité...donc on peut avoir enregistré une conso > 2 litres
+					/*if (computedComsuption > 2) {
 						SMSDto sms = new SMSDto("9ef44780-9e50-4a82-972e-38c473e066f4");
 						sms.setMessage("Bizarre...conso d'eau enregistrée : " + computedComsuption + ", transmission LoRa dead?");
 						_smsGammuService.sendMessage(sms);
-					}
+					}*/
 				}
 			}
 			else {
@@ -287,7 +288,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 			}
 		}
 		
-		_logger.info("WaterMeter voltage " + vcc + ", consumption : " + computedComsuption, ", consumption from sensor start : " + literConsumedFromStart);
+		_logger.info("WaterMeter voltage " + vcc + ", consumption : " + computedComsuption + ", consumption from sensor start : " + literConsumedFromStart);
 		
 		_dbManager.SaveWaterMeterInfo(vcc, computedComsuption);
 	}
