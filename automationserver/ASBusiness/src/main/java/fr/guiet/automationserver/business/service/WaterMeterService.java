@@ -41,6 +41,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 	
 	private Long _previousConsumptionFromStart = null;
 	
+	private int _noSensorNewsTimeout = 35; //in minutes
+	
 	public WaterMeterService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
 		_mqttService = mqttService;
@@ -100,8 +102,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				Long elapsedTime = DateUtils.minutesBetweenDate(_lastMessageReceived, new Date());
 				
-				if (elapsedTime >= 60) {
-					String mess = "Aucune nouvelle du capteur sur compteur d'eau depuis 1h";
+				if (elapsedTime > _noSensorNewsTimeout) {
+					String mess = "Aucune nouvelle du capteur sur compteur d'eau au moins " + _noSensorNewsTimeout +  " minutes";
 
 					_logger.info(mess);
 
