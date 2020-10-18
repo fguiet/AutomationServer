@@ -1,15 +1,18 @@
 /**** 
  * homehub_v2
+ *  Compile with board LOLIN(WEMOS) D1 R2 & mini on Arduino IDE 1.8.13
  * 
  * F. Guiet 
  * Creation           : End of 2018
- * Last modification  : 20190310
+ * Last modification  : 20201018
  * 
- * Version            : 1.3
+ * Version            : 1.4
  * 
  * History            : Huge refactoring - add mqtt toppic for each sensor
  *                      Remove first / in topic, fix bug in mqtt connect (possible infinite loop), improve debug_message function
  *                      20190310 - Add main entry door reedswitch sensor
+ *                      1.4 - 20201018 - Move to Arduino Json 6 and change office sensor mac address
+ *                      
  *                      
  */
 
@@ -20,8 +23,8 @@
 #include <ArduinoJson.h>
 
 #define SOFTSERIAL_TX D5 //=D1 on Wemos
-#define SOFTSERIAL_RX D4 //=D2 on Wemos
-#define DEBUG 0
+#define SOFTSERIAL_RX D2 //=D2 on Wemos
+#define DEBUG 1
 #define MAX_RETRY 50
 #define MQTT_SERVER "192.168.1.25"
 
@@ -30,7 +33,7 @@
 #define MQTT_CLIENT_ID "HubDownstairsMqttClient"
 //#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
 #define MQTT_HUB_TOPIC "guiet/downstairs/hub"
-#define FIRMWARE_VERSION "1.3"
+#define FIRMWARE_VERSION "1.4"
 #define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
 //#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
@@ -103,7 +106,7 @@ void InitSensors() {
   sensors[3].Type = "Environmental";
   */
   
-  sensors[0].Address = "d4:a6:6d:1d:ef:8b";
+  sensors[0].Address = "d7:e0:cf:0e:99:c1";
   sensors[0].Name = "Bureau";
   sensors[0].SensorId = "1";
   sensors[0].Mqtt_topic = "guiet/downstairs/office/sensor/1";
@@ -184,8 +187,10 @@ int readline(int readch, char *buffer, int len)
 
 String ConvertToJSon(Sensor sensor) {
     //Create JSon object
-    DynamicJsonBuffer  jsonBuffer(200);
-    JsonObject& root = jsonBuffer.createObject();
+    //DynamicJsonBuffer  jsonBuffer(200);
+    //JsonObject& root = jsonBuffer.createObject();
+    DynamicJsonDocument  jsonBuffer(200);
+    JsonObject root = jsonBuffer.to<JsonObject>();
     
     root["sensorid"] = sensor.SensorId;
     root["name"] = sensor.Name;
@@ -193,18 +198,20 @@ String ConvertToJSon(Sensor sensor) {
     root["rssi"] = sensor.Rssi;
     root["battery"] = sensor.Battery;
     root["state"] = sensor.State;
-
-    String result;
-    root.printTo(result);
+    
+    String result;    
+    serializeJson(root, result);
 
     return result;
 }
 
 void jsonParser(char *buffer) {
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& jsonObj = jsonBuffer.parseObject(buffer);
+  DynamicJsonDocument  jsonObj(200);
+  //JsonObject& jsonObj = jsonBuffer.parseObject(buffer);
+  //JsonObject jsonObj = jsonBuffer.to<JsonObject>();
+  auto error = deserializeJson(jsonObj, buffer);
 
-  if (jsonObj.success())
+  if (!error)
   {
     Sensor sensor;
     int val = getSensorByAddress(jsonObj["Address"].as<String>(), sensor);
@@ -243,6 +250,9 @@ void jsonParser(char *buffer) {
           client.publish(sensor.Mqtt_topic.c_str() ,message_buff);
       }    
     }
+  }
+  else {
+    debug_message("Error parsing : " + String(buffer), true);
   }
 }
 
