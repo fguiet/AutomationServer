@@ -31,7 +31,7 @@ public class AutomationServer implements Daemon {
 
 	private WaterMeterService _waterMeterService = null;
 	private TeleInfoService _teleInfoService = null; // service de teleinfo
-	private LoRaService _loRaService = null; // service raingauge
+	private RaingaugeService _raingaugeService = null; // service raingauge
 	private RoomService _roomService = null; // service de room service
 	private WaterHeaterService _waterHeater = null; // service de gestion du chauffe-eau
 	private RollerShutterService _rollerShutterService = null;
@@ -40,7 +40,7 @@ public class AutomationServer implements Daemon {
 	private Thread _waterMeterServiceThread = null;
 	private Thread _roomServiceThread = null;
 	private Thread _teleInfoServiceThread = null;
-	private Thread _loRaServiceThread = null;
+	private Thread _raingaugeServiceThread = null;
 	private Thread _waterHeaterServiceThread = null;
 	private Thread _rollerShutterServiceThread = null;
 	private Thread _BLEHubServiceThread = null;
@@ -107,9 +107,9 @@ public class AutomationServer implements Daemon {
 					_waterMeterServiceThread.start();
 
 					// Starting rain gauge service
-					_loRaService = new LoRaService(_smsGammuService, _mqttService);
-					_loRaServiceThread = new Thread(_loRaService);
-					_loRaServiceThread.start();
+					_raingaugeService = new RaingaugeService(_smsGammuService, _mqttService);
+					_raingaugeServiceThread = new Thread(_raingaugeService);
+					_raingaugeServiceThread.start();
 
 					// Starting teleinfo service
 					_teleInfoService = new TeleInfoService(_smsGammuService, _mqttService);
@@ -177,6 +177,7 @@ public class AutomationServer implements Daemon {
 					_mqttService.addClients(_outsideEnvService.getMqttableClients());
 					_mqttService.addClient(_smsGammuService);
 					_mqttService.addClient(_waterMeterService);
+					_mqttService.addClient(_raingaugeService);
 
 					_mqttService.connectAndSubscribe();
 
@@ -330,7 +331,7 @@ public class AutomationServer implements Daemon {
 			_BLEHubService.StopService();
 			_waterMeterService.StopService();
 			_waterHeater.StopService();
-			_loRaService.StopService();
+			_raingaugeService.StopService();
 			_alarmService.StopService();
 			_smsGammuService.StopService();
 			// _scenariiManager.StopScenariiManager();
@@ -364,7 +365,7 @@ public class AutomationServer implements Daemon {
 	@Override
 	public void destroy() {
 		_mainThread = null;
-		_loRaService = null;
+		_raingaugeService = null;
 		_rollerShutterService = null;
 		_teleInfoService = null;
 		_roomService = null;

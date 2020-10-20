@@ -29,8 +29,10 @@ public class WaterMeterService implements Runnable, IMqttable {
 	private MqttService _mqttService = null;
 	private ArrayList<String> _mqttTopics = new ArrayList<String>();
 	
+	//Used in OpenHab to get db aggregation
 	private String _pub_topic ="/guiet/automationserver/watermeter";
 	
+	//Used in OpenHab to get voltage
 	private String _pub_topic_watermeter = "/guiet/outside/sensor/19";
 	
 	private final String WATERMETER_SENSOR_ID = "19";

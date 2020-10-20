@@ -35,6 +35,8 @@ public class LoRaService implements Runnable {
 	private DbManager _dbManager = null;
 	// private static String _mqttClientId = "rainGaugeCliendId";
 	private MqttService _mqttService = null;
+	
+	//Used to get battery voltage of sensor
 	private String _pub_topic = "/guiet/automationserver/raingauge";
 	
 	//private Date _lastMessageReceived = new Date();

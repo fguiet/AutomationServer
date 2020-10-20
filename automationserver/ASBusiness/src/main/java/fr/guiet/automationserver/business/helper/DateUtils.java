@@ -11,7 +11,7 @@ import java.util.GregorianCalendar;
 
 public class DateUtils {
 	
-	private static long millisToNextHour(Calendar calendar) {
+	/*private static long millisToNextHour(Calendar calendar) {
 		
 	    int minutes = calendar.get(Calendar.MINUTE);
 	    int seconds = calendar.get(Calendar.SECOND);
@@ -22,7 +22,7 @@ public class DateUtils {
 	    
 	    return minutesToNextHour*60*1000 + secondsToNextHour*1000 + millisToNextHour;
 	    
-	}
+	}*/
 
 	public static Date addDays(Date date, int days) {
 		Calendar cal = Calendar.getInstance();
