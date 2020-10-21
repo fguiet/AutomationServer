@@ -12,6 +12,7 @@
  *                      Remove first / in topic, fix bug in mqtt connect (possible infinite loop), improve debug_message function
  *                      20190310 - Add main entry door reedswitch sensor
  *                      1.4 - 20201018 - Move to Arduino Json 6 and change office sensor mac address
+ *                      1.5 - 20201021 - Change salon mac address
  *                      
  *                      
  */
@@ -22,8 +23,8 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-#define SOFTSERIAL_TX D5 //=D1 on Wemos
-#define SOFTSERIAL_RX D2 //=D2 on Wemos
+#define SOFTSERIAL_TX D3 
+#define SOFTSERIAL_RX D2 
 #define DEBUG 1
 #define MAX_RETRY 50
 #define MQTT_SERVER "192.168.1.25"
@@ -33,7 +34,7 @@
 #define MQTT_CLIENT_ID "HubDownstairsMqttClient"
 //#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
 #define MQTT_HUB_TOPIC "guiet/downstairs/hub"
-#define FIRMWARE_VERSION "1.4"
+#define FIRMWARE_VERSION "1.5"
 #define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
 //#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
@@ -107,15 +108,15 @@ void InitSensors() {
   */
   
   sensors[0].Address = "d7:e0:cf:0e:99:c1";
-  sensors[0].Name = "Bureau";
-  sensors[0].SensorId = "1";
-  sensors[0].Mqtt_topic = "guiet/downstairs/office/sensor/1";
+  sensors[0].Name = "Salon";
+  sensors[0].SensorId = "2";
+  sensors[0].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
   sensors[0].Type = "Environmental";
 
-  sensors[1].Address = "f4:a4:c6:6f:d8:6a";
-  sensors[1].Name = "Salon";
-  sensors[1].SensorId = "2";
-  sensors[1].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
+  sensors[1].Address = "d9:e1:d3:f5:6e:61";
+  sensors[1].Name = "Bureau";
+  sensors[1].SensorId = "1";
+  sensors[1].Mqtt_topic = "guiet/downstairs/office/sensor/1";
   sensors[1].Type = "Environmental";
 
   sensors[2].Address = "c5:f7:7b:9b:24:46";

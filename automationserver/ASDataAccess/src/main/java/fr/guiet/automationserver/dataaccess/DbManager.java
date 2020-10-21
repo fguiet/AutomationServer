@@ -240,7 +240,7 @@ public class DbManager {
 					// .consistency(ConsistencyLevel.ALL)
 					.build();
 
-			Point point1 = Point.measurement("raingauge").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+			Point point1 = Point.measurement("sensor_raingauge").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 					.addField("vcc", vcc).addField("flipflop", flipflop).build();
 
 			batchPoints.point(point1);
