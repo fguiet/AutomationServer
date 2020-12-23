@@ -37,7 +37,9 @@ public class RaingaugeService implements Runnable, IMqttable {
 	private static String MQTT_TOPIC_LORAWAN = "gateway/dca632fffe365d9c/event/up";
 
 	private Date _lastMessageReceived = new Date();
-
+	
+	private String _lastPayloadReceived = "";
+	
 	private int _noSensorNewsTimeout = 35; // in minutes
 
 	public RaingaugeService(SMSGammuService smsGammuService, MqttService mqttService) {
@@ -112,8 +114,47 @@ public class RaingaugeService implements Runnable, IMqttable {
 				JSONObject json = new JSONObject(message);
 
 				String payload = json.getString("phyPayload");
-
 				_logger.info("Payload base64 received : " + payload);
+												
+				//2020/12/23 - add this check because something message from gateway is sent two time...
+				//In this particular case...message in Application Data, the thing network shows 2 gateways...
+				//Don't know why for the moment...may be a problem 
+				//with low power mode...
+				/*
+
+				{
+					  "time": "2020-12-23T17:05:32.079674859Z",
+					  "frequency": 868.5,
+					  "modulation": "LORA",
+					  "data_rate": "SF7BW125",
+					  "coding_rate": "4/5",
+					  "gateways": [
+					    {
+					      "gtw_id": "eui-dca632fffe365d9c",
+					      "timestamp": 4084734907,
+					      "time": "2020-12-23T17:05:31.024132Z",
+					      "channel": 2,
+					      "rssi": -87,
+					      "snr": 6.8,
+					      "latitude": 48.09587,
+					      "longitude": 1.89417,
+					      "altitude": 122
+					    }
+					  ]
+					}
+				*/
+				if (payload.equals(_lastPayloadReceived)) {
+					_logger.info("Same message received two times...skipping this one...");
+					messageProcessed = true;
+					return messageProcessed;
+				}
+				/*if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
+					_logger.info("Less than one second ago I received a message from Raingauge sensor...skipping this one...");
+					messageProcessed = true;
+					return messageProcessed;
+				}*/
+					
+				_lastPayloadReceived = payload;								
 
 				PhyPayload pp;
 				// try {
@@ -147,41 +188,7 @@ public class RaingaugeService implements Runnable, IMqttable {
 				String sensorid = messageContent[0];
 
 				if (sensorid.equals(RAINGAUGE_SENSOR_ID)) {
-					
-					//2020/12/23 - add this check because something message from gateway is sent two time...
-					//In this particular case...message in Application Data, the thing network shows 2 gateways...
-					//Don't know why for the moment...may be a problem 
-					//with low power mode...
-					/*
- 
-					{
-						  "time": "2020-12-23T17:05:32.079674859Z",
-						  "frequency": 868.5,
-						  "modulation": "LORA",
-						  "data_rate": "SF7BW125",
-						  "coding_rate": "4/5",
-						  "gateways": [
-						    {
-						      "gtw_id": "eui-dca632fffe365d9c",
-						      "timestamp": 4084734907,
-						      "time": "2020-12-23T17:05:31.024132Z",
-						      "channel": 2,
-						      "rssi": -87,
-						      "snr": 6.8,
-						      "latitude": 48.09587,
-						      "longitude": 1.89417,
-						      "altitude": 122
-						    }
-						  ]
-						}
-					*/
-					if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
-						_logger.info("Less than one second ago I received a message from Raingauge sensor...skipping this one...");
-						messageProcessed = true;
-						return messageProcessed;
-					}
-					
-					_lastMessageReceived = new Date();								
+															
 					
 					String firmware = messageContent[1];
 					String battery = messageContent[2];
@@ -195,7 +202,9 @@ public class RaingaugeService implements Runnable, IMqttable {
 					mess.put("battery", battery);
 					mess.put("flipflop", flipflop);
 
-					_logger.info("JSON Message for OpenHab : " + mess.toString());					
+					_logger.info("JSON Message for OpenHab : " + mess.toString());		
+					
+					_lastMessageReceived = new Date();		
 
 					_mqttService.SendMsg(_pub_topic, mess.toString());
 
