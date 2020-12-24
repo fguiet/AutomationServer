@@ -45,7 +45,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 	
 	private int _noSensorNewsTimeout = 35; //in minutes
 	
-	private String _lastPayloadReceived = "";
+	//private String _lastPayloadReceived = "";
 	
 	public WaterMeterService(SMSGammuService smsGammuService, MqttService mqttService) {
 		_smsGammuService = smsGammuService;
@@ -183,6 +183,8 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				if (sensorid.equals(WATERMETER_SENSOR_ID)) {
 					
+					/*** This problem does not seem to occur with WaterMeter Sensor***/
+					 
 					//2020/12/23 - add this check because something message from gateway is sent two time...
 					//In this particular case...message in Application Data, the thing network shows 2 gateways...
 					//Don't know why for the moment...may be a problem 
@@ -209,19 +211,20 @@ public class WaterMeterService implements Runnable, IMqttable {
 						    }
 						  ]
 						}
-					*/
-					if (payload.equals(_lastPayloadReceived)) {
+					*/					
+					/*if (payload.equals(_lastPayloadReceived)) {
 						_logger.info("Same message received two times...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
-					}
+					}*/
 					/*if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
 						_logger.info("Less than one second ago I received a message from Raingauge sensor...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
-					}*/
+					}*/					
 						
-					_lastPayloadReceived = payload;
+					//_lastPayloadReceived = payload;
+					/******************************************************************/
 					
 					String firmware  = messageContent[1];	
 					String voltage  = messageContent[2];
