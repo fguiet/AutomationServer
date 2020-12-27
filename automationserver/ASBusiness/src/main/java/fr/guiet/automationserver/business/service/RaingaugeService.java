@@ -181,7 +181,7 @@ public class RaingaugeService implements Runnable, IMqttable {
 						messageProcessed = true;
 						return messageProcessed;
 					}*/
-					if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
+					if (DateUtils.secondsBetweenDate(_lastMessageReceived, new Date()).compareTo(new Long(1)) < 0) {
 						_logger.info("Less than one second ago I received a message from Raingauge sensor...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
