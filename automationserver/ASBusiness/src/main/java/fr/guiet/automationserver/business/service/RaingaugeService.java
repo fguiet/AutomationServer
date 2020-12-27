@@ -38,7 +38,7 @@ public class RaingaugeService implements Runnable, IMqttable {
 
 	private Date _lastMessageReceived = new Date();
 	
-	private String _lastPayloadReceived = "";
+	//private String _lastPayloadReceived = "";
 	
 	private int _noSensorNewsTimeout = 35; // in minutes
 
@@ -176,18 +176,19 @@ public class RaingaugeService implements Runnable, IMqttable {
 						  ]
 						}
 					*/
-					if (payload.equals(_lastPayloadReceived)) {
+					/*if (payload.equals(_lastPayloadReceived)) {
 						_logger.info("Same message received two times...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
-					}
-					/*if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
+					}*/
+					if (DateUtils.secondsBetweenDate(new Date(), _lastMessageReceived).compareTo(new Long(1)) < 0) {
 						_logger.info("Less than one second ago I received a message from Raingauge sensor...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
-					}*/
+					}
 						
-					_lastPayloadReceived = payload;
+					//_lastPayloadReceived = payload;
+					_lastMessageReceived = new Date();
 															
 					
 					String firmware = messageContent[1];
@@ -204,7 +205,7 @@ public class RaingaugeService implements Runnable, IMqttable {
 
 					_logger.info("JSON Message for OpenHab : " + mess.toString());		
 					
-					_lastMessageReceived = new Date();		
+					//_lastMessageReceived = new Date();		
 
 					_mqttService.SendMsg(_pub_topic, mess.toString());
 
