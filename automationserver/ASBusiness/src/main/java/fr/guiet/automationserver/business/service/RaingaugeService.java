@@ -1,19 +1,19 @@
 package fr.guiet.automationserver.business.service;
 
-import java.nio.ByteBuffer;
+//import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.util.encoders.Base64;
+//import org.bouncycastle.util.encoders.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import be.romaincambier.lorawan.FRMPayload;
+/*import be.romaincambier.lorawan.FRMPayload;
 import be.romaincambier.lorawan.MACPayload;
-import be.romaincambier.lorawan.PhyPayload;
+import be.romaincambier.lorawan.PhyPayload;*/
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
@@ -34,7 +34,9 @@ public class RaingaugeService implements Runnable, IMqttable {
 
 	private final String RAINGAUGE_SENSOR_ID = "17";
 
-	private static String MQTT_TOPIC_LORAWAN = "gateway/dca632fffe365d9c/event/up";
+	//# Event topic template
+	//# application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}
+	private static String MQTT_TOPIC_LORAWAN = "application/1/device/7930bfc7c8460b8e/event/up";
 
 	private Date _lastMessageReceived = new Date();
 	
@@ -108,10 +110,10 @@ public class RaingaugeService implements Runnable, IMqttable {
 
 			// _logger.info("LoRaWAN message received : " + message);
 
-			String decryptedPayload = "";
+			//String decryptedPayload = "";
 
 			try {
-				JSONObject json = new JSONObject(message);
+				/*JSONObject json = new JSONObject(message);
 
 				String payload = json.getString("phyPayload");
 				_logger.info("Payload base64 received : " + payload);
@@ -139,15 +141,19 @@ public class RaingaugeService implements Runnable, IMqttable {
 
 				decryptedPayload = new String(clearData);
 
-				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);
+				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);*/
 
 				// Try parse payload
+				
+				JSONObject json = new JSONObject(message);
+				JSONObject jsonObj = new JSONObject(json.getString("objectJSON"));
+				String data = jsonObj.getString("data");
 
-				String[] messageContent = decryptedPayload.split(" ");
+				String[] messageContent = data.split(" ");
 
-				String sensorid = messageContent[0];
+				//String sensorid = messageContent[0];
 
-				if (sensorid.equals(RAINGAUGE_SENSOR_ID)) {
+				//if (sensorid.equals(RAINGAUGE_SENSOR_ID)) {
 					
 					//2020/12/23 - add this check because something message from gateway is sent two time...
 					//In this particular case...message in Application Data, the thing network shows 2 gateways...
@@ -181,12 +187,12 @@ public class RaingaugeService implements Runnable, IMqttable {
 						messageProcessed = true;
 						return messageProcessed;
 					}*/
-					if (DateUtils.secondsBetweenDate(_lastMessageReceived, new Date()).compareTo(new Long(2)) < 0) {
+					/*if (DateUtils.secondsBetweenDate(_lastMessageReceived, new Date()).compareTo(new Long(2)) < 0) {
 						_logger.info("Less than two second ago I received a message from Raingauge sensor...skipping this one...");
 						messageProcessed = true;
 						return messageProcessed;
-					}
-						
+					}						*/
+				
 					//_lastPayloadReceived = payload;
 					_lastMessageReceived = new Date();
 															
@@ -216,17 +222,17 @@ public class RaingaugeService implements Runnable, IMqttable {
 					} catch (NumberFormatException e) {
 						_logger.error("Valeur de la batterie pour le capteur Raingauge incorrecte : " + battery);
 					}
-				} else {
-					throw new Exception("sensorid is " + sensorid + ", mine is " + RAINGAUGE_SENSOR_ID
-							+ ", LoRaWAN frame not for me");
-				}
+				//} else {
+			//		throw new Exception("sensorid is " + sensorid + ", mine is " + RAINGAUGE_SENSOR_ID
+			//				+ ", LoRaWAN frame not for me");
+			//	}
 
 				messageProcessed = true;
 
 			} catch (JSONException e) {
 				_logger.info("Cannot parse JSON LoRaWAN Message : " + message, e);
 			} catch (Exception e) {
-				_logger.info("Cannot parse LoRaWAN decrypted message, should not be for me : " + decryptedPayload, e);
+				_logger.info("Exception while processing LoRaWAN message : " + message, e);
 			}
 		}
 

@@ -51,7 +51,7 @@
 		<automationserver-business.version>0.0.1-SNAPSHOT</automationserver-business.version>
 		<automationserver-model.version>0.0.1-SNAPSHOT</automationserver-model.version>
 		<automationserver-dataaccess.version>0.0.1-SNAPSHOT</automationserver-dataaccess.version>	
-		<automationserver-lorawan.version>0.0.1-SNAPSHOT</automationserver-lorawan.version>		
+		<!-- <automationserver-lorawan.version>0.0.1-SNAPSHOT</automationserver-lorawan.version>-->		
 	</properties>
 
     <!--
