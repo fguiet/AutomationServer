@@ -1,2 +1,2 @@
-docker build -t guiet/postgresql:9.6 -f postgresql_dockerfile /home/fred/git/AutomationServer/third-party-tools/postgresql/docker
+docker build -t guiet/postgresql:9.6 -f postgresql_dockerfile .
 

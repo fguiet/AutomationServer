@@ -1,6 +1,4 @@
-docker run --device=/dev/ttyUSB2 \
-           --device=/dev/ttyUSB3 \
-           --privileged \
+docker run --privileged \
            --name automationserver \
            -h docker-automationserver \
            --network automationserver-network \
@@ -10,6 +8,7 @@ docker run --device=/dev/ttyUSB2 \
            -v /home/fred/applications/automationserver/cmd:/applications/automationserver/cmd \
            -v /home/fred/applications/automationserver/config:/applications/automationserver/config \
            -v /home/fred/applications/automationserver/bin:/applications/automationserver/bin \
+           -v /dev:/dev \
            --restart=unless-stopped \
            -d \
            guiet/automationserver:1.0
