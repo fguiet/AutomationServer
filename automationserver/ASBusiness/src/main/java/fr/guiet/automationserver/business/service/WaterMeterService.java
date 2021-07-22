@@ -1,6 +1,6 @@
 package fr.guiet.automationserver.business.service;
 
-import java.nio.ByteBuffer;
+//import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -8,13 +8,13 @@ import java.util.TimerTask;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.util.encoders.Base64;
+//import org.bouncycastle.util.encoders.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import be.romaincambier.lorawan.FRMPayload;
+/*import be.romaincambier.lorawan.FRMPayload;
 import be.romaincambier.lorawan.MACPayload;
-import be.romaincambier.lorawan.PhyPayload;
+import be.romaincambier.lorawan.PhyPayload;*/
 import fr.guiet.automationserver.business.helper.DateUtils;
 import fr.guiet.automationserver.dataaccess.DbManager;
 import fr.guiet.automationserver.dto.SMSDto;
@@ -37,7 +37,9 @@ public class WaterMeterService implements Runnable, IMqttable {
 	
 	private final String WATERMETER_SENSOR_ID = "19";
 	
-	private static String MQTT_TOPIC_LORAWAN="gateway/dca632fffe365d9c/event/up";
+	//# Event topic template
+	//# application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}
+	private static String MQTT_TOPIC_LORAWAN="application/2/device/a907c224a685bd43/event/up";
 	
 	private Date _lastMessageReceived = new Date();
 	
@@ -150,10 +152,19 @@ public class WaterMeterService implements Runnable, IMqttable {
 			
 			//_logger.info("LoRaWAN message received : " + message);
 			
-			String decryptedPayload = "";			
+			//String decryptedPayload = "";			
 			
 			try {
+				
 				JSONObject json = new JSONObject(message);
+				JSONObject jsonObj = new JSONObject(json.getString("objectJSON"));
+				String data = jsonObj.getString("data");
+				
+				
+				_logger.info("Raw LoRaWAN Message received : " + message);
+				
+								
+				/*JSONObject json = new JSONObject(message);
 				
 				String payload = json.getString("phyPayload");
 				_logger.info("Payload base64 received : " + payload);
@@ -173,15 +184,15 @@ public class WaterMeterService implements Runnable, IMqttable {
 				
 				decryptedPayload = new String(clearData);
 				
-				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);
+				_logger.info("Decrypted LoraWAN Message : " + decryptedPayload);*/
 				
 				//Try parse payload
 				
-				String[] messageContent = decryptedPayload.split(" ");
+				String[] messageContent = data.split(" ");
 				
-				String sensorid = messageContent[0];
+				//String sensorid = messageContent[0];
 				
-				if (sensorid.equals(WATERMETER_SENSOR_ID)) {
+				//if (sensorid.equals(WATERMETER_SENSOR_ID)) {
 					
 					/*** This problem does not seem to occur with WaterMeter Sensor***/
 					 
@@ -245,10 +256,10 @@ public class WaterMeterService implements Runnable, IMqttable {
 					_lastMessageReceived = new Date();
 					
 					ManageWaterMeterSensor(mess.toString(), voltage, literConsumed, literConsumedFromStart);
-				}
-				else {
-					throw new Exception("sensorid is " + sensorid + ", mine is " + WATERMETER_SENSOR_ID + ", LoRaWAN frame not for me");
-				}
+				//}
+				//else {
+				//	throw new Exception("sensorid is " + sensorid + ", mine is " + WATERMETER_SENSOR_ID + ", LoRaWAN frame not for me");
+				//}
 					
 				/*} catch (MalformedPacketException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
 					// TODO Auto-generated catch block
@@ -263,7 +274,7 @@ public class WaterMeterService implements Runnable, IMqttable {
 				_logger.info("Cannot parse JSON LoRaWAN Message : " + message, e);				
 			}
 			catch(Exception e) {
-				_logger.info("Cannot parse LoRaWAN decrypted message, should not be for me : " + decryptedPayload, e);
+				_logger.info("Exception while processing LoRaWAN message : " + message, e);
 			}
 		}
 				

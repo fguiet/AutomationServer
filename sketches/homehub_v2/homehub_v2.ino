@@ -30,13 +30,13 @@
 #define MQTT_SERVER "192.168.1.25"
 
 //*** CHANGE IT
-//#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
-#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
-//#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
-#define MQTT_HUB_TOPIC "guiet/downstairs/hub"
+#define MQTT_CLIENT_ID "HubUpstairsMqttClient"
+//#define MQTT_CLIENT_ID "HubDownstairsMqttClient"
+#define MQTT_HUB_TOPIC "guiet/upstairs/hub"
+//#define MQTT_HUB_TOPIC "guiet/downstairs/hub"
 #define FIRMWARE_VERSION "1.5"
-#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
-//#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
+//#define MQTT_HUB_MESSAGE "HUB_DOWNSTAIRS_ALIVE"
+#define MQTT_HUB_MESSAGE "HUB_UPSTAIRS_ALIVE"
 
 SoftwareSerial softSerial(SOFTSERIAL_RX, SOFTSERIAL_TX); // RX, TX
 
@@ -68,7 +68,7 @@ struct Sensor {
 };
 
 //*** CHANGE IT
-#define SENSORS_COUNT 3
+#define SENSORS_COUNT 4
 
 Sensor sensors[SENSORS_COUNT];
 
@@ -81,7 +81,7 @@ void InitSensors() {
   //String SENSORID =  "5"; //Parents
   //String SENSORID =  "12"; //Bathroom (upstairs)
   
-  /*
+  
   sensors[0].Address = "d2:48:c8:a5:35:4c";
   sensors[0].Name = "Manon";
   sensors[0].SensorId = "4";
@@ -105,9 +105,9 @@ void InitSensors() {
   sensors[3].SensorId = "12";
   sensors[3].Mqtt_topic = "guiet/upstairs/bathroom/sensor/12";
   sensors[3].Type = "Environmental";
-  */
   
-  sensors[0].Address = "d7:e0:cf:0e:99:c1";
+  
+  /*sensors[0].Address = "d7:e0:cf:0e:99:c1";
   sensors[0].Name = "Salon";
   sensors[0].SensorId = "2";
   sensors[0].Mqtt_topic = "guiet/downstairs/livingroom/sensor/2";
@@ -123,7 +123,7 @@ void InitSensors() {
   sensors[2].Name = "Reedswitch - porte entrée";
   sensors[2].SensorId = "16";
   sensors[2].Mqtt_topic = "guiet/downstairs/livingroom/sensor/16";
-  sensors[2].Type = "Reedswitch";
+  sensors[2].Type = "Reedswitch";*/
 }
 
 
