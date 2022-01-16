@@ -1,8 +1,15 @@
 NAME
-    
+   
   AutomationServer
 
 DESCRIPTION
+
+  !!! THIS PROJECT IS OFFICIALLY DEPRECATED !!!
+  
+  It has run in my house for years but I decided to give a try to NodeRed, HomeAssistant.
+  And now I am addicted :) But it was a nice project I learn a lot.
+  
+  !!! THIS PROJECT IS OFFICIALLY DEPRECATED !!!
 
   AutomationServer is a personal home automation project. 
   It is both a software and electronic project.
