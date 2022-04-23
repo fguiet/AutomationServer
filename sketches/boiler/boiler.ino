@@ -16,9 +16,9 @@
  *                      
  */
 
-#include <ArduinoJson.h>
-#include <ESP8266HTTPClient.h>
-#include <ESP8266httpUpdate.h>
+//#include <ArduinoJson.h>
+//#include <ESP8266HTTPClient.h>
+//#include <ESP8266httpUpdate.h>
 #include <ESP8266WiFi.h> 
 #include <OneWire.h> //Librairie du bus OneWire
 #include <DallasTemperature.h> //Librairie du capteur 
@@ -27,13 +27,14 @@
 #include <PubSubClient.h>
 
 /**** VARIABLES ***/
-DynamicJsonBuffer JSONBuffer;
+//DynamicJsonDocument JSONBuffer;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 char message_buff[100];
 
-OneWire oneWire(D2); //Bus One Wire sur la pin 2 de l'arduino
+//D2 = GPIO4
+OneWire oneWire(4); //Bus One Wire sur la pin 2 de l'arduino
 DallasTemperature sensor(&oneWire); //Utilistion du bus Onewire pour les capteurs
 DeviceAddress sensorDeviceAddress; //Vérifie la compatibilité des capteurs avec la librairie
 
@@ -44,17 +45,17 @@ const int SLEEP_TIME_SECONDS = 60;
 String SENSORID =  "11"; //Boiler
 #define MAX_RETRY 50
 #define MQTT_CLIENT_ID "BoilerSensor"
-#define MQTT_SERVER "192.168.1.25"
+#define MQTT_SERVER "mqtt.guiet.lan"
 #define MQTT_TOPIC "/guiet/boiler/temp"
 const int CURRENT_FIRMWARE_VERSION = 4;
-String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
-String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
+//String CHECK_FIRMWARE_VERSION_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getversion/" + SENSORID;
+//String BASE_FIRMWARE_URL = "http://192.168.1.25:8510/automationserver-webapp/api/firmware/getfirmware/" + SENSORID;
 const char* ssid = "DUMBLEDORE";
 const char* password = "frederic";
 
-IPAddress ip_wemos (192,168,1,42); 
-IPAddress gateway_ip ( 192,168,1,1);
-IPAddress subnet_mask(255, 255, 255,0);
+//IPAddress ip_wemos (192,168,1,42); 
+//IPAddress gateway_ip ( 192,168,1,1);
+//IPAddress subnet_mask(255, 255, 255,0);
 
 /**** END DEFINE ***/ 
 
@@ -67,7 +68,7 @@ void setup() {
   connectToWifi();
 
   //Check for firmware update
-  checkForUpdate();
+  //checkForUpdate();
 
   //Init Sensor
   sensor.begin(); //Activation des capteurs
@@ -82,7 +83,7 @@ void setup() {
 void loop() {
 
   ///Wait a little before beginning
-  delay(2000);
+  //delay(2000);
 
   //Handle MQTT connection
   client.loop();   
@@ -110,7 +111,7 @@ float getTemperature() {
   return sensor.getTempCByIndex(0);
 }
 
-void doOTAUpdate(int version) {
+/*void doOTAUpdate(int version) {
 
   t_httpUpdate_return ret  = ESPhttpUpdate.update(BASE_FIRMWARE_URL +  "/" + String(version));
   
@@ -125,7 +126,7 @@ void doOTAUpdate(int version) {
       Serial.println("[update] Update ok.");   
       break;
   }  
-}
+}*/
 
 void connectToMqtt() {
   
@@ -151,7 +152,7 @@ void connectToMqtt() {
   }
 }
 
-void checkForUpdate() {
+/*void checkForUpdate() {
 
   HTTPClient httpClient;
   httpClient.setTimeout(2000);
@@ -173,7 +174,7 @@ void checkForUpdate() {
   }
   
   httpClient.end();  
-}
+}*/
 
 void connectToWifi() 
 {
@@ -182,7 +183,7 @@ void connectToWifi()
   WiFi.forceSleepWake();
   WiFi.disconnect();
   Serial.println("Connecting to WiFi...");
-  WiFi.config(ip_wemos, gateway_ip, subnet_mask);
+  //WiFi.config(ip_wemos, gateway_ip, subnet_mask);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
